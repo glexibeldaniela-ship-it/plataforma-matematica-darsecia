@@ -1,3 +1,17 @@
+// 🔥 IMPORTACIONES NECESARIAS
+import { auth, db } from "./firebase.js";
+
+import {
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
 // 🔹 REGISTRO COMPLETO CON VALIDACIÓN DE CÉDULA
 window.registrar = async function () {
 
@@ -26,11 +40,11 @@ window.registrar = async function () {
       return;
     }
 
-    // 🔐 Crear usuario en Auth
+    // 🔐 Crear usuario en Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 💾 Guardar datos completos en usuarios
+    // 💾 Guardar datos del estudiante
     await setDoc(doc(db, "usuarios", user.uid), {
       cedula: cedula,
       nombres: nombres,
@@ -42,10 +56,11 @@ window.registrar = async function () {
       lapso_actual: lapso,
       intento: false,
       nota: null,
-      estado: "sin_presentar"
+      estado: "sin_presentar",
+      creado_en: new Date()
     });
 
-    // 💾 Guardar cédula en colección especial para bloquear repetidos
+    // 💾 Guardar cédula para bloquear repetidos
     await setDoc(doc(db, "cedulas", cedula), {
       uid: user.uid
     });
