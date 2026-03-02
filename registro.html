@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+  <h2>Registro</h2>
+
+  <input type="email" id="email" placeholder="Correo"><br><br>
+  <input type="password" id="password" placeholder="Contraseña"><br><br>
+
+  <select id="rol">
+    <option value="estudiante">Estudiante</option>
+  </select><br><br>
+
+  <button onclick="registrar()">Crear Cuenta</button>
+
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="auth.js"></script>
+
+</body>
+</html>
