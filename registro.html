@@ -2,19 +2,38 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Registro</title>
+  <title>Registro Estudiante</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 
-  <h2>Registro</h2>
+  <h2>Registro de Estudiante</h2>
 
+  <input type="text" id="cedula" placeholder="Cédula"><br><br>
+  <input type="text" id="nombres" placeholder="Nombres completos"><br><br>
+  <input type="text" id="apellidos" placeholder="Apellidos completos"><br><br>
   <input type="email" id="email" placeholder="Correo"><br><br>
   <input type="password" id="password" placeholder="Contraseña"><br><br>
 
-  <select id="rol">
-    <option value="estudiante">Estudiante</option>
+  <select id="anio">
+    <option value="">Seleccione Año</option>
+    <option value="1">1° Año</option>
+    <option value="2">2° Año</option>
+    <option value="3">3° Año</option>
+  </select><br><br>
+
+  <select id="seccion">
+    <option value="">Seleccione Sección</option>
+    <option value="A">A</option>
+    <option value="B">B</option>
+  </select><br><br>
+
+  <select id="lapso">
+    <option value="">Seleccione Lapso</option>
+    <option value="1">Lapso 1</option>
+    <option value="2">Lapso 2</option>
+    <option value="3">Lapso 3</option>
   </select><br><br>
 
   <button onclick="registrar()">Crear Cuenta</button>
