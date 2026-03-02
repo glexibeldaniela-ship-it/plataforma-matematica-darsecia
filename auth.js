@@ -81,3 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", registrar);
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const boton = document.getElementById("btnRegistro");
+
+  if (boton) {
+    boton.addEventListener("click", registrar);
+  }
+});
