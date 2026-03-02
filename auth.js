@@ -13,7 +13,7 @@ import {
 
 
 // 🔹 REGISTRO COMPLETO CON VALIDACIÓN DE CÉDULA
-window.registrar = async function () {
+async function registrar() {
 
   const cedula = document.getElementById("cedula").value.trim();
   const nombres = document.getElementById("nombres").value.trim();
@@ -46,13 +46,13 @@ window.registrar = async function () {
 
     // 💾 Guardar datos del estudiante
     await setDoc(doc(db, "usuarios", user.uid), {
-      cedula: cedula,
-      nombres: nombres,
-      apellidos: apellidos,
-      email: email,
+      cedula,
+      nombres,
+      apellidos,
+      email,
       rol: "estudiante",
-      anio: anio,
-      seccion: seccion,
+      anio,
+      seccion,
       lapso_actual: lapso,
       intento: false,
       nota: null,
@@ -71,4 +71,13 @@ window.registrar = async function () {
   } catch (error) {
     alert("Error: " + error.message);
   }
-};
+}
+
+
+// 🔥 ACTIVAR BOTÓN CUANDO CARGUE EL DOM
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnRegistro");
+  if (btn) {
+    btn.addEventListener("click", registrar);
+  }
+});
