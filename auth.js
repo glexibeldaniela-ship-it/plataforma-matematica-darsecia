@@ -1,80 +1,57 @@
-import { auth, db } from "./firebase.js";
-
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-// 🔹 REGISTRO
+// 🔹 REGISTRO COMPLETO CON VALIDACIÓN DE CÉDULA
 window.registrar = async function () {
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const cedula = document.getElementById("cedula").value.trim();
+  const nombres = document.getElementById("nombres").value.trim();
+  const apellidos = document.getElementById("apellidos").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const anio = document.getElementById("anio").value;
+  const seccion = document.getElementById("seccion").value;
+  const lapso = document.getElementById("lapso").value;
 
-  if (!email || !password) {
+  if (!cedula || !nombres || !apellidos || !email || !password || !anio || !seccion || !lapso) {
     alert("Complete todos los campos");
     return;
   }
 
   try {
 
+    // 🔎 Verificar si la cédula ya existe
+    const cedulaRef = doc(db, "cedulas", cedula);
+    const cedulaSnap = await getDoc(cedulaRef);
+
+    if (cedulaSnap.exists()) {
+      alert("Esta cédula ya está registrada");
+      return;
+    }
+
+    // 🔐 Crear usuario en Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Guardar rol en Firestore (por defecto estudiante)
+    // 💾 Guardar datos completos en usuarios
     await setDoc(doc(db, "usuarios", user.uid), {
+      cedula: cedula,
+      nombres: nombres,
+      apellidos: apellidos,
       email: email,
       rol: "estudiante",
-      intento: false
+      anio: anio,
+      seccion: seccion,
+      lapso_actual: lapso,
+      intento: false,
+      nota: null,
+      estado: "sin_presentar"
     });
 
-    alert("Usuario creado correctamente");
+    // 💾 Guardar cédula en colección especial para bloquear repetidos
+    await setDoc(doc(db, "cedulas", cedula), {
+      uid: user.uid
+    });
+
+    alert("Estudiante registrado correctamente");
     window.location.href = "login.html";
-
-  } catch (error) {
-    alert("Error: " + error.message);
-  }
-};
-
-
-// 🔹 LOGIN
-window.login = async function () {
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    const docRef = doc(db, "usuarios", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-
-      const data = docSnap.data();
-
-      if (data.rol === "admin") {
-        window.location.href = "panel-admin.html";
-      }
-      else if (data.rol === "profesor") {
-        window.location.href = "panel-profesor.html";
-      }
-      else {
-        window.location.href = "panel-estudiante.html";
-      }
-
-    } else {
-      alert("No tiene rol asignado");
-    }
 
   } catch (error) {
     alert("Error: " + error.message);
