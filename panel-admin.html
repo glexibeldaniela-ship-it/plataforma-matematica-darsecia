@@ -1,29 +1,70 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Panel Administrador</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+<h2>Panel Administrador</h2>
 
-<body>
+<h3>Crear Profesor</h3>
 
-  <h2>Bienvenido Administrador</h2>
+<input type="email" id="emailProfesor" placeholder="Correo del profesor"><br><br>
+<input type="password" id="passwordProfesor" placeholder="Contraseña"><br><br>
 
-  <p>Aquí podrá gestionar usuarios y ver estadísticas.</p>
+<button onclick="crearProfesor()">Crear Profesor</button>
 
-  <button onclick="cerrarSesion()">Cerrar Sesión</button>
+<br><br>
+<button onclick="cerrarSesion()">Cerrar Sesión</button>
 
-  <script type="module">
-    import { auth } from "./firebase.js";
-    import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<script type="module">
+  import { auth, db } from "./firebase.js";
+  import { signOut, createUserWithEmailAndPassword } 
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    window.cerrarSesion = function () {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
+  import { doc, setDoc, getDocs, collection } 
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  window.cerrarSesion = function () {
+    signOut(auth).then(() => {
+      window.location.href = "login.html";
+    });
+  };
+
+  window.crearProfesor = async function () {
+
+    const email = document.getElementById("emailProfesor").value;
+    const password = document.getElementById("passwordProfesor").value;
+
+    if (!email || !password) {
+      alert("Complete todos los campos");
+      return;
+    }
+
+    // Verificar si ya existe un profesor
+    const querySnapshot = await getDocs(collection(db, "usuarios"));
+
+    let existeProfesor = false;
+
+    querySnapshot.forEach((docu) => {
+      if (docu.data().rol === "profesor") {
+        existeProfesor = true;
+      }
+    });
+
+    if (existeProfesor) {
+      alert("Ya existe un profesor activo");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "usuarios", user.uid), {
+        email: email,
+        rol: "profesor",
+        intento: false
       });
-    };
-  </script>
 
-</body>
-</html>
+      alert("Profesor creado correctamente");
+
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+
+  };
+</script>
