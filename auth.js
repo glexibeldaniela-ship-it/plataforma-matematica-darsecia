@@ -1,8 +1,9 @@
-// 🔥 IMPORTACIONES NECESARIAS
+// 🔥 IMPORTACIONES
 import { auth, db } from "./firebase.js";
 
 import {
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -12,17 +13,20 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// 🔹 REGISTRO COMPLETO CON VALIDACIÓN DE CÉDULA
+// ============================
+// 🔹 REGISTRO
+// ============================
+
 async function registrar() {
 
-  const cedula = document.getElementById("cedula").value.trim();
-  const nombres = document.getElementById("nombres").value.trim();
-  const apellidos = document.getElementById("apellidos").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const anio = document.getElementById("anio").value;
-  const seccion = document.getElementById("seccion").value;
-  const lapso = document.getElementById("lapso").value;
+  const cedula = document.getElementById("cedula")?.value.trim();
+  const nombres = document.getElementById("nombres")?.value.trim();
+  const apellidos = document.getElementById("apellidos")?.value.trim();
+  const email = document.getElementById("email")?.value.trim();
+  const password = document.getElementById("password")?.value.trim();
+  const anio = document.getElementById("anio")?.value;
+  const seccion = document.getElementById("seccion")?.value;
+  const lapso = document.getElementById("lapso")?.value;
 
   if (!cedula || !nombres || !apellidos || !email || !password || !anio || !seccion || !lapso) {
     alert("Complete todos los campos");
@@ -31,7 +35,6 @@ async function registrar() {
 
   try {
 
-    // 🔎 Verificar si la cédula ya existe
     const cedulaRef = doc(db, "cedulas", cedula);
     const cedulaSnap = await getDoc(cedulaRef);
 
@@ -40,11 +43,9 @@ async function registrar() {
       return;
     }
 
-    // 🔐 Crear usuario en Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 💾 Guardar datos del estudiante
     await setDoc(doc(db, "usuarios", user.uid), {
       cedula,
       nombres,
@@ -60,7 +61,6 @@ async function registrar() {
       creado_en: new Date()
     });
 
-    // 💾 Guardar cédula para bloquear repetidos
     await setDoc(doc(db, "cedulas", cedula), {
       uid: user.uid
     });
@@ -74,17 +74,64 @@ async function registrar() {
 }
 
 
-// 🔥 ACTIVAR BOTÓN CUANDO CARGUE EL DOM
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("btnRegistro");
-  if (btn) {
-    btn.addEventListener("click", registrar);
-  }
-});
-document.addEventListener("DOMContentLoaded", () => {
-  const boton = document.getElementById("btnRegistro");
+// ============================
+// 🔹 LOGIN
+// ============================
 
-  if (boton) {
-    boton.addEventListener("click", registrar);
+async function login() {
+
+  const email = document.getElementById("email")?.value.trim();
+  const password = document.getElementById("password")?.value.trim();
+
+  if (!email || !password) {
+    alert("Ingrese correo y contraseña");
+    return;
   }
+
+  try {
+
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const docRef = doc(db, "usuarios", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+
+      const rol = docSnap.data().rol;
+
+      if (rol === "admin") {
+        window.location.href = "panel-admin.html";
+      } else if (rol === "profesor") {
+        window.location.href = "panel-profesor.html";
+      } else if (rol === "estudiante") {
+        window.location.href = "panel-estudiante.html";
+      }
+
+    } else {
+      alert("No se encontró el rol del usuario");
+    }
+
+  } catch (error) {
+    alert("Error al iniciar sesión: " + error.message);
+  }
+}
+
+
+// ============================
+// 🔹 ACTIVAR BOTONES
+// ============================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btnRegistro = document.getElementById("btnRegistro");
+  if (btnRegistro) {
+    btnRegistro.addEventListener("click", registrar);
+  }
+
+  const btnLogin = document.querySelector("button[onclick='login()']");
+  if (btnLogin) {
+    btnLogin.addEventListener("click", login);
+  }
+
 });
