@@ -10,6 +10,13 @@ body{ font-family: Arial; padding:20px; }
 select{ padding:5px; margin-right:10px; }
 button{ padding:6px 10px; cursor:pointer; }
 table{ margin-top:10px; }
+.resumen{
+  margin-top:15px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  background:#f5f5f5;
+}
 </style>
 </head>
 
@@ -69,6 +76,13 @@ table{ margin-top:10px; }
 <tbody></tbody>
 </table>
 
+<div class="resumen" id="resumenBox" style="display:none;">
+  <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
+  <strong>Promedio:</strong> <span id="promedio"></span> |
+  🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
+  🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+</div>
+
 <script type="module">
 
 import { auth, db } from "./firebase.js";
@@ -84,6 +98,12 @@ const btnCrear = document.getElementById("btnCrear");
 const filtroAnio = document.getElementById("filtroAnio");
 const filtroSeccion = document.getElementById("filtroSeccion");
 
+const totalEst = document.getElementById("totalEst");
+const promedioSpan = document.getElementById("promedio");
+const aprobadosSpan = document.getElementById("aprobados");
+const reprobadosSpan = document.getElementById("reprobados");
+const resumenBox = document.getElementById("resumenBox");
+
 let resultadosGlobal = [];
 
 btnCrear.addEventListener("click", () => {
@@ -98,7 +118,6 @@ async function cargarExamenes(){
   const examenesSnap = await getDocs(collection(db,"examenes"));
 
   examenesSnap.forEach(docu=>{
-
     const examen = docu.data();
     const tr = document.createElement("tr");
 
@@ -121,13 +140,10 @@ async function cargarExamenes(){
     option.value = docu.id;
     option.textContent = examen.titulo;
     selectExamen.appendChild(option);
-
   });
-
 }
 
 window.activarExamen = async function(id, estadoActual){
-
   const examenesSnap = await getDocs(collection(db,"examenes"));
 
   if(!estadoActual){
@@ -158,10 +174,12 @@ async function cargarResultados(examenId){
 
   resultadosSnap.forEach(docu=>{
     const data = docu.data();
-    resultadosGlobal.push(data);
 
-    if(data.grado) anios.add(data.grado);
-    if(data.seccion) secciones.add(data.seccion);
+    if(data.nombre && !isNaN(data.nota)){
+      resultadosGlobal.push(data);
+      if(data.grado) anios.add(data.grado);
+      if(data.seccion) secciones.add(data.seccion);
+    }
   });
 
   anios.forEach(a=>{
@@ -185,23 +203,47 @@ function mostrarResultados(lista){
 
   tablaBody.innerHTML="";
 
+  let suma = 0;
+  let aprobados = 0;
+  let reprobados = 0;
+
   lista.forEach(data=>{
+
+    const nota = Number(data.nota);
+
+    suma += nota;
+    if(nota >= 10){
+      aprobados++;
+    } else {
+      reprobados++;
+    }
 
     const fila = document.createElement("tr");
 
     fila.innerHTML = `
-      <td>${data.nombre || "-"}</td>
-      <td>${data.grado || "-"}</td>
-      <td>${data.seccion || "-"}</td>
-      <td>${data.lapso || "-"}</td>
+      <td>${data.nombre}</td>
+      <td>${data.grado}</td>
+      <td>${data.seccion}</td>
+      <td>${data.lapso}</td>
       <td>${data.tiempo || "-"}</td>
-      <td><strong>${data.nota}</strong></td>
+      <td><strong>${nota}</strong></td>
     `;
 
     tablaBody.appendChild(fila);
-
   });
 
+  if(lista.length > 0){
+    const promedio = (suma / lista.length).toFixed(2);
+
+    totalEst.textContent = lista.length;
+    promedioSpan.textContent = promedio;
+    aprobadosSpan.textContent = aprobados;
+    reprobadosSpan.textContent = reprobados;
+
+    resumenBox.style.display="block";
+  } else {
+    resumenBox.style.display="none";
+  }
 }
 
 function aplicarFiltros(){
