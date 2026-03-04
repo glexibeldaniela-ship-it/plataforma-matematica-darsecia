@@ -1,137 +1,132 @@
-// 🔥 IMPORTACIONES
-import { auth, db } from "./firebase.js";
+// 🔥 IMPORTACIONES  
+import { auth, db } from "./firebase.js";  
 
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {  
+  createUserWithEmailAndPassword,  
+  signInWithEmailAndPassword  
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";  
 
-import {
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-// ============================
-// 🔹 REGISTRO
-// ============================
-
-async function registrar() {
-
-  const cedula = document.getElementById("cedula")?.value.trim();
-  const nombres = document.getElementById("nombres")?.value.trim();
-  const apellidos = document.getElementById("apellidos")?.value.trim();
-  const email = document.getElementById("email")?.value.trim();
-  const password = document.getElementById("password")?.value.trim();
-  const anio = document.getElementById("anio")?.value;
-  const seccion = document.getElementById("seccion")?.value;
-  const lapso = document.getElementById("lapso")?.value;
-
-  if (!cedula || !nombres || !apellidos || !email || !password || !anio || !seccion || !lapso) {
-    alert("Complete todos los campos");
-    return;
-  }
-
-  try {
-
-    const cedulaRef = doc(db, "cedulas", cedula);
-    const cedulaSnap = await getDoc(cedulaRef);
-
-    if (cedulaSnap.exists()) {
-      alert("Esta cédula ya está registrada");
-      return;
-    }
-
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    await setDoc(doc(db, "usuarios", user.uid), {
-      cedula,
-      nombres,
-      apellidos,
-      email,
-      rol: "estudiante",
-      anio,
-      seccion,
-      lapso_actual: lapso,
-      intento: false,
-      nota: null,
-      estado: "sin_presentar",
-      creado_en: new Date()
-    });
-
-    await setDoc(doc(db, "cedulas", cedula), {
-      uid: user.uid
-    });
-
-    alert("Estudiante registrado correctamente");
-    window.location.href = "login.html";
-
-  } catch (error) {
-    alert("Error: " + error.message);
-  }
-}
+import {  
+  doc,  
+  setDoc,  
+  getDoc  
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";  
 
 
-// ============================
-// 🔹 LOGIN
-// ============================
+// ============================  
+// 🔹 REGISTRO  
+// ============================  
 
-async function login() {
+async function registrar() {  
 
-  const email = document.getElementById("email")?.value.trim();
-  const password = document.getElementById("password")?.value.trim();
+  const cedula = document.getElementById("cedula")?.value.trim();  
+  const nombres = document.getElementById("nombres")?.value.trim();  
+  const apellidos = document.getElementById("apellidos")?.value.trim();  
+  const email = document.getElementById("email")?.value.trim();  
+  const password = document.getElementById("password")?.value.trim();  
+  const anio = document.getElementById("anio")?.value;  
+  const seccion = document.getElementById("seccion")?.value;  
+  const lapso = document.getElementById("lapso")?.value;  
 
-  if (!email || !password) {
-    alert("Ingrese correo y contraseña");
-    return;
-  }
+  if (!cedula || !nombres || !apellidos || !email || !password || !anio || !seccion || !lapso) {  
+    alert("Complete todos los campos");  
+    return;  
+  }  
 
-  try {
+  try {  
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    const cedulaRef = doc(db, "cedulas", cedula);  
+    const cedulaSnap = await getDoc(cedulaRef);  
 
-    const docRef = doc(db, "usuarios", user.uid);
-    const docSnap = await getDoc(docRef);
+    if (cedulaSnap.exists()) {  
+      alert("Esta cédula ya está registrada");  
+      return;  
+    }  
 
-    if (docSnap.exists()) {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);  
+    const user = userCredential.user;  
 
-      const rol = docSnap.data().rol;
+    await setDoc(doc(db, "usuarios", user.uid), {  
+      cedula,  
+      nombres,  
+      apellidos,  
+      email,  
+      rol: "estudiante",  
+      anio,  
+      seccion,  
+      lapso_actual: lapso,  
+      intento: false,  
+      nota: null,  
+      estado: "sin_presentar",  
+      creado_en: new Date()  
+    });  
 
-      if (rol === "admin") {
-        window.location.href = "panel-admin.html";
-      } else if (rol === "profesor") {
-        window.location.href = "panel-profesor.html";
-      } else if (rol === "estudiante") {
-        window.location.href = "panel-estudiante.html";
-      }
+    await setDoc(doc(db, "cedulas", cedula), {  
+      uid: user.uid  
+    });  
 
-    } else {
-      alert("No se encontró el rol del usuario");
-    }
+    alert("Estudiante registrado correctamente");  
+    window.location.href = "login.html";  
 
-  } catch (error) {
-    alert("Error al iniciar sesión: " + error.message);
-  }
-}
+  } catch (error) {  
+    alert("Error: " + error.message);  
+  }  
+}  
 
 
-// ============================
-// 🔹 ACTIVAR BOTONES
-// ============================
+// ============================  
+// 🔹 LOGIN  
+// ============================  
 
-document.addEventListener("DOMContentLoaded", () => {
+async function login() {  
 
-  const btnRegistro = document.getElementById("btnRegistro");
-  if (btnRegistro) {
-    btnRegistro.addEventListener("click", registrar);
-  }
+  const email = document.getElementById("email")?.value.trim();  
+  const password = document.getElementById("password")?.value.trim();  
 
-  const btnLogin = document.querySelector("button[onclick='login()']");
-  if (btnLogin) {
-    btnLogin.addEventListener("click", login);
+  if (!email || !password) {  
+    alert("Ingrese correo y contraseña");  
+    return;  
+  }  
+
+  try {  
+
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);  
+    const user = userCredential.user;  
+
+    const docRef = doc(db, "usuarios", user.uid);  
+    const docSnap = await getDoc(docRef);  
+
+    if (docSnap.exists()) {  
+
+      const rol = docSnap.data().rol;  
+
+      if (rol === "admin") {  
+        window.location.href = "panel-admin.html";  
+      } else if (rol === "profesor") {  
+        window.location.href = "panel-profesor.html";  
+      } else if (rol === "estudiante") {  
+        window.location.href = "panel-estudiante.html";  
+      }  
+
+    } else {  
+      alert("No se encontró el rol del usuario");  
+    }  
+
+  } catch (error) {  
+    alert("Error al iniciar sesión: " + error.message);  
+  }  
+}  
+
+
+// ============================  
+// 🔹 ACTIVAR BOTONES  
+// ============================  
+
+document.addEventListener("DOMContentLoaded", () => {  
+
+  const btnLogin = document.getElementById("btnLogin");  
+  if (btnLogin) {  
+    btnLogin.addEventListener("click", login);  
   }
 
 });
