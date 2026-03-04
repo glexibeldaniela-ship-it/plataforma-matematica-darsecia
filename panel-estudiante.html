@@ -10,7 +10,7 @@
 
   <h2>Bienvenido Estudiante</h2>
 
-  <h3>Exámenes Disponibles</h3>
+  <h3>Examen Disponible</h3>
 
   <div id="listaExamenes"></div>
 
@@ -25,7 +25,7 @@
 
     const lista = document.getElementById("listaExamenes");
 
-    async function cargarExamenes() {
+    async function cargarExamenActivo() {
 
       const q = query(
         collection(db, "examenes"),
@@ -35,7 +35,7 @@
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        lista.innerHTML = "<p>No hay exámenes disponibles.</p>";
+        lista.innerHTML = "<p>No hay examen activo en este momento.</p>";
         return;
       }
 
@@ -45,26 +45,61 @@
 
         const div = document.createElement("div");
         div.style.border = "1px solid gray";
-        div.style.padding = "10px";
-        div.style.marginBottom = "10px";
+        div.style.padding = "15px";
+        div.style.marginBottom = "15px";
 
         div.innerHTML = `
           <h4>${examen.titulo}</h4>
           <p>Año: ${examen.anio}</p>
           <p>Sección: ${examen.seccion}</p>
           <p>Duración: ${examen.duracion} minutos</p>
-          <button onclick="presentarExamen('${doc.id}')">Presentar</button>
+
+          <p><strong>Repaso obligatorio (2 minutos)</strong></p>
+          <a href="${examen.repaso_link}" target="_blank">
+            📘 Ver Repaso en Drive
+          </a>
+
+          <br><br>
+          <p id="contador_${doc.id}">Disponible en 120 segundos</p>
+
+          <button id="btn_${doc.id}" disabled>
+            Iniciar Examen
+          </button>
         `;
 
         lista.appendChild(div);
+
+        iniciarTemporizador(doc.id);
 
       });
 
     }
 
-    window.presentarExamen = function(id) {
-      window.location.href = "presentar-examen.html?id=" + id;
-    };
+    function iniciarTemporizador(id) {
+
+      let tiempo = 120; // 2 minutos
+
+      const contador = document.getElementById("contador_" + id);
+      const boton = document.getElementById("btn_" + id);
+
+      const intervalo = setInterval(() => {
+
+        tiempo--;
+        contador.textContent = "Disponible en " + tiempo + " segundos";
+
+        if (tiempo <= 0) {
+          clearInterval(intervalo);
+          contador.textContent = "Puede iniciar el examen";
+          boton.disabled = false;
+
+          boton.onclick = () => {
+            window.location.href = "presentar-examen.html?id=" + id;
+          };
+        }
+
+      }, 1000);
+
+    }
 
     window.cerrarSesion = function () {
       signOut(auth).then(() => {
@@ -72,7 +107,7 @@
       });
     };
 
-    cargarExamenes();
+    cargarExamenActivo();
 
   </script>
 
