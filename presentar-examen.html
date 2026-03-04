@@ -115,7 +115,29 @@
     }
 
     cargarExamen();
+document.getElementById("btnEnviar").addEventListener("click", () => {
 
+  const respuestas = {};
+
+  const inputs = document.querySelectorAll("input");
+
+  inputs.forEach(input => {
+
+    if (input.type === "radio") {
+      if (input.checked) {
+        respuestas[input.name] = input.value;
+      }
+    } else {
+      respuestas[input.name] = input.value;
+    }
+
+  });
+
+  console.log("Respuestas del estudiante:", respuestas);
+
+  alert("Examen enviado (prueba inicial)");
+
+});
   </script>
 
 </body>
