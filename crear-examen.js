@@ -1,42 +1,58 @@
 import { auth, db } from "./firebase.js";
-import { collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let preguntas = [];
+let contador = 0;
 
-window.agregarPregunta = function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-  const index = preguntas.length;
+  document.getElementById("btnAgregar").addEventListener("click", agregarPregunta);
+
+  document.getElementById("btnGuardar").addEventListener("click", guardarExamen);
+
+});
+
+function agregarPregunta() {
+
+  const contenedor = document.getElementById("contenedorPreguntas");
 
   const div = document.createElement("div");
   div.innerHTML = `
     <hr>
-    <select id="tipo_${index}">
+    <h4>Pregunta ${contador + 1}</h4>
+
+    <select id="tipo_${contador}">
       <option value="opcion_multiple">Opción múltiple</option>
       <option value="numerica">Numérica</option>
       <option value="completar">Completar palabra</option>
     </select><br><br>
 
-    <input type="text" id="enunciado_${index}" placeholder="Enunciado"><br><br>
-
-    <div id="extra_${index}"></div>
+    <input type="text" id="enunciado_${contador}" placeholder="Enunciado"><br><br>
   `;
 
-  document.getElementById("contenedorPreguntas").appendChild(div);
+  contenedor.appendChild(div);
 
-  preguntas.push({});
-};
+  contador++;
+}
 
-document.getElementById("btnGuardar").addEventListener("click", async () => {
+async function guardarExamen() {
 
   const user = auth.currentUser;
-  if (!user) return alert("No autorizado");
+  if (!user) {
+    alert("No autorizado");
+    return;
+  }
 
-  const titulo = titulo.value;
-  const anio = anio.value;
-  const seccion = seccion.value;
-  const lapso = lapso.value;
+  const titulo = document.getElementById("titulo").value;
+  const anio = document.getElementById("anio").value;
+  const seccion = document.getElementById("seccion").value;
+  const lapso = document.getElementById("lapso").value;
   const duracion = parseInt(document.getElementById("duracion").value);
-  const repaso = repaso.value;
+  const repaso = document.getElementById("repaso").value;
+
+  if (!titulo || !anio || !seccion || !lapso || !duracion) {
+    alert("Complete todos los campos");
+    return;
+  }
 
   const examenRef = await addDoc(collection(db, "examenes"), {
     titulo,
@@ -51,7 +67,7 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
     creado_en: new Date()
   });
 
-  for (let i = 0; i < preguntas.length; i++) {
+  for (let i = 0; i < contador; i++) {
 
     const tipo = document.getElementById(`tipo_${i}`).value;
     const enunciado = document.getElementById(`enunciado_${i}`).value;
@@ -61,13 +77,11 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
       enunciado,
       puntos: 1
     });
-
   }
 
-  alert("Examen con preguntas creado correctamente");
+  alert("Examen creado correctamente");
   window.location.href = "panel-profesor.html";
-
-});
+}
 
 window.volver = function () {
   window.location.href = "panel-profesor.html";
