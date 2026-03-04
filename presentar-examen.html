@@ -11,6 +11,7 @@
   <h2>Presentar Examen</h2>
 
   <div id="infoExamen"></div>
+  <h3 id="temporizador" style="color:red;"></h3>
   <hr>
   <div id="preguntas"></div>
   <br>
@@ -28,10 +29,14 @@ const examenId = params.get("id");
 const infoDiv = document.getElementById("infoExamen");
 const preguntasDiv = document.getElementById("preguntas");
 const btnEnviar = document.getElementById("btnEnviar");
+const temporizadorDiv = document.getElementById("temporizador");
 
 let preguntasData = [];
 let usuarioActual = null;
 let tiempoInicio = Date.now();
+let tiempoRestante = 0;
+let intervaloTimer = null;
+let examenEnviado = false;
 
 /* Verificar si ya presentó */
 async function yaPresentoExamen(uid) {
@@ -50,6 +55,28 @@ async function yaPresentoExamen(uid) {
   });
 
   return yaPresento;
+}
+
+/* Temporizador */
+function iniciarTemporizador(minutos) {
+
+  tiempoRestante = minutos * 60;
+
+  intervaloTimer = setInterval(() => {
+
+    let min = Math.floor(tiempoRestante / 60);
+    let seg = tiempoRestante % 60;
+
+    temporizadorDiv.innerText = `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
+
+    tiempoRestante--;
+
+    if (tiempoRestante < 0) {
+      clearInterval(intervaloTimer);
+      enviarExamen();
+    }
+
+  }, 1000);
 }
 
 /* Cargar examen */
@@ -71,6 +98,8 @@ async function cargarExamen() {
     <p>Lapso: ${examen.lapso || "No definido"}</p>
     <p>Duración: ${examen.duracion} minutos</p>
   `;
+
+  iniciarTemporizador(examen.duracion);
 
   const preguntasSnap = await getDocs(
     collection(db, "examenes", examenId, "preguntas")
@@ -124,9 +153,13 @@ async function cargarExamen() {
 }
 
 /* Enviar examen */
-btnEnviar.addEventListener("click", async () => {
+async function enviarExamen() {
 
-  if (!usuarioActual) return;
+  if (examenEnviado) return;
+  examenEnviado = true;
+
+  btnEnviar.disabled = true;
+  clearInterval(intervaloTimer);
 
   let correctas = 0;
 
@@ -186,7 +219,16 @@ btnEnviar.addEventListener("click", async () => {
 
   alert("Examen enviado. Nota: " + nota.toFixed(2));
   window.location.href = "panel-estudiante.html";
+}
 
+btnEnviar.addEventListener("click", enviarExamen);
+
+/* Bloquear si cambia de pestaña */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && !examenEnviado) {
+    alert("Saliste del examen. Se enviará automáticamente.");
+    enviarExamen();
+  }
 });
 
 onAuthStateChanged(auth, async (user) => {
