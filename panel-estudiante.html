@@ -10,19 +10,70 @@
 
   <h2>Bienvenido Estudiante</h2>
 
-  <p>Próximamente aquí estará el examen.</p>
+  <h3>Exámenes Disponibles</h3>
 
+  <div id="listaExamenes"></div>
+
+  <br>
   <button onclick="cerrarSesion()">Cerrar Sesión</button>
 
   <script type="module">
-    import { auth } from "./firebase.js";
+
+    import { auth, db } from "./firebase.js";
     import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const lista = document.getElementById("listaExamenes");
+
+    async function cargarExamenes() {
+
+      const q = query(
+        collection(db, "examenes"),
+        where("activo", "==", true)
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        lista.innerHTML = "<p>No hay exámenes disponibles.</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+
+        const examen = doc.data();
+
+        const div = document.createElement("div");
+        div.style.border = "1px solid gray";
+        div.style.padding = "10px";
+        div.style.marginBottom = "10px";
+
+        div.innerHTML = `
+          <h4>${examen.titulo}</h4>
+          <p>Año: ${examen.anio}</p>
+          <p>Sección: ${examen.seccion}</p>
+          <p>Duración: ${examen.duracion} minutos</p>
+          <button onclick="presentarExamen('${doc.id}')">Presentar</button>
+        `;
+
+        lista.appendChild(div);
+
+      });
+
+    }
+
+    window.presentarExamen = function(id) {
+      window.location.href = "presentar-examen.html?id=" + id;
+    };
 
     window.cerrarSesion = function () {
       signOut(auth).then(() => {
         window.location.href = "login.html";
       });
     };
+
+    cargarExamenes();
+
   </script>
 
 </body>
