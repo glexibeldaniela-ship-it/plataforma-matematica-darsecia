@@ -5,7 +5,6 @@ let contador = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ✅ BOTÓN CORRECTO
   document.getElementById("btnAgregar")
     .addEventListener("click", agregarPregunta);
 
@@ -25,7 +24,7 @@ function agregarPregunta() {
   div.style.padding = "10px";
   div.style.marginBottom = "15px";
 
-  const idLocal = contador; // 🔥 importante para radios únicos
+  const idLocal = contador;
 
   div.innerHTML = `
     <h4>Pregunta ${contador + 1}</h4>
@@ -53,7 +52,6 @@ function agregarPregunta() {
 
     contenido.innerHTML = "";
 
-    // 🟢 OPCIÓN MÚLTIPLE
     if (select.value === "opcion_multiple") {
 
       const btnAgregar = document.createElement("button");
@@ -65,7 +63,6 @@ function agregarPregunta() {
       btnAgregar.onclick = () => {
 
         const opcionDiv = document.createElement("div");
-        opcionDiv.style.marginBottom = "5px";
 
         opcionDiv.innerHTML = `
           <input type="radio" name="correcta_${idLocal}" class="correcta">
@@ -80,11 +77,9 @@ function agregarPregunta() {
 
       contenido.appendChild(btnAgregar);
       contenido.appendChild(document.createElement("br"));
-      contenido.appendChild(document.createElement("br"));
       contenido.appendChild(lista);
     }
 
-    // 🔵 NUMÉRICA
     if (select.value === "numerica") {
       contenido.innerHTML = `
         <input type="number" class="respuestaNumerica" placeholder="Respuesta correcta"><br><br>
@@ -92,14 +87,12 @@ function agregarPregunta() {
       `;
     }
 
-    // 🟣 COMPLETAR
     if (select.value === "completar") {
       contenido.innerHTML = `
         <input type="text" class="respuestaCompletar" placeholder="Respuesta correcta">
       `;
     }
 
-    // 🟡 VERDADERO/FALSO
     if (select.value === "verdadero_falso") {
       contenido.innerHTML = `
         <select class="respuestaVF">
@@ -109,7 +102,6 @@ function agregarPregunta() {
       `;
     }
 
-    // 🔴 DESARROLLO
     if (select.value === "desarrollo") {
       contenido.innerHTML = `
         <p>El estudiante responderá manualmente.</p>
@@ -129,15 +121,16 @@ async function guardarExamen() {
     return;
   }
 
-  const titulo = document.getElementById("titulo").value;
-  const anio = document.getElementById("anio").value;
-  const seccion = document.getElementById("seccion").value;
-  const lapso = document.getElementById("lapso").value;
+  const titulo = document.getElementById("titulo").value.trim();
+  const anio = document.getElementById("anio").value.trim();
+  const seccion = document.getElementById("seccion").value.trim();
+  const lapso = document.getElementById("lapso").value.trim();
   const duracion = parseInt(document.getElementById("duracion").value);
-  const repaso = document.getElementById("repaso").value;
+  const repaso = document.getElementById("repaso").value.trim();
+  const tiempoRepaso = 2; // 🔥 fijo 2 minutos obligatorio
 
-  if (!titulo || !anio || !seccion || !lapso || !duracion) {
-    alert("Complete todos los campos");
+  if (!titulo || !anio || !seccion || !lapso || !duracion || !repaso) {
+    alert("Complete todos los campos incluyendo el link de repaso");
     return;
   }
 
@@ -148,6 +141,7 @@ async function guardarExamen() {
     lapso,
     duracion,
     repaso_link: repaso,
+    tiempo_repaso_minutos: tiempoRepaso,
     escala: 20,
     activo: false,
     creado_por: user.uid,
@@ -167,7 +161,6 @@ async function guardarExamen() {
       puntos: 1
     };
 
-    // 🟢 OPCIÓN MÚLTIPLE
     if (tipo === "opcion_multiple") {
 
       const opciones = [];
@@ -184,7 +177,6 @@ async function guardarExamen() {
       datosPregunta.opciones = opciones;
     }
 
-    // 🔵 NUMÉRICA
     if (tipo === "numerica") {
       datosPregunta.respuestaCorrecta =
         parseFloat(preguntaDiv.querySelector(".respuestaNumerica")?.value || 0);
@@ -193,13 +185,11 @@ async function guardarExamen() {
         parseFloat(preguntaDiv.querySelector(".margenError")?.value || 0);
     }
 
-    // 🟣 COMPLETAR
     if (tipo === "completar") {
       datosPregunta.respuestaCorrecta =
         preguntaDiv.querySelector(".respuestaCompletar")?.value || "";
     }
 
-    // 🟡 VERDADERO/FALSO
     if (tipo === "verdadero_falso") {
       datosPregunta.respuestaCorrecta =
         preguntaDiv.querySelector(".respuestaVF")?.value;
