@@ -69,13 +69,13 @@ async function registrar() {
     window.location.href = "login.html";  
 
   } catch (error) {  
-    alert("Error: " + error.message);  
+    alert("Error al registrar");  
   }  
 }  
 
 
 // ============================  
-// 🔹 LOGIN  
+// 🔹 LOGIN PROFESIONAL  
 // ============================  
 
 async function login() {  
@@ -96,24 +96,41 @@ async function login() {
     const docRef = doc(db, "usuarios", user.uid);  
     const docSnap = await getDoc(docRef);  
 
-    if (docSnap.exists()) {  
+    if (!docSnap.exists()) {  
+      alert("Usuario no autorizado");  
+      return;  
+    }
 
-      const rol = docSnap.data().rol;  
+    const datos = docSnap.data();
+    const rol = datos.rol;
 
-      if (rol === "admin") {  
-        window.location.href = "panel-admin.html";  
-      } else if (rol === "profesor") {  
-        window.location.href = "panel-profesor.html";  
-      } else if (rol === "estudiante") {  
-        window.location.href = "panel-estudiante.html";  
-      }  
+    // 🔥 LOG DE ACTIVIDAD
+    await setDoc(doc(db, "logs", crypto.randomUUID()), {
+      uid: user.uid,
+      email: user.email,
+      rol: rol,
+      accion: "login",
+      fecha: new Date()
+    });
 
-    } else {  
-      alert("No se encontró el rol del usuario");  
-    }  
+    if (rol === "admin") {  
+      window.location.href = "panel-admin.html";  
+    } else if (rol === "profesor") {  
+      window.location.href = "panel-profesor.html";  
+    } else if (rol === "estudiante") {  
+      window.location.href = "panel-estudiante.html";  
+    } else {
+      alert("Rol no válido");
+    }
 
   } catch (error) {  
-    alert("Error al iniciar sesión: " + error.message);  
+
+    if (error.code === "auth/invalid-credential") {
+      alert("Correo o contraseña incorrectos");
+    } else {
+      alert("Error al iniciar sesión");
+    }
+
   }  
 }  
 
