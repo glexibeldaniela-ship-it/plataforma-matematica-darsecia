@@ -16,10 +16,12 @@
 
 <script type="module">
   import { auth, db } from "./firebase.js";
+
   import { 
     signOut, 
+    onAuthStateChanged,
     createUserWithEmailAndPassword,
-    onAuthStateChanged 
+    getAuth
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   import { 
@@ -29,6 +31,9 @@
     collection,
     getDoc 
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  import { initializeApp } 
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
   const contenidoAdmin = document.getElementById("contenidoAdmin");
 
@@ -51,7 +56,6 @@
       return;
     }
 
-    // Si es admin, mostrar contenido
     contenidoAdmin.style.display = "block";
   });
 
@@ -71,7 +75,7 @@
       return;
     }
 
-    // Verificar si ya existe un profesor
+    // Verificar si ya existe profesor
     const querySnapshot = await getDocs(collection(db, "usuarios"));
 
     let existeProfesor = false;
@@ -88,7 +92,13 @@
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // 🔥 Crear segunda app temporal
+      const firebaseConfig = auth.app.options;
+      const tempApp = initializeApp(firebaseConfig, "Secondary");
+      const tempAuth = getAuth(tempApp);
+
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
       const user = userCredential.user;
 
       await setDoc(doc(db, "usuarios", user.uid), {
@@ -98,9 +108,13 @@
 
       alert("Profesor creado correctamente");
 
+      // 🔥 Cerrar sesión solo de la app secundaria
+      await tempAuth.signOut();
+
     } catch (error) {
       alert("Error: " + error.message);
     }
 
   };
+
 </script>
