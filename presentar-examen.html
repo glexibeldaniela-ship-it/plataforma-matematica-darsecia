@@ -8,20 +8,22 @@
 
 <body>
 
-  <h2>Presentar Examen</h2>
+<h2>Presentar Examen</h2>
 
-  <div id="infoExamen"></div>
-  <h3 id="temporizador" style="color:red;"></h3>
-  <hr>
-  <div id="preguntas"></div>
-  <br>
-  <button id="btnEnviar">Enviar Examen</button>
+<div id="infoExamen"></div>
+<h3 id="temporizador" style="color:red;"></h3>
+<hr>
+<div id="preguntas"></div>
+<br>
+<button id="btnEnviar">Enviar Examen</button>
 
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, addDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const params = new URLSearchParams(window.location.search);
 const examenId = params.get("id");
@@ -33,10 +35,33 @@ const temporizadorDiv = document.getElementById("temporizador");
 
 let preguntasData = [];
 let usuarioActual = null;
-let tiempoInicio = Date.now();
 let tiempoRestante = 0;
 let intervaloTimer = null;
 let examenEnviado = false;
+let examenIniciado = false;
+
+/* 🔒 BLOQUEAR RECARGA */
+window.addEventListener("beforeunload", function (e) {
+  if (!examenEnviado && examenIniciado) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+/* 🔒 DETECTAR CIERRE / RECARGA REAL */
+window.addEventListener("unload", function () {
+  if (!examenEnviado && examenIniciado) {
+    enviarExamen(true);
+  }
+});
+
+/* 🔒 SI CAMBIA DE PESTAÑA */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && !examenEnviado && examenIniciado) {
+    alert("Saliste del examen. Se enviará automáticamente con nota 0.");
+    enviarExamen(true);
+  }
+});
 
 /* Verificar si ya presentó */
 async function yaPresentoExamen(uid) {
@@ -48,8 +73,7 @@ async function yaPresentoExamen(uid) {
   let yaPresento = false;
 
   resultadosSnap.forEach(docu => {
-    const data = docu.data();
-    if (data.estudiante_id === uid) {
+    if (docu.data().estudiante_id === uid) {
       yaPresento = true;
     }
   });
@@ -57,9 +81,10 @@ async function yaPresentoExamen(uid) {
   return yaPresento;
 }
 
-/* Temporizador */
+/* ⏳ Temporizador */
 function iniciarTemporizador(minutos) {
 
+  examenIniciado = true;
   tiempoRestante = minutos * 60;
 
   intervaloTimer = setInterval(() => {
@@ -67,13 +92,15 @@ function iniciarTemporizador(minutos) {
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
 
-    temporizadorDiv.innerText = `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
+    temporizadorDiv.innerText = 
+      `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
 
     tiempoRestante--;
 
     if (tiempoRestante < 0) {
       clearInterval(intervaloTimer);
-      enviarExamen();
+      alert("Tiempo agotado. Nota 0.");
+      enviarExamen(true);
     }
 
   }, 1000);
@@ -153,49 +180,51 @@ async function cargarExamen() {
 }
 
 /* Enviar examen */
-async function enviarExamen() {
+async function enviarExamen(forzado = false) {
 
   if (examenEnviado) return;
   examenEnviado = true;
 
-  btnEnviar.disabled = true;
   clearInterval(intervaloTimer);
+  btnEnviar.disabled = true;
 
   let correctas = 0;
 
-  preguntasData.forEach(pregunta => {
+  if (!forzado) {
 
-    const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
-                  document.querySelector(`[name="preg_${pregunta.id}"]`);
+    preguntasData.forEach(pregunta => {
 
-    if (!input) return;
+      const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
+                    document.querySelector(`[name="preg_${pregunta.id}"]`);
 
-    const respuestaUsuario = input.value;
+      if (!input) return;
 
-    if (pregunta.tipo === "opcion_multiple") {
-      const correcta = pregunta.opciones.find(op => op.correcta);
-      if (correcta && respuestaUsuario === correcta.texto) correctas++;
-    }
+      const respuestaUsuario = input.value;
 
-    if (pregunta.tipo === "numerica") {
-      if (parseFloat(respuestaUsuario) === pregunta.respuestaCorrecta) correctas++;
-    }
+      if (pregunta.tipo === "opcion_multiple") {
+        const correcta = pregunta.opciones.find(op => op.correcta);
+        if (correcta && respuestaUsuario === correcta.texto) correctas++;
+      }
 
-    if (pregunta.tipo === "completar") {
-      if (respuestaUsuario.trim().toLowerCase() === 
-          pregunta.respuestaCorrecta.trim().toLowerCase()) correctas++;
-    }
+      if (pregunta.tipo === "numerica") {
+        if (parseFloat(respuestaUsuario) === pregunta.respuestaCorrecta) correctas++;
+      }
 
-    if (pregunta.tipo === "verdadero_falso") {
-      if (respuestaUsuario === pregunta.respuestaCorrecta) correctas++;
-    }
+      if (pregunta.tipo === "completar") {
+        if (respuestaUsuario.trim().toLowerCase() === 
+            pregunta.respuestaCorrecta.trim().toLowerCase()) correctas++;
+      }
 
-  });
+      if (pregunta.tipo === "verdadero_falso") {
+        if (respuestaUsuario === pregunta.respuestaCorrecta) correctas++;
+      }
+
+    });
+
+  }
 
   const total = preguntasData.length;
-  const nota = (correctas / total) * 20;
-  const tiempoFinal = Date.now();
-  const tiempoUsado = Math.round((tiempoFinal - tiempoInicio) / 60000);
+  const nota = forzado ? 0 : (correctas / total) * 20;
 
   const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
   const usuarioData = usuarioSnap.data();
@@ -211,25 +240,18 @@ async function enviarExamen() {
       grado: examenData.anio,
       seccion: examenData.seccion,
       lapso: examenData.lapso || "No definido",
-      tiempo: tiempoUsado + " min",
+      tiempo: "Automático",
       nota: parseFloat(nota.toFixed(2)),
+      estado: nota >= 10 ? "Aprobado" : "Reprobado",
       fecha: new Date()
     }
   );
 
-  alert("Examen enviado. Nota: " + nota.toFixed(2));
+  alert("Examen finalizado. Nota: " + nota.toFixed(2));
   window.location.href = "panel-estudiante.html";
 }
 
-btnEnviar.addEventListener("click", enviarExamen);
-
-/* Bloquear si cambia de pestaña */
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden && !examenEnviado) {
-    alert("Saliste del examen. Se enviará automáticamente.");
-    enviarExamen();
-  }
-});
+btnEnviar.addEventListener("click", () => enviarExamen(false));
 
 onAuthStateChanged(auth, async (user) => {
 
