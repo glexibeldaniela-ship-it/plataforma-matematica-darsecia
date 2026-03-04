@@ -20,7 +20,7 @@
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { doc, getDoc, collection, getDocs, addDoc } 
+import { doc, getDoc, collection, getDocs, setDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -39,8 +39,9 @@ let tiempoRestante = 0;
 let intervaloTimer = null;
 let examenEnviado = false;
 let examenIniciado = false;
+let duracionTotal = 0;
 
-/* 🔒 BLOQUEAR RECARGA */
+/* BLOQUEAR RECARGA */
 window.addEventListener("beforeunload", function (e) {
   if (!examenEnviado && examenIniciado) {
     e.preventDefault();
@@ -48,14 +49,7 @@ window.addEventListener("beforeunload", function (e) {
   }
 });
 
-/* 🔒 DETECTAR CIERRE */
-window.addEventListener("unload", function () {
-  if (!examenEnviado && examenIniciado) {
-    enviarExamen(true);
-  }
-});
-
-/* 🔒 CAMBIO DE PESTAÑA */
+/* CAMBIO DE PESTAÑA */
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && !examenEnviado && examenIniciado) {
     alert("Saliste del examen. Se enviará automáticamente con nota 0.");
@@ -63,36 +57,26 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-/* Verificar si ya presentó */
+/* Verificar intento único */
 async function yaPresentoExamen(uid) {
-
-  const resultadosSnap = await getDocs(
-    collection(db, "examenes", examenId, "resultados")
-  );
-
-  let yaPresento = false;
-
-  resultadosSnap.forEach(docu => {
-    if (docu.data().estudiante_id === uid) {
-      yaPresento = true;
-    }
-  });
-
-  return yaPresento;
+  const resultadoRef = doc(db, "examenes", examenId, "resultados", uid);
+  const resultadoSnap = await getDoc(resultadoRef);
+  return resultadoSnap.exists();
 }
 
 /* Temporizador */
 function iniciarTemporizador(minutos) {
 
   examenIniciado = true;
-  tiempoRestante = minutos * 60;
+  duracionTotal = minutos * 60;
+  tiempoRestante = duracionTotal;
 
   intervaloTimer = setInterval(() => {
 
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
 
-    temporizadorDiv.innerText = 
+    temporizadorDiv.innerText =
       `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
 
     tiempoRestante--;
@@ -109,7 +93,8 @@ function iniciarTemporizador(minutos) {
 /* Cargar examen */
 async function cargarExamen() {
 
-  const examenSnap = await getDoc(doc(db, "examenes", examenId));
+  const examenRef = doc(db, "examenes", examenId);
+  const examenSnap = await getDoc(examenRef);
 
   if (!examenSnap.exists()) {
     infoDiv.innerHTML = "<p>Examen no existe.</p>";
@@ -117,6 +102,12 @@ async function cargarExamen() {
   }
 
   const examen = examenSnap.data();
+
+  if (!examen.activo) {
+    infoDiv.innerHTML = "<h2 style='color:red;'>Este examen no está activo.</h2>";
+    btnEnviar.style.display = "none";
+    return;
+  }
 
   infoDiv.innerHTML = `
     <h3>${examen.titulo}</h3>
@@ -179,7 +170,7 @@ async function cargarExamen() {
 
 }
 
-/* Enviar examen */
+/* Enviar examen BLINDADO */
 async function enviarExamen(forzado = false) {
 
   if (examenEnviado) return;
@@ -188,10 +179,18 @@ async function enviarExamen(forzado = false) {
   clearInterval(intervaloTimer);
   btnEnviar.disabled = true;
 
+  const resultadoRef = doc(db, "examenes", examenId, "resultados", usuarioActual.uid);
+
+  const yaExiste = await getDoc(resultadoRef);
+  if (yaExiste.exists()) {
+    alert("Ya existe un resultado registrado.");
+    window.location.href = "resultados.html?id=" + examenId;
+    return;
+  }
+
   let correctas = 0;
 
   if (!forzado) {
-
     preguntasData.forEach(pregunta => {
 
       const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
@@ -220,11 +219,11 @@ async function enviarExamen(forzado = false) {
       }
 
     });
-
   }
 
   const total = preguntasData.length;
   const nota = forzado ? 0 : (correctas / total) * 20;
+  const tiempoConsumido = duracionTotal - tiempoRestante;
 
   const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
   const usuarioData = usuarioSnap.data();
@@ -232,24 +231,19 @@ async function enviarExamen(forzado = false) {
   const examenSnap = await getDoc(doc(db, "examenes", examenId));
   const examenData = examenSnap.data();
 
-  await addDoc(
-    collection(db, "examenes", examenId, "resultados"),
-    {
-      estudiante_id: usuarioActual.uid,
-      nombre: usuarioData.nombre || "Sin nombre",
-      grado: examenData.anio,
-      seccion: examenData.seccion,
-      lapso: examenData.lapso || "No definido",
-      tiempo: "Automático",
-      nota: parseFloat(nota.toFixed(2)),
-      estado: nota >= 10 ? "Aprobado" : "Reprobado",
-      fecha: new Date()
-    }
-  );
+  await setDoc(resultadoRef, {
+    estudiante_id: usuarioActual.uid,
+    nombre: usuarioData.nombre || "Sin nombre",
+    grado: examenData.anio,
+    seccion: examenData.seccion,
+    lapso: examenData.lapso || "No definido",
+    tiempo_segundos: tiempoConsumido,
+    nota: parseFloat(nota.toFixed(2)),
+    estado: nota >= 10 ? "Aprobado" : "Reprobado",
+    fecha: new Date()
+  });
 
   alert("Examen finalizado. Nota: " + nota.toFixed(2));
-
-  // 🔥 NUEVA REDIRECCIÓN
   window.location.href = "resultados.html?id=" + examenId;
 }
 
