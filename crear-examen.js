@@ -5,9 +5,11 @@ let contador = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  document.getElementById("btnAgregar").addEventListener("click", agregarPregunta);
+  document.querySelector("button[onclick='agregarPregunta()']")
+    .addEventListener("click", agregarPregunta);
 
-  document.getElementById("btnGuardar").addEventListener("click", guardarExamen);
+  document.getElementById("btnGuardar")
+    .addEventListener("click", guardarExamen);
 
 });
 
@@ -16,20 +18,102 @@ function agregarPregunta() {
   const contenedor = document.getElementById("contenedorPreguntas");
 
   const div = document.createElement("div");
+  div.classList.add("pregunta");
+  div.dataset.index = contador;
+  div.style.border = "1px solid gray";
+  div.style.padding = "10px";
+  div.style.marginBottom = "15px";
+
   div.innerHTML = `
-    <hr>
     <h4>Pregunta ${contador + 1}</h4>
 
-    <select id="tipo_${contador}">
+    <select class="tipoPregunta">
+      <option value="">Seleccione tipo</option>
       <option value="opcion_multiple">Opción múltiple</option>
-      <option value="numerica">Numérica</option>
-      <option value="completar">Completar palabra</option>
+      <option value="numerica">Respuesta numérica</option>
+      <option value="completar">Completar expresión</option>
+      <option value="verdadero_falso">Verdadero / Falso</option>
+      <option value="desarrollo">Desarrollo</option>
     </select><br><br>
 
-    <input type="text" id="enunciado_${contador}" placeholder="Enunciado"><br><br>
+    <input type="text" class="enunciado" placeholder="Enunciado"><br><br>
+
+    <div class="contenidoDinamico"></div>
   `;
 
   contenedor.appendChild(div);
+
+  const select = div.querySelector(".tipoPregunta");
+  const contenido = div.querySelector(".contenidoDinamico");
+
+  select.addEventListener("change", () => {
+
+    contenido.innerHTML = "";
+
+    // 🟢 OPCIÓN MÚLTIPLE
+    if (select.value === "opcion_multiple") {
+
+      const btnAgregar = document.createElement("button");
+      btnAgregar.textContent = "Agregar opción";
+      btnAgregar.type = "button";
+
+      const lista = document.createElement("div");
+
+      btnAgregar.onclick = () => {
+
+        const opcionDiv = document.createElement("div");
+        opcionDiv.style.marginBottom = "5px";
+
+        opcionDiv.innerHTML = `
+          <input type="radio" name="correcta_${contador}" class="correcta">
+          <input type="text" class="opcionTexto" placeholder="Texto de la opción">
+          <button type="button" class="eliminar">❌</button>
+        `;
+
+        opcionDiv.querySelector(".eliminar").onclick = () => opcionDiv.remove();
+
+        lista.appendChild(opcionDiv);
+      };
+
+      contenido.appendChild(btnAgregar);
+      contenido.appendChild(document.createElement("br"));
+      contenido.appendChild(document.createElement("br"));
+      contenido.appendChild(lista);
+    }
+
+    // 🔵 NUMÉRICA
+    if (select.value === "numerica") {
+      contenido.innerHTML = `
+        <input type="number" class="respuestaNumerica" placeholder="Respuesta correcta"><br><br>
+        <input type="number" class="margenError" placeholder="Margen de error (opcional)">
+      `;
+    }
+
+    // 🟣 COMPLETAR
+    if (select.value === "completar") {
+      contenido.innerHTML = `
+        <input type="text" class="respuestaCompletar" placeholder="Respuesta correcta">
+      `;
+    }
+
+    // 🟡 VERDADERO/FALSO
+    if (select.value === "verdadero_falso") {
+      contenido.innerHTML = `
+        <select class="respuestaVF">
+          <option value="verdadero">Verdadero</option>
+          <option value="falso">Falso</option>
+        </select>
+      `;
+    }
+
+    // 🔴 DESARROLLO
+    if (select.value === "desarrollo") {
+      contenido.innerHTML = `
+        <p>El estudiante responderá manualmente.</p>
+      `;
+    }
+
+  });
 
   contador++;
 }
@@ -67,16 +151,61 @@ async function guardarExamen() {
     creado_en: new Date()
   });
 
-  for (let i = 0; i < contador; i++) {
+  const preguntas = document.querySelectorAll(".pregunta");
 
-    const tipo = document.getElementById(`tipo_${i}`).value;
-    const enunciado = document.getElementById(`enunciado_${i}`).value;
+  for (const preguntaDiv of preguntas) {
 
-    await addDoc(collection(db, "examenes", examenRef.id, "preguntas"), {
+    const tipo = preguntaDiv.querySelector(".tipoPregunta").value;
+    const enunciado = preguntaDiv.querySelector(".enunciado").value;
+
+    let datosPregunta = {
       tipo,
       enunciado,
       puntos: 1
-    });
+    };
+
+    // 🟢 OPCIÓN MÚLTIPLE
+    if (tipo === "opcion_multiple") {
+
+      const opciones = [];
+      const opcionesDiv = preguntaDiv.querySelectorAll(".opcionTexto");
+      const radios = preguntaDiv.querySelectorAll(".correcta");
+
+      opcionesDiv.forEach((input, index) => {
+        opciones.push({
+          texto: input.value,
+          correcta: radios[index].checked
+        });
+      });
+
+      datosPregunta.opciones = opciones;
+    }
+
+    // 🔵 NUMÉRICA
+    if (tipo === "numerica") {
+      datosPregunta.respuestaCorrecta =
+        parseFloat(preguntaDiv.querySelector(".respuestaNumerica")?.value || 0);
+
+      datosPregunta.margenError =
+        parseFloat(preguntaDiv.querySelector(".margenError")?.value || 0);
+    }
+
+    // 🟣 COMPLETAR
+    if (tipo === "completar") {
+      datosPregunta.respuestaCorrecta =
+        preguntaDiv.querySelector(".respuestaCompletar")?.value || "";
+    }
+
+    // 🟡 VERDADERO/FALSO
+    if (tipo === "verdadero_falso") {
+      datosPregunta.respuestaCorrecta =
+        preguntaDiv.querySelector(".respuestaVF")?.value;
+    }
+
+    await addDoc(
+      collection(db, "examenes", examenRef.id, "preguntas"),
+      datosPregunta
+    );
   }
 
   alert("Examen creado correctamente");
