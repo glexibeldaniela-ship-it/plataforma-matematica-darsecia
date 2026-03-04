@@ -19,11 +19,12 @@
   <table border="1" width="100%" id="tablaResultados">
     <thead>
       <tr>
-        <th>Estudiante UID</th>
-        <th>Correctas</th>
-        <th>Total</th>
+        <th>Nombre</th>
+        <th>Grado</th>
+        <th>Sección</th>
+        <th>Lapso</th>
+        <th>Tiempo</th>
         <th>Nota</th>
-        <th>Fecha</th>
       </tr>
     </thead>
     <tbody>
@@ -33,16 +34,12 @@
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { 
-  collection, getDocs 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
 
-/* 📚 Cargar exámenes */
 async function cargarExamenes() {
 
   const examenesSnap = await getDocs(collection(db, "examenes"));
@@ -56,7 +53,6 @@ async function cargarExamenes() {
   });
 }
 
-/* 📊 Cargar resultados */
 async function cargarResultados(examenId) {
 
   tablaBody.innerHTML = "";
@@ -68,29 +64,27 @@ async function cargarResultados(examenId) {
   resultadosSnap.forEach(docu => {
 
     const data = docu.data();
-
     const fila = document.createElement("tr");
 
     fila.innerHTML = `
-      <td>${data.estudiante_id}</td>
-      <td>${data.correctas}</td>
-      <td>${data.total}</td>
+      <td>${data.nombre || "-"}</td>
+      <td>${data.grado || "-"}</td>
+      <td>${data.seccion || "-"}</td>
+      <td>${data.lapso || "-"}</td>
+      <td>${data.tiempo || "-"}</td>
       <td><strong>${data.nota}</strong></td>
-      <td>${new Date(data.fecha.seconds * 1000).toLocaleString()}</td>
     `;
 
     tablaBody.appendChild(fila);
   });
 }
 
-/* 🎯 Cuando cambia el select */
 selectExamen.addEventListener("change", () => {
   if (selectExamen.value) {
     cargarResultados(selectExamen.value);
   }
 });
 
-/* 🔐 Seguridad básica */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
