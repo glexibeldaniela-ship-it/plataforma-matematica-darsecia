@@ -26,6 +26,8 @@ import {
   doc, getDoc, collection, getDocs, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 const params = new URLSearchParams(window.location.search);
 const examenId = params.get("id");
 
@@ -34,10 +36,10 @@ const preguntasDiv = document.getElementById("preguntas");
 const btnEnviar = document.getElementById("btnEnviar");
 
 let preguntasData = [];
-async function yaPresentoExamen() {
+let usuarioActual = null;
 
-  const user = auth.currentUser;
-  if (!user) return false;
+/* 🔒 Verificar si ya presentó */
+async function yaPresentoExamen(uid) {
 
   const resultadosRef = collection(db, "examenes", examenId, "resultados");
   const resultadosSnap = await getDocs(resultadosRef);
@@ -46,13 +48,15 @@ async function yaPresentoExamen() {
 
   resultadosSnap.forEach(docu => {
     const data = docu.data();
-    if (data.estudiante_id === user.uid) {
+    if (data.estudiante_id === uid) {
       yaPresento = true;
     }
   });
 
   return yaPresento;
 }
+
+/* 📚 Cargar examen */
 async function cargarExamen() {
 
   const examenRef = doc(db, "examenes", examenId);
@@ -123,10 +127,10 @@ async function cargarExamen() {
 
 }
 
+/* 📤 Enviar examen */
 btnEnviar.addEventListener("click", async () => {
 
-  const user = auth.currentUser;
-  if (!user) {
+  if (!usuarioActual) {
     alert("No autorizado");
     return;
   }
@@ -142,7 +146,6 @@ btnEnviar.addEventListener("click", async () => {
 
     const respuestaUsuario = input.value;
 
-    // OPCIÓN MÚLTIPLE
     if (pregunta.tipo === "opcion_multiple") {
       const correcta = pregunta.opciones.find(op => op.correcta);
       if (correcta && respuestaUsuario === correcta.texto) {
@@ -150,22 +153,21 @@ btnEnviar.addEventListener("click", async () => {
       }
     }
 
-    // NUMÉRICA
     if (pregunta.tipo === "numerica") {
       if (parseFloat(respuestaUsuario) === pregunta.respuestaCorrecta) {
         correctas++;
       }
     }
 
-    // COMPLETAR
     if (pregunta.tipo === "completar") {
-      if (respuestaUsuario.trim().toLowerCase() === 
-          pregunta.respuestaCorrecta.trim().toLowerCase()) {
+      if (
+        respuestaUsuario.trim().toLowerCase() ===
+        pregunta.respuestaCorrecta.trim().toLowerCase()
+      ) {
         correctas++;
       }
     }
 
-    // VERDADERO/FALSO
     if (pregunta.tipo === "verdadero_falso") {
       if (respuestaUsuario === pregunta.respuestaCorrecta) {
         correctas++;
@@ -180,7 +182,7 @@ btnEnviar.addEventListener("click", async () => {
   await addDoc(
     collection(db, "examenes", examenId, "resultados"),
     {
-      estudiante_id: user.uid,
+      estudiante_id: usuarioActual.uid,
       correctas,
       total,
       nota: parseFloat(nota.toFixed(2)),
@@ -194,6 +196,32 @@ btnEnviar.addEventListener("click", async () => {
 
 });
 
-cargarExamen();
+/* 🔐 Esperar autenticación antes de cargar */
+onAuthStateChanged(auth, async (user) => {
+
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  usuarioActual = user;
+
+  const yaPresento = await yaPresentoExamen(user.uid);
+
+  if (yaPresento) {
+    infoDiv.innerHTML = `
+      <h2 style="color:red;">⚠ Ya presentaste este examen</h2>
+      <p>No puedes volver a realizarlo.</p>
+    `;
+    btnEnviar.style.display = "none";
+    return;
+  }
+
+  await cargarExamen();
+
+});
 
 </script>
+
+</body>
+</html>
