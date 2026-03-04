@@ -48,14 +48,14 @@ window.addEventListener("beforeunload", function (e) {
   }
 });
 
-/* 🔒 DETECTAR CIERRE / RECARGA REAL */
+/* 🔒 DETECTAR CIERRE */
 window.addEventListener("unload", function () {
   if (!examenEnviado && examenIniciado) {
     enviarExamen(true);
   }
 });
 
-/* 🔒 SI CAMBIA DE PESTAÑA */
+/* 🔒 CAMBIO DE PESTAÑA */
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && !examenEnviado && examenIniciado) {
     alert("Saliste del examen. Se enviará automáticamente con nota 0.");
@@ -81,7 +81,7 @@ async function yaPresentoExamen(uid) {
   return yaPresento;
 }
 
-/* ⏳ Temporizador */
+/* Temporizador */
 function iniciarTemporizador(minutos) {
 
   examenIniciado = true;
@@ -248,7 +248,9 @@ async function enviarExamen(forzado = false) {
   );
 
   alert("Examen finalizado. Nota: " + nota.toFixed(2));
-  window.location.href = "panel-estudiante.html";
+
+  // 🔥 NUEVA REDIRECCIÓN
+  window.location.href = "resultados.html?id=" + examenId;
 }
 
 btnEnviar.addEventListener("click", () => enviarExamen(false));
