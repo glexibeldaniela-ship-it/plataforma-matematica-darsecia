@@ -1,5 +1,7 @@
 <h2>Panel Administrador</h2>
 
+<div id="contenidoAdmin" style="display:none;">
+
 <h3>Crear Profesor</h3>
 
 <input type="email" id="emailProfesor" placeholder="Correo del profesor"><br><br>
@@ -10,13 +12,48 @@
 <br><br>
 <button onclick="cerrarSesion()">Cerrar Sesión</button>
 
+</div>
+
 <script type="module">
   import { auth, db } from "./firebase.js";
-  import { signOut, createUserWithEmailAndPassword } 
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { 
+    signOut, 
+    createUserWithEmailAndPassword,
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  import { doc, setDoc, getDocs, collection } 
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { 
+    doc, 
+    setDoc, 
+    getDocs, 
+    collection,
+    getDoc 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const contenidoAdmin = document.getElementById("contenidoAdmin");
+
+  // 🔐 VERIFICAR ROL ADMIN
+  onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists() || userSnap.data().rol !== "admin") {
+      document.body.innerHTML = `
+        <h2 style="color:red;">Acceso Denegado</h2>
+        <p>No tienes permisos para entrar aquí.</p>
+      `;
+      return;
+    }
+
+    // Si es admin, mostrar contenido
+    contenidoAdmin.style.display = "block";
+  });
 
   window.cerrarSesion = function () {
     signOut(auth).then(() => {
@@ -56,8 +93,7 @@
 
       await setDoc(doc(db, "usuarios", user.uid), {
         email: email,
-        rol: "profesor",
-        intento: false
+        rol: "profesor"
       });
 
       alert("Profesor creado correctamente");
