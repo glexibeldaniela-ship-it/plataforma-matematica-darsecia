@@ -21,124 +21,161 @@
 
   <script type="module">
 
-    import { auth, db } from "./firebase.js";
-    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db } from "./firebase.js";
+import { 
+  doc, getDoc, collection, getDocs, addDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const params = new URLSearchParams(window.location.search);
-    const examenId = params.get("id");
+const params = new URLSearchParams(window.location.search);
+const examenId = params.get("id");
 
-    const infoDiv = document.getElementById("infoExamen");
-    const preguntasDiv = document.getElementById("preguntas");
+const infoDiv = document.getElementById("infoExamen");
+const preguntasDiv = document.getElementById("preguntas");
+const btnEnviar = document.getElementById("btnEnviar");
 
-    async function cargarExamen() {
+let preguntasData = [];
 
-      if (!examenId) {
-        infoDiv.innerHTML = "<p>Error: examen no encontrado.</p>";
-        return;
-      }
+async function cargarExamen() {
 
-      // 🔹 Cargar datos del examen
-      const examenRef = doc(db, "examenes", examenId);
-      const examenSnap = await getDoc(examenRef);
+  const examenRef = doc(db, "examenes", examenId);
+  const examenSnap = await getDoc(examenRef);
 
-      if (!examenSnap.exists()) {
-        infoDiv.innerHTML = "<p>Examen no existe.</p>";
-        return;
-      }
+  if (!examenSnap.exists()) {
+    infoDiv.innerHTML = "<p>Examen no existe.</p>";
+    return;
+  }
 
-      const examen = examenSnap.data();
+  const examen = examenSnap.data();
 
-      infoDiv.innerHTML = `
-        <h3>${examen.titulo}</h3>
-        <p>Año: ${examen.anio}</p>
-        <p>Sección: ${examen.seccion}</p>
-        <p>Duración: ${examen.duracion} minutos</p>
-      `;
+  infoDiv.innerHTML = `
+    <h3>${examen.titulo}</h3>
+    <p>Año: ${examen.anio}</p>
+    <p>Sección: ${examen.seccion}</p>
+    <p>Duración: ${examen.duracion} minutos</p>
+  `;
 
-      // 🔹 Cargar preguntas
-      const preguntasRef = collection(db, "examenes", examenId, "preguntas");
-      const preguntasSnap = await getDocs(preguntasRef);
+  const preguntasRef = collection(db, "examenes", examenId, "preguntas");
+  const preguntasSnap = await getDocs(preguntasRef);
 
-      let numero = 1;
+  let numero = 1;
 
-      preguntasSnap.forEach(doc => {
+  preguntasSnap.forEach(docu => {
 
-        const pregunta = doc.data();
+    const pregunta = docu.data();
+    pregunta.id = docu.id;
 
-        const div = document.createElement("div");
-        div.style.border = "1px solid gray";
-        div.style.padding = "10px";
-        div.style.marginBottom = "10px";
+    preguntasData.push(pregunta);
 
-        div.innerHTML = `<h4>${numero}. ${pregunta.enunciado}</h4>`;
+    const div = document.createElement("div");
+    div.style.border = "1px solid gray";
+    div.style.padding = "10px";
+    div.style.marginBottom = "10px";
 
-        // 🟢 Opción múltiple
-        if (pregunta.tipo === "opcion_multiple") {
+    div.innerHTML = `<h4>${numero}. ${pregunta.enunciado}</h4>`;
 
-          pregunta.opciones.forEach(op => {
-            div.innerHTML += `
-              <label>
-                <input type="radio" name="preg_${doc.id}" value="${op.texto}">
-                ${op.texto}
-              </label><br>
-            `;
-          });
-        }
-
-        // 🔵 Numérica
-        if (pregunta.tipo === "numerica") {
-          div.innerHTML += `
-            <input type="number" name="preg_${doc.id}">
-          `;
-        }
-
-        // 🟣 Completar
-        if (pregunta.tipo === "completar") {
-          div.innerHTML += `
-            <input type="text" name="preg_${doc.id}">
-          `;
-        }
-
-        // 🟡 Verdadero/Falso
-        if (pregunta.tipo === "verdadero_falso") {
-          div.innerHTML += `
-            <label><input type="radio" name="preg_${doc.id}" value="verdadero"> Verdadero</label><br>
-            <label><input type="radio" name="preg_${doc.id}" value="falso"> Falso</label>
-          `;
-        }
-
-        preguntasDiv.appendChild(div);
-
-        numero++;
+    if (pregunta.tipo === "opcion_multiple") {
+      pregunta.opciones.forEach(op => {
+        div.innerHTML += `
+          <label>
+            <input type="radio" name="preg_${pregunta.id}" value="${op.texto}">
+            ${op.texto}
+          </label><br>
+        `;
       });
-
     }
 
-    cargarExamen();
-document.getElementById("btnEnviar").addEventListener("click", () => {
+    if (pregunta.tipo === "numerica") {
+      div.innerHTML += `<input type="number" name="preg_${pregunta.id}">`;
+    }
 
-  const respuestas = {};
+    if (pregunta.tipo === "completar") {
+      div.innerHTML += `<input type="text" name="preg_${pregunta.id}">`;
+    }
 
-  const inputs = document.querySelectorAll("input");
+    if (pregunta.tipo === "verdadero_falso") {
+      div.innerHTML += `
+        <label><input type="radio" name="preg_${pregunta.id}" value="verdadero"> Verdadero</label><br>
+        <label><input type="radio" name="preg_${pregunta.id}" value="falso"> Falso</label>
+      `;
+    }
 
-  inputs.forEach(input => {
+    preguntasDiv.appendChild(div);
+    numero++;
+  });
 
-    if (input.type === "radio") {
-      if (input.checked) {
-        respuestas[input.name] = input.value;
+}
+
+btnEnviar.addEventListener("click", async () => {
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("No autorizado");
+    return;
+  }
+
+  let correctas = 0;
+
+  preguntasData.forEach(pregunta => {
+
+    const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
+                  document.querySelector(`[name="preg_${pregunta.id}"]`);
+
+    if (!input) return;
+
+    const respuestaUsuario = input.value;
+
+    // OPCIÓN MÚLTIPLE
+    if (pregunta.tipo === "opcion_multiple") {
+      const correcta = pregunta.opciones.find(op => op.correcta);
+      if (correcta && respuestaUsuario === correcta.texto) {
+        correctas++;
       }
-    } else {
-      respuestas[input.name] = input.value;
+    }
+
+    // NUMÉRICA
+    if (pregunta.tipo === "numerica") {
+      if (parseFloat(respuestaUsuario) === pregunta.respuestaCorrecta) {
+        correctas++;
+      }
+    }
+
+    // COMPLETAR
+    if (pregunta.tipo === "completar") {
+      if (respuestaUsuario.trim().toLowerCase() === 
+          pregunta.respuestaCorrecta.trim().toLowerCase()) {
+        correctas++;
+      }
+    }
+
+    // VERDADERO/FALSO
+    if (pregunta.tipo === "verdadero_falso") {
+      if (respuestaUsuario === pregunta.respuestaCorrecta) {
+        correctas++;
+      }
     }
 
   });
 
-  console.log("Respuestas del estudiante:", respuestas);
+  const total = preguntasData.length;
+  const nota = (correctas / total) * 20;
 
-  alert("Examen enviado (prueba inicial)");
+  await addDoc(
+    collection(db, "examenes", examenId, "resultados"),
+    {
+      estudiante_id: user.uid,
+      correctas,
+      total,
+      nota: parseFloat(nota.toFixed(2)),
+      fecha: new Date()
+    }
+  );
+
+  alert("Examen enviado. Tu nota es: " + nota.toFixed(2) + " / 20");
+
+  window.location.href = "panel-estudiante.html";
 
 });
-  </script>
 
-</body>
-</html>
+cargarExamen();
+
+</script>
