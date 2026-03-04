@@ -1,88 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Profesor</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Panel Profesor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{ font-family: Arial; padding:20px; }
+select{ padding:5px; margin-right:10px; }
+button{ padding:6px 10px; cursor:pointer; }
+table{ margin-top:10px; }
+</style>
 </head>
 
 <body>
 
-  <h2>Panel del Profesor</h2>
+<h2>Panel del Profesor</h2>
 
-  <button id="btnCrear">➕ Crear Examen</button>
+<button id="btnCrear">➕ Crear Examen</button>
 
-  <hr>
+<hr>
 
-  <h3>Lista de Exámenes</h3>
+<h3>Lista de Exámenes</h3>
 
-  <table border="1" width="100%" id="tablaExamenes">
-    <thead>
-      <tr>
-        <th>Título</th>
-        <th>Año</th>
-        <th>Sección</th>
-        <th>Lapso</th>
-        <th>Estado</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<table border="1" width="100%" id="tablaExamenes">
+<thead>
+<tr>
+<th>Título</th>
+<th>Año</th>
+<th>Sección</th>
+<th>Lapso</th>
+<th>Estado</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
-  <hr>
+<hr>
 
-  <h3>Resultados</h3>
+<h3>Resultados</h3>
 
-  <select id="selectExamen">
-    <option value="">Selecciona un examen</option>
-  </select>
+<select id="selectExamen">
+<option value="">Selecciona un examen</option>
+</select>
 
-  <br><br>
+<select id="filtroAnio">
+<option value="">Filtrar por Año</option>
+</select>
 
-  <table border="1" width="100%" id="tablaResultados">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Grado</th>
-        <th>Sección</th>
-        <th>Lapso</th>
-        <th>Tiempo</th>
-        <th>Nota</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<select id="filtroSeccion">
+<option value="">Filtrar por Sección</option>
+</select>
+
+<br><br>
+
+<table border="1" width="100%" id="tablaResultados">
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Grado</th>
+<th>Sección</th>
+<th>Lapso</th>
+<th>Tiempo</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { 
-  collection, 
-  getDocs, 
-  updateDoc, 
-  doc 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs, updateDoc, doc }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const tablaExamenesBody = document.querySelector("#tablaExamenes tbody");
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
 const btnCrear = document.getElementById("btnCrear");
+const filtroAnio = document.getElementById("filtroAnio");
+const filtroSeccion = document.getElementById("filtroSeccion");
+
+let resultadosGlobal = [];
 
 btnCrear.addEventListener("click", () => {
   window.location.href = "crear-examen.html";
 });
 
-async function cargarExamenes() {
+async function cargarExamenes(){
 
-  tablaExamenesBody.innerHTML = "";
-  selectExamen.innerHTML = '<option value="">Selecciona un examen</option>';
+  tablaExamenesBody.innerHTML="";
+  selectExamen.innerHTML='<option value="">Selecciona un examen</option>';
 
-  const examenesSnap = await getDocs(collection(db, "examenes"));
+  const examenesSnap = await getDocs(collection(db,"examenes"));
 
-  examenesSnap.forEach(docu => {
+  examenesSnap.forEach(docu=>{
 
     const examen = docu.data();
     const tr = document.createElement("tr");
@@ -102,46 +117,76 @@ async function cargarExamenes() {
 
     tablaExamenesBody.appendChild(tr);
 
-    // llenar select resultados
     const option = document.createElement("option");
     option.value = docu.id;
     option.textContent = examen.titulo;
     selectExamen.appendChild(option);
+
   });
+
 }
 
-window.activarExamen = async function(id, estadoActual) {
+window.activarExamen = async function(id, estadoActual){
 
-  const examenesSnap = await getDocs(collection(db, "examenes"));
+  const examenesSnap = await getDocs(collection(db,"examenes"));
 
-  // 🔥 Solo permitir 1 activo
-  if (!estadoActual) {
-    examenesSnap.forEach(async (docu) => {
-      await updateDoc(doc(db, "examenes", docu.id), {
-        activo: false
-      });
+  if(!estadoActual){
+    examenesSnap.forEach(async (docu)=>{
+      await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
     });
   }
 
-  await updateDoc(doc(db, "examenes", id), {
-    activo: !estadoActual
-  });
+  await updateDoc(doc(db,"examenes",id),{ activo:!estadoActual });
 
   alert("Estado actualizado");
   cargarExamenes();
 };
 
-async function cargarResultados(examenId) {
+async function cargarResultados(examenId){
 
-  tablaBody.innerHTML = "";
+  tablaBody.innerHTML="";
+  filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
+  filtroSeccion.innerHTML='<option value="">Filtrar por Sección</option>';
+  resultadosGlobal = [];
 
   const resultadosSnap = await getDocs(
-    collection(db, "examenes", examenId, "resultados")
+    collection(db,"examenes",examenId,"resultados")
   );
 
-  resultadosSnap.forEach(docu => {
+  const anios = new Set();
+  const secciones = new Set();
 
+  resultadosSnap.forEach(docu=>{
     const data = docu.data();
+    resultadosGlobal.push(data);
+
+    if(data.grado) anios.add(data.grado);
+    if(data.seccion) secciones.add(data.seccion);
+  });
+
+  anios.forEach(a=>{
+    const op = document.createElement("option");
+    op.value = a;
+    op.textContent = a;
+    filtroAnio.appendChild(op);
+  });
+
+  secciones.forEach(s=>{
+    const op = document.createElement("option");
+    op.value = s;
+    op.textContent = s;
+    filtroSeccion.appendChild(op);
+  });
+
+  mostrarResultados(resultadosGlobal);
+}
+
+function mostrarResultados(lista){
+
+  tablaBody.innerHTML="";
+
+  lista.forEach(data=>{
+
     const fila = document.createElement("tr");
 
     fila.innerHTML = `
@@ -154,18 +199,38 @@ async function cargarResultados(examenId) {
     `;
 
     tablaBody.appendChild(fila);
+
   });
+
 }
 
-selectExamen.addEventListener("change", () => {
-  if (selectExamen.value) {
+function aplicarFiltros(){
+
+  let filtrado = resultadosGlobal;
+
+  if(filtroAnio.value){
+    filtrado = filtrado.filter(r=>r.grado==filtroAnio.value);
+  }
+
+  if(filtroSeccion.value){
+    filtrado = filtrado.filter(r=>r.seccion==filtroSeccion.value);
+  }
+
+  mostrarResultados(filtrado);
+}
+
+selectExamen.addEventListener("change",()=>{
+  if(selectExamen.value){
     cargarResultados(selectExamen.value);
   }
 });
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "index.html";
+filtroAnio.addEventListener("change", aplicarFiltros);
+filtroSeccion.addEventListener("change", aplicarFiltros);
+
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    window.location.href="index.html";
   }
 });
 
