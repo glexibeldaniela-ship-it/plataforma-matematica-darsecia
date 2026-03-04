@@ -8,7 +8,31 @@
 
 <body>
 
-  <h2>Panel del Profesor - Resultados</h2>
+  <h2>Panel del Profesor</h2>
+
+  <button id="btnCrear">➕ Crear Examen</button>
+
+  <hr>
+
+  <h3>Lista de Exámenes</h3>
+
+  <table border="1" width="100%" id="tablaExamenes">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Año</th>
+        <th>Sección</th>
+        <th>Lapso</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <hr>
+
+  <h3>Resultados</h3>
 
   <select id="selectExamen">
     <option value="">Selecciona un examen</option>
@@ -27,31 +51,85 @@
         <th>Nota</th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
 
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  collection, 
+  getDocs, 
+  updateDoc, 
+  doc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+const tablaExamenesBody = document.querySelector("#tablaExamenes tbody");
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
+const btnCrear = document.getElementById("btnCrear");
+
+btnCrear.addEventListener("click", () => {
+  window.location.href = "crear-examen.html";
+});
 
 async function cargarExamenes() {
+
+  tablaExamenesBody.innerHTML = "";
+  selectExamen.innerHTML = '<option value="">Selecciona un examen</option>';
 
   const examenesSnap = await getDocs(collection(db, "examenes"));
 
   examenesSnap.forEach(docu => {
+
     const examen = docu.data();
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${examen.titulo}</td>
+      <td>${examen.anio}</td>
+      <td>${examen.seccion}</td>
+      <td>${examen.lapso}</td>
+      <td>${examen.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
+      <td>
+        <button onclick="activarExamen('${docu.id}', ${examen.activo})">
+          ${examen.activo ? "Desactivar" : "Activar"}
+        </button>
+      </td>
+    `;
+
+    tablaExamenesBody.appendChild(tr);
+
+    // llenar select resultados
     const option = document.createElement("option");
     option.value = docu.id;
     option.textContent = examen.titulo;
     selectExamen.appendChild(option);
   });
 }
+
+window.activarExamen = async function(id, estadoActual) {
+
+  const examenesSnap = await getDocs(collection(db, "examenes"));
+
+  // 🔥 Solo permitir 1 activo
+  if (!estadoActual) {
+    examenesSnap.forEach(async (docu) => {
+      await updateDoc(doc(db, "examenes", docu.id), {
+        activo: false
+      });
+    });
+  }
+
+  await updateDoc(doc(db, "examenes", id), {
+    activo: !estadoActual
+  });
+
+  alert("Estado actualizado");
+  cargarExamenes();
+};
 
 async function cargarResultados(examenId) {
 
