@@ -5,7 +5,8 @@ let contador = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  document.querySelector("button[onclick='agregarPregunta()']")
+  // ✅ BOTÓN CORRECTO
+  document.getElementById("btnAgregar")
     .addEventListener("click", agregarPregunta);
 
   document.getElementById("btnGuardar")
@@ -23,6 +24,8 @@ function agregarPregunta() {
   div.style.border = "1px solid gray";
   div.style.padding = "10px";
   div.style.marginBottom = "15px";
+
+  const idLocal = contador; // 🔥 importante para radios únicos
 
   div.innerHTML = `
     <h4>Pregunta ${contador + 1}</h4>
@@ -65,7 +68,7 @@ function agregarPregunta() {
         opcionDiv.style.marginBottom = "5px";
 
         opcionDiv.innerHTML = `
-          <input type="radio" name="correcta_${contador}" class="correcta">
+          <input type="radio" name="correcta_${idLocal}" class="correcta">
           <input type="text" class="opcionTexto" placeholder="Texto de la opción">
           <button type="button" class="eliminar">❌</button>
         `;
