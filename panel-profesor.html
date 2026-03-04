@@ -1,40 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Panel Profesor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
 <h2>Panel Profesor</h2>
 
-<h3>Crear Examen</h3>
-
-<input type="text" id="titulo" placeholder="Título del examen"><br><br>
-
-<input type="text" id="repaso" placeholder="Enlace Google Drive (repaso obligatorio)"><br><br>
-
-<h4>Pregunta 1</h4>
-<input type="text" id="p1" placeholder="Escribe la pregunta"><br>
-<input type="text" id="r1" placeholder="Respuesta correcta"><br><br>
-
-<h4>Pregunta 2</h4>
-<input type="text" id="p2" placeholder="Escribe la pregunta"><br>
-<input type="text" id="r2" placeholder="Respuesta correcta"><br><br>
-
-<h4>Pregunta 3</h4>
-<input type="text" id="p3" placeholder="Escribe la pregunta"><br>
-<input type="text" id="r3" placeholder="Respuesta correcta"><br><br>
-
-<h4>Pregunta 4</h4>
-<input type="text" id="p4" placeholder="Escribe la pregunta"><br>
-<input type="text" id="r4" placeholder="Respuesta correcta"><br><br>
-
-<h4>Pregunta 5</h4>
-<input type="text" id="p5" placeholder="Escribe la pregunta"><br>
-<input type="text" id="r5" placeholder="Respuesta correcta"><br><br>
-
-<button onclick="crearExamen()">Guardar Examen</button>
+<button onclick="irCrearExamen()">Crear Nuevo Examen</button>
 
 <br><br>
+
 <button onclick="cerrarSesion()">Cerrar Sesión</button>
 
 <script type="module">
-import { auth, db } from "./firebase.js";
+
+import { auth } from "./firebase.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.cerrarSesion = function () {
   signOut(auth).then(() => {
@@ -42,24 +27,11 @@ window.cerrarSesion = function () {
   });
 };
 
-window.crearExamen = async function () {
-
-  const examen = {
-    titulo: document.getElementById("titulo").value,
-    repaso: document.getElementById("repaso").value,
-    activo: false,
-    duracion: 30,
-    preguntas: [
-      { pregunta: p1.value, respuesta: r1.value },
-      { pregunta: p2.value, respuesta: r2.value },
-      { pregunta: p3.value, respuesta: r3.value },
-      { pregunta: p4.value, respuesta: r4.value },
-      { pregunta: p5.value, respuesta: r5.value }
-    ]
-  };
-
-  await setDoc(doc(db, "examenes", "examen_activo"), examen);
-
-  alert("Examen guardado correctamente");
+window.irCrearExamen = function () {
+  window.location.href = "crear-examen.html";
 };
+
 </script>
+
+</body>
+</html>
