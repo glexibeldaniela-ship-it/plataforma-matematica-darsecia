@@ -1,35 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Panel Profesor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Panel Profesor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 
-<h2>Panel Profesor</h2>
+  <h2>Panel del Profesor - Resultados</h2>
 
-<button onclick="irCrearExamen()">Crear Nuevo Examen</button>
+  <select id="selectExamen">
+    <option value="">Selecciona un examen</option>
+  </select>
 
-<br><br>
+  <br><br>
 
-<button onclick="cerrarSesion()">Cerrar Sesión</button>
+  <table border="1" width="100%" id="tablaResultados">
+    <thead>
+      <tr>
+        <th>Estudiante UID</th>
+        <th>Correctas</th>
+        <th>Total</th>
+        <th>Nota</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 
 <script type="module">
 
-import { auth } from "./firebase.js";
-import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { auth, db } from "./firebase.js";
+import { 
+  collection, getDocs 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-window.cerrarSesion = function () {
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const selectExamen = document.getElementById("selectExamen");
+const tablaBody = document.querySelector("#tablaResultados tbody");
+
+/* 📚 Cargar exámenes */
+async function cargarExamenes() {
+
+  const examenesSnap = await getDocs(collection(db, "examenes"));
+
+  examenesSnap.forEach(docu => {
+    const examen = docu.data();
+    const option = document.createElement("option");
+    option.value = docu.id;
+    option.textContent = examen.titulo;
+    selectExamen.appendChild(option);
   });
-};
+}
 
-window.irCrearExamen = function () {
-  window.location.href = "crear-examen.html";
-};
+/* 📊 Cargar resultados */
+async function cargarResultados(examenId) {
+
+  tablaBody.innerHTML = "";
+
+  const resultadosSnap = await getDocs(
+    collection(db, "examenes", examenId, "resultados")
+  );
+
+  resultadosSnap.forEach(docu => {
+
+    const data = docu.data();
+
+    const fila = document.createElement("tr");
+
+    fila.innerHTML = `
+      <td>${data.estudiante_id}</td>
+      <td>${data.correctas}</td>
+      <td>${data.total}</td>
+      <td><strong>${data.nota}</strong></td>
+      <td>${new Date(data.fecha.seconds * 1000).toLocaleString()}</td>
+    `;
+
+    tablaBody.appendChild(fila);
+  });
+}
+
+/* 🎯 Cuando cambia el select */
+selectExamen.addEventListener("change", () => {
+  if (selectExamen.value) {
+    cargarResultados(selectExamen.value);
+  }
+});
+
+/* 🔐 Seguridad básica */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+cargarExamenes();
 
 </script>
 
