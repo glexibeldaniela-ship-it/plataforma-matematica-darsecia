@@ -9,7 +9,8 @@
 body{ font-family: Arial; padding:20px; }
 select{ padding:5px; margin-right:10px; }
 button{ padding:6px 10px; cursor:pointer; }
-table{ margin-top:10px; }
+table{ margin-top:10px; border-collapse: collapse; }
+th, td{ padding:5px; }
 .resumen{
   margin-top:15px;
   padding:10px;
@@ -18,6 +19,10 @@ table{ margin-top:10px; }
   background:#f5f5f5;
 }
 </style>
+
+<!-- Librería PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 
 <body>
@@ -60,6 +65,8 @@ table{ margin-top:10px; }
 <option value="">Filtrar por Sección</option>
 </select>
 
+<button id="btnPDF">📄 Descargar Acta General</button>
+
 <br><br>
 
 <table border="1" width="100%" id="tablaResultados">
@@ -91,12 +98,15 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+const { jsPDF } = window.jspdf;
+
 const tablaExamenesBody = document.querySelector("#tablaExamenes tbody");
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
 const btnCrear = document.getElementById("btnCrear");
 const filtroAnio = document.getElementById("filtroAnio");
 const filtroSeccion = document.getElementById("filtroSeccion");
+const btnPDF = document.getElementById("btnPDF");
 
 const totalEst = document.getElementById("totalEst");
 const promedioSpan = document.getElementById("promedio");
@@ -105,6 +115,7 @@ const reprobadosSpan = document.getElementById("reprobados");
 const resumenBox = document.getElementById("resumenBox");
 
 let resultadosGlobal = [];
+let resultadosFiltrados = [];
 
 btnCrear.addEventListener("click", () => {
   window.location.href = "crear-examen.html";
@@ -169,31 +180,11 @@ async function cargarResultados(examenId){
     collection(db,"examenes",examenId,"resultados")
   );
 
-  const anios = new Set();
-  const secciones = new Set();
-
   resultadosSnap.forEach(docu=>{
     const data = docu.data();
-
     if(data.nombre && !isNaN(data.nota)){
       resultadosGlobal.push(data);
-      if(data.grado) anios.add(data.grado);
-      if(data.seccion) secciones.add(data.seccion);
     }
-  });
-
-  anios.forEach(a=>{
-    const op = document.createElement("option");
-    op.value = a;
-    op.textContent = a;
-    filtroAnio.appendChild(op);
-  });
-
-  secciones.forEach(s=>{
-    const op = document.createElement("option");
-    op.value = s;
-    op.textContent = s;
-    filtroSeccion.appendChild(op);
   });
 
   mostrarResultados(resultadosGlobal);
@@ -201,6 +192,7 @@ async function cargarResultados(examenId){
 
 function mostrarResultados(lista){
 
+  resultadosFiltrados = lista;
   tablaBody.innerHTML="";
 
   let suma = 0;
@@ -208,15 +200,11 @@ function mostrarResultados(lista){
   let reprobados = 0;
 
   lista.forEach(data=>{
-
     const nota = Number(data.nota);
-
     suma += nota;
-    if(nota >= 10){
-      aprobados++;
-    } else {
-      reprobados++;
-    }
+
+    if(nota >= 10) aprobados++;
+    else reprobados++;
 
     const fila = document.createElement("tr");
 
@@ -269,6 +257,44 @@ selectExamen.addEventListener("change",()=>{
 
 filtroAnio.addEventListener("change", aplicarFiltros);
 filtroSeccion.addEventListener("change", aplicarFiltros);
+
+btnPDF.addEventListener("click", generarPDF);
+
+function generarPDF(){
+
+  if(resultadosFiltrados.length === 0){
+    alert("No hay datos para exportar");
+    return;
+  }
+
+  const doc = new jsPDF();
+  let y = 10;
+
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(12);
+
+  doc.text("República Bolivariana de Venezuela", 105, y, {align:"center"}); y+=6;
+  doc.text("Ministerio del Poder Popular para la Educación", 105, y, {align:"center"}); y+=6;
+  doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita", 105, y, {align:"center"}); y+=6;
+  doc.text("U.E.E. Cecilia Núñez Sucre", 105, y, {align:"center"}); y+=10;
+
+  doc.setFont("helvetica","normal");
+  doc.text("Fecha: "+ new Date().toLocaleDateString(), 14, y); y+=10;
+
+  resultadosFiltrados.forEach((r,i)=>{
+    doc.text(`${i+1}. ${r.nombre} - Nota: ${r.nota}`, 14, y);
+    y+=6;
+  });
+
+  y+=10;
+
+  doc.text("Firma:", 14, y);
+  y+=15;
+  doc.text("Prof. José Fernández", 14, y); y+=6;
+  doc.text("C.I: 28.123.219", 14, y);
+
+  doc.save("Acta_General.pdf");
+}
 
 onAuthStateChanged(auth,(user)=>{
   if(!user){
