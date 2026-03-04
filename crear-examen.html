@@ -11,17 +11,22 @@
 <h2>Crear Examen</h2>
 
 <input type="text" id="titulo" placeholder="Título del examen"><br><br>
-
-<input type="text" id="anio" placeholder="Año (Ej: 3er año)"><br><br>
-<input type="text" id="seccion" placeholder="Sección (Ej: A)"><br><br>
-<input type="text" id="lapso" placeholder="Lapso (1,2,3)"><br><br>
-
+<input type="text" id="anio" placeholder="Año"><br><br>
+<input type="text" id="seccion" placeholder="Sección"><br><br>
+<input type="text" id="lapso" placeholder="Lapso"><br><br>
 <input type="number" id="duracion" placeholder="Duración en minutos"><br><br>
+<input type="text" id="repaso" placeholder="Link Google Drive"><br><br>
 
-<input type="text" id="repaso" placeholder="Link Google Drive (repaso obligatorio)"><br><br>
+<hr>
 
+<h3>Preguntas</h3>
+
+<div id="contenedorPreguntas"></div>
+
+<button onclick="agregarPregunta()">Agregar Pregunta</button>
+
+<br><br>
 <button id="btnGuardar">Guardar Examen</button>
-
 <br><br>
 <button onclick="volver()">Volver</button>
 
