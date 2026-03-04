@@ -34,7 +34,25 @@ const preguntasDiv = document.getElementById("preguntas");
 const btnEnviar = document.getElementById("btnEnviar");
 
 let preguntasData = [];
+async function yaPresentoExamen() {
 
+  const user = auth.currentUser;
+  if (!user) return false;
+
+  const resultadosRef = collection(db, "examenes", examenId, "resultados");
+  const resultadosSnap = await getDocs(resultadosRef);
+
+  let yaPresento = false;
+
+  resultadosSnap.forEach(docu => {
+    const data = docu.data();
+    if (data.estudiante_id === user.uid) {
+      yaPresento = true;
+    }
+  });
+
+  return yaPresento;
+}
 async function cargarExamen() {
 
   const examenRef = doc(db, "examenes", examenId);
