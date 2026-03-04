@@ -1,1 +1,136 @@
-tty
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resultado del Examen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  padding:20px;
+}
+
+.card{
+  border:1px solid #ccc;
+  padding:20px;
+  border-radius:10px;
+  margin-top:20px;
+}
+
+button{
+  padding:10px 15px;
+  font-size:16px;
+  margin-top:15px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Resultado del Examen</h2>
+
+<div id="resultado" class="card"></div>
+
+<button id="btnPDF">Descargar Acta Oficial PDF</button>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+import { doc, getDoc, collection, getDocs, query, where } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const { jsPDF } = window.jspdf;
+
+const params = new URLSearchParams(window.location.search);
+const examenId = params.get("id");
+
+const resultadoDiv = document.getElementById("resultado");
+const btnPDF = document.getElementById("btnPDF");
+
+let datosResultado = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+  if(!user){
+    window.location.href="index.html";
+    return;
+  }
+
+  const examenSnap = await getDoc(doc(db,"examenes",examenId));
+  const examenData = examenSnap.data();
+
+  const resultadosRef = collection(db,"examenes",examenId,"resultados");
+  const q = query(resultadosRef, where("estudiante_id","==",user.uid));
+  const querySnap = await getDocs(q);
+
+  querySnap.forEach(docu=>{
+    datosResultado = docu.data();
+  });
+
+  if(!datosResultado){
+    resultadoDiv.innerHTML="<p>No se encontró resultado.</p>";
+    btnPDF.style.display="none";
+    return;
+  }
+
+  resultadoDiv.innerHTML = `
+    <h3>${examenData.titulo}</h3>
+    <p><strong>Estudiante:</strong> ${datosResultado.nombre}</p>
+    <p><strong>Año:</strong> ${datosResultado.grado}</p>
+    <p><strong>Sección:</strong> ${datosResultado.seccion}</p>
+    <p><strong>Lapso:</strong> ${datosResultado.lapso}</p>
+    <p><strong>Nota:</strong> ${datosResultado.nota} / 20</p>
+    <p><strong>Estado:</strong> ${datosResultado.estado}</p>
+  `;
+
+});
+
+btnPDF.addEventListener("click", ()=>{
+
+  if(!datosResultado) return;
+
+  const doc = new jsPDF();
+
+  doc.setFont("times","normal");
+
+  doc.text("REPÚBLICA BOLIVARIANA DE VENEZUELA",105,20,null,null,"center");
+  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN",105,28,null,null,"center");
+  doc.text("UEE Cecilia Núñez",105,36,null,null,"center");
+  doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita",105,44,null,null,"center");
+
+  doc.line(20,50,190,50);
+
+  doc.setFontSize(14);
+  doc.text("ACTA DE EVALUACIÓN",105,60,null,null,"center");
+
+  doc.setFontSize(12);
+
+  doc.text("Estudiante: " + datosResultado.nombre,20,80);
+  doc.text("Año: " + datosResultado.grado,20,90);
+  doc.text("Sección: " + datosResultado.seccion,20,100);
+  doc.text("Lapso: " + datosResultado.lapso,20,110);
+  doc.text("Nota Obtenida: " + datosResultado.nota + " / 20",20,120);
+  doc.text("Estado: " + datosResultado.estado.toUpperCase(),20,130);
+
+  const fecha = new Date().toLocaleDateString();
+  doc.text("Fecha: " + fecha,20,150);
+
+  doc.line(60,190,150,190);
+  doc.text("José Fernández",105,200,null,null,"center");
+  doc.text("C.I. 28.123.219",105,208,null,null,"center");
+  doc.text("Docente Evaluador",105,216,null,null,"center");
+
+  doc.save("Acta_Resultado.pdf");
+
+});
+
+</script>
+
+</body>
+</html>
