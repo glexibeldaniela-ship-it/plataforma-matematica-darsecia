@@ -1,6 +1,9 @@
+<h3 class="bienvenida" id="bienvenidaAdmin">Bienvenido Administrador José</h3>
+
 <h3>Administrar Estudiantes</h3>
-<div id="listaEstudiantes"></div>
-<div id="estadisticasEstudiantes" style="margin-top:10px; padding:10px; border:1px solid #ccc; border-radius:8px; background:#f5f5f5;">
+<div id="listaEstudiantes" class="lista-estudiantes"></div>
+
+<div id="estadisticasEstudiantes" class="resumen-estadisticas">
   <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
   <strong>Por Sección:</strong> <span id="porSeccion"></span> |
   <strong>En Línea:</strong> <span id="estudiantesOnline"></span>
@@ -29,25 +32,26 @@ async function cargarEstudiantes() {
     const data = docu.data();
     if (data.rol === "estudiante") {
       total++;
-
-      // Contar estudiantes por sección
       secciones[data.seccion] = (secciones[data.seccion] || 0) + 1;
-
-      // Ver si está online
       if (data.estado === "online") online.push(`${data.nombres} ${data.apellidos}`);
 
       const div = document.createElement("div");
+      div.classList.add("estudiante-item");
       div.innerHTML = `
-        ${data.nombres} ${data.apellidos} | Cédula: ${data.cedula} | Fecha de Nacimiento: ${data.fechaNacimiento} | Sección: ${data.seccion} | Año: ${data.anio} 
-        <button onclick="resetearPassword('${data.email}')">Resetear contraseña</button>
-        <button onclick="borrarEstudiante('${docu.id}', '${data.cedula}')">Borrar</button>
-        <hr>
+        <div class="estudiante-info">
+          <strong>${data.nombres} ${data.apellidos}</strong><br>
+          Cédula: ${data.cedula} | Fecha de Nacimiento: ${data.fechaNacimiento}<br>
+          Sección: ${data.seccion} | Año: ${data.anio}
+        </div>
+        <div class="estudiante-acciones">
+          <button class="btn-reset" onclick="resetearPassword('${data.email}')">Resetear contraseña</button>
+          <button class="btn-borrar" onclick="borrarEstudiante('${docu.id}', '${data.cedula}')">Borrar</button>
+        </div>
       `;
       listaDiv.appendChild(div);
     }
   });
 
-  // Mostrar estadísticas
   totalEst.textContent = total;
   porSeccion.textContent = JSON.stringify(secciones);
   estudiantesOnline.textContent = online.length > 0 ? online.join(", ") : "Ninguno";
@@ -82,3 +86,101 @@ onSnapshot(collection(db, "usuarios"), () => {
 // Ejecutar al cargar la página
 cargarEstudiantes();
 </script>
+
+<style>
+/* ==========================
+   Bienvenida
+========================== */
+.bienvenida {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #00796b; /* turquesa oscuro */
+  margin-bottom: 20px;
+}
+
+/* ==========================
+   Lista de estudiantes
+========================== */
+.lista-estudiantes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.estudiante-item {
+  background-color: #e0f2f1; /* turquesa suave */
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.estudiante-info {
+  font-size: 14px;
+  color: #004d40;
+}
+
+/* ==========================
+   Botones
+========================== */
+.estudiante-acciones button {
+  margin-left: 5px;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+  transition: 0.3s;
+}
+
+.btn-reset {
+  background-color: #00bcd4;
+}
+
+.btn-reset:hover {
+  background-color: #0097a7;
+}
+
+.btn-borrar {
+  background-color: #f44336;
+}
+
+.btn-borrar:hover {
+  background-color: #d32f2f;
+}
+
+/* ==========================
+   Estadísticas
+========================== */
+.resumen-estadisticas {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #b2ebf2;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* ==========================
+   Responsive
+========================== */
+@media screen and (max-width: 600px) {
+  .estudiante-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .estudiante-acciones {
+    margin-top: 8px;
+  }
+
+  .estudiante-info {
+    font-size: 13px;
+  }
+}
+</style>
