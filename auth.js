@@ -69,13 +69,13 @@ async function registrar() {
     window.location.href = "login.html";  
 
   } catch (error) {  
-    alert("Error al registrar");  
+    alert("Error al registrar: " + error.message);  
   }  
 }  
 
 
 // ============================  
-// 🔹 LOGIN PROFESIONAL  
+// 🔹 LOGIN  
 // ============================  
 
 async function login() {  
@@ -104,7 +104,6 @@ async function login() {
     const datos = docSnap.data();
     const rol = datos.rol;
 
-    // 🔥 LOG DE ACTIVIDAD
     await setDoc(doc(db, "logs", crypto.randomUUID()), {
       uid: user.uid,
       email: user.email,
@@ -125,23 +124,20 @@ async function login() {
 
   } catch (error) {  
 
-    if (error.code === "auth/invalid-credential") {
-      alert("Correo o contraseña incorrectos");
-    } else {
-      alert("Error al iniciar sesión");
-    }
+    alert(error.code + " - " + error.message);
 
   }  
 }  
 
 
 // ============================  
-// 🔹 ACTIVAR BOTONES  
+// 🔹 BOTÓN LOGIN  
 // ============================  
 
 document.addEventListener("DOMContentLoaded", () => {  
 
   const btnLogin = document.getElementById("btnLogin");  
+
   if (btnLogin) {  
     btnLogin.addEventListener("click", login);  
   }
