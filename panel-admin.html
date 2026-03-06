@@ -1,170 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
 <h2>Panel Administrador</h2>
 
 <div id="contenidoAdmin" style="display:none;">
 
-<h3>Crear Profesor</h3>
+  <!-- Crear Profesor -->
+  <h3>Crear Profesor</h3>
+  <input type="email" id="emailProfesor" placeholder="Correo del profesor"><br><br>
+  <input type="password" id="passwordProfesor" placeholder="Contraseña"><br><br>
+  <button onclick="crearProfesor()">Crear Profesor</button>
+  <hr>
 
-<input type="email" id="emailProfesor" placeholder="Correo del profesor"><br><br>
-<input type="password" id="passwordProfesor" placeholder="Contraseña"><br><br>
+  <!-- Crear Estudiante -->
+  <h3>Crear Estudiante</h3>
+  <input type="text" id="nombresEst" placeholder="Nombres"><br><br>
+  <input type="text" id="apellidosEst" placeholder="Apellidos"><br><br>
+  <input type="text" id="cedulaEst" placeholder="Cédula"><br><br>
+  <input type="date" id="fechaNacimientoEst" placeholder="Fecha de Nacimiento"><br><br>
+  <input type="text" id="anioEst" placeholder="Año"><br><br>
+  <input type="text" id="seccionEst" placeholder="Sección"><br><br>
+  <input type="email" id="emailEst" placeholder="Correo"><br><br>
+  <input type="password" id="passwordEst" placeholder="Contraseña"><br><br>
+  <button onclick="crearEstudiante()">Crear Estudiante</button>
+  <hr>
 
-<button onclick="crearProfesor()">Crear Profesor</button>
+  <!-- Lista de Estudiantes -->
+  <h3>Administrar Estudiantes</h3>
+  <div id="listaEstudiantes"></div>
+  <hr>
 
-<hr>
-
-<h3>Crear Estudiante</h3>
-
-<input type="text" id="cedulaEstudiante" placeholder="Cédula"><br><br>
-<input type="text" id="nombreEstudiante" placeholder="Nombre completo"><br><br>
-<input type="date" id="fechaNacimiento"><br><br>
-<input type="email" id="emailEstudiante" placeholder="Correo"><br><br>
-<input type="password" id="passwordEstudiante" placeholder="Contraseña"><br><br>
-
-<button onclick="crearEstudiante()">Crear Estudiante</button>
-
-<br><br>
-<button onclick="cerrarSesion()">Cerrar Sesión</button>
-
+  <button onclick="cerrarSesion()">Cerrar Sesión</button>
 </div>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
-
 import { 
-signOut,
-onAuthStateChanged,
-createUserWithEmailAndPassword,
-getAuth
+  signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-doc,
-setDoc,
-getDocs,
-collection,
-getDoc
+import { 
+  doc, setDoc, getDoc, getDocs, collection, deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 const contenidoAdmin = document.getElementById("contenidoAdmin");
 
-onAuthStateChanged(auth, async (user)=>{
+// 🔐 Verificar rol admin
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-if(!user){
-window.location.href="login.html";
-return;
-}
+  const userRef = doc(db, "usuarios", user.uid);
+  const userSnap = await getDoc(userRef);
 
-const userRef=doc(db,"usuarios",user.uid);
-const userSnap=await getDoc(userRef);
+  if (!userSnap.exists() || userSnap.data().rol !== "admin") {
+    document.body.innerHTML = `
+      <h2 style="color:red;">Acceso Denegado</h2>
+      <p>No tienes permisos para entrar aquí.</p>
+    `;
+    return;
+  }
 
-if(!userSnap.exists() || userSnap.data().rol!=="admin"){
-document.body.innerHTML=`
-<h2 style="color:red;">Acceso Denegado</h2>
-<p>No tienes permisos para entrar aquí</p>
-`;
-return;
-}
-
-contenidoAdmin.style.display="block";
-
+  contenidoAdmin.style.display = "block";
+  cargarEstudiantes();
 });
 
-window.cerrarSesion=function(){
-signOut(auth).then(()=>{
-window.location.href="login.html";
-});
+// Cerrar sesión
+window.cerrarSesion = function () {
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
 };
 
-window.crearProfesor=async function(){
+// Crear Profesor
+window.crearProfesor = async function () {
+  const email = document.getElementById("emailProfesor").value;
+  const password = document.getElementById("passwordProfesor").value;
 
-const email=document.getElementById("emailProfesor").value;
-const password=document.getElementById("passwordProfesor").value;
+  if (!email || !password) { alert("Complete todos los campos"); return; }
 
-if(!email || !password){
-alert("Complete todos los campos");
-return;
-}
+  const querySnapshot = await getDocs(collection(db, "usuarios"));
+  let existeProfesor = false;
+  querySnapshot.forEach((docu) => { if(docu.data().rol === "profesor") existeProfesor = true; });
+  if (existeProfesor) { alert("Ya existe un profesor activo"); return; }
 
-const querySnapshot=await getDocs(collection(db,"usuarios"));
+  try {
+    const firebaseConfig = auth.app.options;
+    const tempApp = initializeApp(firebaseConfig, "Secondary");
+    const tempAuth = getAuth(tempApp);
 
-let existeProfesor=false;
+    const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+    const user = userCredential.user;
 
-querySnapshot.forEach((docu)=>{
-if(docu.data().rol==="profesor"){
-existeProfesor=true;
-}
-});
+    await setDoc(doc(db, "usuarios", user.uid), { email, rol: "profesor" });
+    alert("Profesor creado correctamente");
 
-if(existeProfesor){
-alert("Ya existe un profesor activo");
-return;
-}
-
-try{
-
-const firebaseConfig=auth.app.options;
-const tempApp=initializeApp(firebaseConfig,"Secondary");
-const tempAuth=getAuth(tempApp);
-
-const userCredential=await createUserWithEmailAndPassword(tempAuth,email,password);
-const user=userCredential.user;
-
-await setDoc(doc(db,"usuarios",user.uid),{
-email:email,
-rol:"profesor"
-});
-
-alert("Profesor creado correctamente");
-
-await tempAuth.signOut();
-
-}catch(error){
-alert("Error: "+error.message);
-}
-
+    await tempAuth.signOut();
+  } catch (error) { alert("Error: " + error.message); }
 };
 
-window.crearEstudiante=async function(){
+// Crear Estudiante
+window.crearEstudiante = async function () {
+  const nombres = document.getElementById("nombresEst").value.trim();
+  const apellidos = document.getElementById("apellidosEst").value.trim();
+  const cedula = document.getElementById("cedulaEst").value.trim();
+  const fechaNacimiento = document.getElementById("fechaNacimientoEst").value;
+  const anio = document.getElementById("anioEst").value.trim();
+  const seccion = document.getElementById("seccionEst").value.trim();
+  const email = document.getElementById("emailEst").value.trim();
+  const password = document.getElementById("passwordEst").value.trim();
 
-const cedula=document.getElementById("cedulaEstudiante").value;
-const nombre=document.getElementById("nombreEstudiante").value;
-const fecha=document.getElementById("fechaNacimiento").value;
-const email=document.getElementById("emailEstudiante").value;
-const password=document.getElementById("passwordEstudiante").value;
+  if (!nombres || !apellidos || !cedula || !fechaNacimiento || !anio || !seccion || !email || !password) {
+    alert("Complete todos los campos");
+    return;
+  }
 
-if(!cedula || !nombre || !fecha || !email || !password){
-alert("Complete todos los campos");
-return;
-}
+  try {
+    const cedulaRef = doc(db, "cedulas", cedula);
+    const cedulaSnap = await getDoc(cedulaRef);
+    if (cedulaSnap.exists()) { alert("Cédula ya registrada"); return; }
 
-try{
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-const firebaseConfig=auth.app.options;
-const tempApp=initializeApp(firebaseConfig,"Secondary2");
-const tempAuth=getAuth(tempApp);
+    await setDoc(doc(db, "usuarios", user.uid), {
+      nombres, apellidos, cedula, fechaNacimiento, anio, seccion,
+      email, rol: "estudiante", intento: false, nota: null,
+      estado: "sin_presentar", creado_en: new Date()
+    });
 
-const userCredential=await createUserWithEmailAndPassword(tempAuth,email,password);
-const user=userCredential.user;
-
-await setDoc(doc(db,"usuarios",user.uid),{
-cedula:cedula,
-nombre:nombre,
-fecha_nacimiento:fecha,
-email:email,
-rol:"estudiante"
-});
-
-alert("Estudiante creado correctamente");
-
-await tempAuth.signOut();
-
-}catch(error){
-alert("Error: "+error.message);
-}
-
+    await setDoc(doc(db, "cedulas", cedula), { uid: user.uid });
+    alert("Estudiante creado correctamente");
+    cargarEstudiantes();
+  } catch (error) { alert("Error: " + error.message); }
 };
 
+// Cargar lista de estudiantes
+async function cargarEstudiantes() {
+  const listaDiv = document.getElementById("listaEstudiantes");
+  listaDiv.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "usuarios"));
+  querySnapshot.forEach((docu) => {
+    const data = docu.data();
+    if (data.rol === "estudiante") {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        ${data.nombres} ${data.apellidos} | Cédula: ${data.cedula} | Sección: ${data.seccion} | Año: ${data.anio} 
+        <button onclick="resetearPassword('${data.email}')">Resetear contraseña</button>
+        <button onclick="borrarEstudiante('${docu.id}', '${data.cedula}')">Borrar</button>
+        <hr>
+      `;
+      listaDiv.appendChild(div);
+    }
+  });
+}
+
+// Resetear contraseña estudiante
+window.resetearPassword = async function(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Correo de recuperación enviado a " + email);
+  } catch (error) {
+    alert("Error al enviar correo: " + error.message);
+  }
+}
+
+// Borrar estudiante
+window.borrarEstudiante = async function(uid, cedula) {
+  if (!confirm("¿Seguro quieres borrar este estudiante?")) return;
+  try {
+    await deleteDoc(doc(db, "usuarios", uid));
+    await deleteDoc(doc(db, "cedulas", cedula));
+    alert("Estudiante borrado correctamente");
+    cargarEstudiantes();
+  } catch (error) { alert("Error al borrar estudiante: " + error.message); }
+}
 </script>
+
+</body>
+</html>
