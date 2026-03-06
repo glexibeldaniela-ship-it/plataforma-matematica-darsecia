@@ -4,112 +4,200 @@
   <meta charset="UTF-8">
   <title>Panel Estudiante</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
+    .resumen { margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #f5f5f5; }
+    h3 { margin-top: 30px; }
+  </style>
 </head>
-
 <body>
 
-  <h2>Bienvenido Estudiante</h2>
+<h2>Bienvenido Estudiante</h2>
 
-  <h3>Examen Disponible</h3>
+<div id="datosPersonales"></div>
 
-  <div id="listaExamenes"></div>
+<h3>Examenes Disponibles</h3>
+<div id="listaExamenes"></div>
 
-  <br>
-  <button onclick="cerrarSesion()">Cerrar Sesión</button>
+<h3>Historial de Exámenes</h3>
+<table id="tablaHistorial">
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Año</th>
+      <th>Sección</th>
+      <th>Lapso</th>
+      <th>Nota</th>
+      <th>Intento</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <script type="module">
+<div class="resumen" id="estadisticasPersonales" style="display:none;">
+  <strong>Total Exámenes:</strong> <span id="totalEx"></span> |
+  <strong>Promedio:</strong> <span id="promedio"></span> |
+  🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
+  🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+</div>
 
-    import { auth, db } from "./firebase.js";
-    import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<br>
+<button onclick="cerrarSesion()">Cerrar Sesión</button>
 
-    const lista = document.getElementById("listaExamenes");
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    async function cargarExamenActivo() {
+const lista = document.getElementById("listaExamenes");
+const tablaHistorial = document.querySelector("#tablaHistorial tbody");
+const datosPersonalesDiv = document.getElementById("datosPersonales");
+const estadisticasDiv = document.getElementById("estadisticasPersonales");
 
-      const q = query(
-        collection(db, "examenes"),
-        where("activo", "==", true)
-      );
+const totalEx = document.getElementById("totalEx");
+const promedioSpan = document.getElementById("promedio");
+const aprobadosSpan = document.getElementById("aprobados");
+const reprobadosSpan = document.getElementById("reprobados");
 
-      const snapshot = await getDocs(q);
+// 🔐 Verificar usuario y cargar datos
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-      if (snapshot.empty) {
-        lista.innerHTML = "<p>No hay examen activo en este momento.</p>";
-        return;
-      }
+  // Cargar datos personales
+  const userRef = doc(db, "usuarios", user.uid);
+  const userSnap = await getDoc(userRef);
 
-      snapshot.forEach(doc => {
+  if (!userSnap.exists()) {
+    datosPersonalesDiv.innerHTML = "<p>Error: usuario no encontrado.</p>";
+    return;
+  }
 
-        const examen = doc.data();
+  const data = userSnap.data();
+  datosPersonalesDiv.innerHTML = `
+    <strong>Nombre:</strong> ${data.nombres} ${data.apellidos} |
+    <strong>Cédula:</strong> ${data.cedula} |
+    <strong>Fecha de Nacimiento:</strong> ${data.fechaNacimiento} |
+    <strong>Año:</strong> ${data.anio} |
+    <strong>Sección:</strong> ${data.seccion}
+  `;
 
-        const div = document.createElement("div");
-        div.style.border = "1px solid gray";
-        div.style.padding = "15px";
-        div.style.marginBottom = "15px";
+  // Cargar exámenes activos
+  cargarExamenActivo();
 
-        div.innerHTML = `
-          <h4>${examen.titulo}</h4>
-          <p>Año: ${examen.anio}</p>
-          <p>Sección: ${examen.seccion}</p>
-          <p>Duración: ${examen.duracion} minutos</p>
+  // Cargar historial de exámenes y estadísticas
+  cargarHistorial(user.uid);
+});
 
-          <p><strong>Repaso obligatorio (2 minutos)</strong></p>
-          <a href="${examen.repaso_link}" target="_blank">
-            📘 Ver Repaso en Drive
-          </a>
+// Cerrar sesión
+window.cerrarSesion = function () {
+  signOut(auth).then(() => { window.location.href = "login.html"; });
+};
 
-          <br><br>
-          <p id="contador_${doc.id}">Disponible en 120 segundos</p>
+// 🔹 Exámenes disponibles
+async function cargarExamenActivo() {
+  lista.innerHTML = "";
+  const q = query(collection(db, "examenes"), where("activo", "==", true));
+  const snapshot = await getDocs(q);
 
-          <button id="btn_${doc.id}" disabled>
-            Iniciar Examen
-          </button>
+  if (snapshot.empty) {
+    lista.innerHTML = "<p>No hay examen activo en este momento.</p>";
+    return;
+  }
+
+  snapshot.forEach(docu => {
+    const examen = docu.data();
+    const div = document.createElement("div");
+    div.style.border = "1px solid gray";
+    div.style.padding = "15px";
+    div.style.marginBottom = "15px";
+
+    div.innerHTML = `
+      <h4>${examen.titulo}</h4>
+      <p>Año: ${examen.anio}</p>
+      <p>Sección: ${examen.seccion}</p>
+      <p>Duración: ${examen.duracion || "-"} minutos</p>
+      <p><strong>Repaso obligatorio (2 minutos)</strong></p>
+      <a href="${examen.repaso_link || "#"}" target="_blank">📘 Ver Repaso en Drive</a>
+      <br><br>
+      <p id="contador_${docu.id}">Disponible en 120 segundos</p>
+      <button id="btn_${docu.id}" disabled>Iniciar Examen</button>
+    `;
+
+    lista.appendChild(div);
+    iniciarTemporizador(docu.id);
+  });
+}
+
+function iniciarTemporizador(id) {
+  let tiempo = 120;
+  const contador = document.getElementById("contador_" + id);
+  const boton = document.getElementById("btn_" + id);
+
+  const intervalo = setInterval(() => {
+    tiempo--;
+    contador.textContent = "Disponible en " + tiempo + " segundos";
+    if (tiempo <= 0) {
+      clearInterval(intervalo);
+      contador.textContent = "Puede iniciar el examen";
+      boton.disabled = false;
+      boton.onclick = () => { window.location.href = "presentar-examen.html?id=" + id; };
+    }
+  }, 1000);
+}
+
+// 🔹 Historial de exámenes
+async function cargarHistorial(uid) {
+  tablaHistorial.innerHTML = "";
+  resultadosGlobal = [];
+  let total = 0, suma = 0, aprobados = 0, reprobados = 0;
+
+  const examenesSnap = await getDocs(collection(db, "examenes"));
+  for (const examenDoc of examenesSnap.docs) {
+    const examenId = examenDoc.id;
+    const examenData = examenDoc.data();
+
+    const resultadosSnap = await getDocs(collection(db, `examenes/${examenId}/resultados`));
+    resultadosSnap.forEach(resDoc => {
+      const res = resDoc.data();
+      if (res.uid === uid) {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${examenData.titulo}</td>
+          <td>${examenData.anio}</td>
+          <td>${examenData.seccion}</td>
+          <td>${examenData.lapso || "-"}</td>
+          <td>${res.nota != null ? res.nota : "-"}</td>
+          <td>${res.intento ? "Sí" : "No"}</td>
+          <td>${res.estado || "Sin presentar"}</td>
         `;
+        tablaHistorial.appendChild(fila);
 
-        lista.appendChild(div);
-
-        iniciarTemporizador(doc.id);
-
-      });
-
-    }
-
-    function iniciarTemporizador(id) {
-
-      let tiempo = 120; // 2 minutos
-
-      const contador = document.getElementById("contador_" + id);
-      const boton = document.getElementById("btn_" + id);
-
-      const intervalo = setInterval(() => {
-
-        tiempo--;
-        contador.textContent = "Disponible en " + tiempo + " segundos";
-
-        if (tiempo <= 0) {
-          clearInterval(intervalo);
-          contador.textContent = "Puede iniciar el examen";
-          boton.disabled = false;
-
-          boton.onclick = () => {
-            window.location.href = "presentar-examen.html?id=" + id;
-          };
+        // Estadísticas
+        if (res.nota != null && !isNaN(res.nota)) {
+          total++; suma += Number(res.nota);
+          if (Number(res.nota) >= 10) aprobados++; else reprobados++;
         }
+      }
+    });
+  }
 
-      }, 1000);
-
-    }
-
-    window.cerrarSesion = function () {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    };
-
-    cargarExamenActivo();
-
-  </script>
+  if (total > 0) {
+    totalEx.textContent = total;
+    promedioSpan.textContent = (suma/total).toFixed(2);
+    aprobadosSpan.textContent = aprobados;
+    reprobadosSpan.textContent = reprobados;
+    estadisticasDiv.style.display = "block";
+  } else {
+    estadisticasDiv.style.display = "none";
+  }
+}
+</script>
 
 </body>
 </html>
