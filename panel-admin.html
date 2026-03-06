@@ -1,5 +1,30 @@
 <h3 class="bienvenida" id="bienvenidaAdmin">Bienvenido Administrador José</h3>
 
+<!-- Crear Profesor -->
+<h3>Crear Profesor</h3>
+<div class="formulario-creacion">
+  <input type="email" id="emailProfesor" placeholder="Correo del profesor">
+  <input type="password" id="passwordProfesor" placeholder="Contraseña">
+  <button class="btn-crear" onclick="crearProfesor()">Crear Profesor</button>
+</div>
+<hr>
+
+<!-- Crear Estudiante -->
+<h3>Crear Estudiante</h3>
+<div class="formulario-creacion">
+  <input type="text" id="nombresEst" placeholder="Nombres">
+  <input type="text" id="apellidosEst" placeholder="Apellidos">
+  <input type="text" id="cedulaEst" placeholder="Cédula">
+  <input type="date" id="fechaNacimientoEst" placeholder="Fecha de Nacimiento">
+  <input type="text" id="anioEst" placeholder="Año">
+  <input type="text" id="seccionEst" placeholder="Sección">
+  <input type="email" id="emailEst" placeholder="Correo">
+  <input type="password" id="passwordEst" placeholder="Contraseña">
+  <button class="btn-crear" onclick="crearEstudiante()">Crear Estudiante</button>
+</div>
+<hr>
+
+<!-- Administrar Estudiantes -->
 <h3>Administrar Estudiantes</h3>
 <div id="listaEstudiantes" class="lista-estudiantes"></div>
 
@@ -10,11 +35,21 @@
 </div>
 <hr>
 
+<button onclick="cerrarSesion()" class="btn-cerrar">Cerrar Sesión</button>
+
 <script type="module">
 import { db, auth } from "./firebase.js";
-import { collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  collection, getDocs, deleteDoc, doc, onSnapshot, setDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  sendPasswordResetEmail, createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
+// ==========================
+// Estudiantes
+// ==========================
 const totalEst = document.getElementById("totalEst");
 const porSeccion = document.getElementById("porSeccion");
 const estudiantesOnline = document.getElementById("estudiantesOnline");
@@ -57,7 +92,6 @@ async function cargarEstudiantes() {
   estudiantesOnline.textContent = online.length > 0 ? online.join(", ") : "Ninguno";
 }
 
-// Resetear contraseña estudiante
 window.resetearPassword = async function(email) {
   try {
     await sendPasswordResetEmail(auth, email);
@@ -67,7 +101,6 @@ window.resetearPassword = async function(email) {
   }
 }
 
-// Borrar estudiante
 window.borrarEstudiante = async function(uid, cedula) {
   if (!confirm("¿Seguro quieres borrar este estudiante?")) return;
   try {
@@ -78,12 +111,78 @@ window.borrarEstudiante = async function(uid, cedula) {
   } catch (error) { alert("Error al borrar estudiante: " + error.message); }
 }
 
-// Detectar cambios en tiempo real (online/offline)
 onSnapshot(collection(db, "usuarios"), () => {
   cargarEstudiantes();
 });
 
-// Ejecutar al cargar la página
+// ==========================
+// Crear Profesor
+// ==========================
+window.crearProfesor = async function() {
+  const email = document.getElementById("emailProfesor").value;
+  const password = document.getElementById("passwordProfesor").value;
+  if(!email || !password){ alert("Complete todos los campos"); return; }
+
+  try {
+    const firebaseConfig = auth.app.options;
+    const tempApp = initializeApp(firebaseConfig, "Secondary");
+    const tempAuth = getAuth(tempApp);
+    const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+    const user = userCredential.user;
+
+    await setDoc(doc(db,"usuarios", user.uid), { email, rol:"profesor" });
+    alert("Profesor creado correctamente");
+    await tempAuth.signOut();
+  } catch(error){ alert("Error: " + error.message); }
+}
+
+// ==========================
+// Crear Estudiante
+// ==========================
+window.crearEstudiante = async function() {
+  const nombres = document.getElementById("nombresEst").value.trim();
+  const apellidos = document.getElementById("apellidosEst").value.trim();
+  const cedula = document.getElementById("cedulaEst").value.trim();
+  const fechaNacimiento = document.getElementById("fechaNacimientoEst").value;
+  const anio = document.getElementById("anioEst").value.trim();
+  const seccion = document.getElementById("seccionEst").value.trim();
+  const email = document.getElementById("emailEst").value.trim();
+  const password = document.getElementById("passwordEst").value.trim();
+
+  if(!nombres || !apellidos || !cedula || !fechaNacimiento || !anio || !seccion || !email || !password) {
+    alert("Complete todos los campos");
+    return;
+  }
+
+  try {
+    const cedulaRef = doc(db,"cedulas", cedula);
+    const cedulaSnap = await getDocs(cedulaRef);
+    if(cedulaSnap.exists()){ alert("Cédula ya registrada"); return; }
+
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    await setDoc(doc(db,"usuarios", user.uid), {
+      nombres, apellidos, cedula, fechaNacimiento, anio, seccion,
+      email, rol:"estudiante", estado:"sin_presentar", creado_en:new Date()
+    });
+
+    await setDoc(doc(db,"cedulas", cedula), { uid:user.uid });
+    alert("Estudiante creado correctamente");
+    cargarEstudiantes();
+  } catch(error){ alert("Error: " + error.message); }
+}
+
+// ==========================
+// Cerrar sesión
+// ==========================
+window.cerrarSesion = function(){
+  auth.signOut().then(()=>{ window.location.href="login.html"; });
+}
+
+// ==========================
+// Ejecutar al cargar
+// ==========================
 cargarEstudiantes();
 </script>
 
@@ -93,94 +192,116 @@ cargarEstudiantes();
 ========================== */
 .bienvenida {
   text-align: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   color: #00796b; /* turquesa oscuro */
   margin-bottom: 20px;
 }
 
 /* ==========================
-   Lista de estudiantes
+   Formularios
 ========================== */
-.lista-estudiantes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.formulario-creacion input {
+  padding:8px;
+  margin:5px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width: 100%;
 }
 
-.estudiante-item {
-  background-color: #e0f2f1; /* turquesa suave */
-  padding: 15px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+.formulario-creacion button.btn-crear {
+  margin-top:8px;
+  padding:8px 15px;
+  border:none;
+  border-radius:10px;
+  background-color:#00bcd4;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
 }
 
-.estudiante-info {
-  font-size: 14px;
-  color: #004d40;
+.formulario-creacion button.btn-crear:hover {
+  background-color:#0097a7;
 }
 
 /* ==========================
-   Botones
+   Lista de estudiantes
 ========================== */
+.lista-estudiantes {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.estudiante-item {
+  background-color: #e0f2f1;
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 3px 6px rgba(0,0,0,0.1);
+}
+
+.estudiante-info { font-size:14px; color:#004d40; }
+
 .estudiante-acciones button {
-  margin-left: 5px;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #fff;
-  transition: 0.3s;
+  margin-left:5px;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  color:#fff;
+  transition:0.3s;
 }
 
-.btn-reset {
-  background-color: #00bcd4;
-}
+.btn-reset { background-color:#00bcd4; }
+.btn-reset:hover { background-color:#0097a7; }
 
-.btn-reset:hover {
-  background-color: #0097a7;
-}
-
-.btn-borrar {
-  background-color: #f44336;
-}
-
-.btn-borrar:hover {
-  background-color: #d32f2f;
-}
+.btn-borrar { background-color:#f44336; }
+.btn-borrar:hover { background-color:#d32f2f; }
 
 /* ==========================
    Estadísticas
 ========================== */
 .resumen-estadisticas {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 12px;
-  background-color: #b2ebf2;
-  font-weight: bold;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  margin-top:15px;
+  padding:12px;
+  border-radius:12px;
+  background-color:#b2ebf2;
+  font-weight:bold;
+  text-align:center;
+  box-shadow:0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* ==========================
+   Botón cerrar sesión
+========================== */
+.btn-cerrar {
+  padding:8px 15px;
+  border:none;
+  border-radius:10px;
+  background-color:#00796b;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.btn-cerrar:hover {
+  background-color:#004d40;
 }
 
 /* ==========================
    Responsive
 ========================== */
-@media screen and (max-width: 600px) {
-  .estudiante-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .estudiante-acciones {
-    margin-top: 8px;
-  }
-
-  .estudiante-info {
-    font-size: 13px;
-  }
+@media screen and (max-width:600px){
+  .estudiante-item { flex-direction:column; align-items:flex-start; }
+  .estudiante-acciones { margin-top:8px; }
+  .estudiante-info { font-size:13px; }
+  .formulario-creacion input { font-size:13px; }
+  .formulario-creacion button { font-size:13px; }
 }
 </style>
