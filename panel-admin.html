@@ -4,138 +4,49 @@
   <meta charset="UTF-8">
   <title>Panel Administrador</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="estilos.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #e0f7fa;
-      margin: 0;
-      padding: 20px;
-    }
+    body { font-family: Arial, sans-serif; margin: 10px; background-color: #e0f7fa; }
+    h2 { text-align: center; color: #00796b; }
+    .bienvenida { text-align: center; font-size: 20px; font-weight: bold; color: #00796b; margin-bottom: 20px; }
 
-    h2, h3 {
-      color: #00796b;
-      text-align: center;
-    }
+    .panel-seccion { background: #b2ebf2; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+    .panel-seccion input, .panel-seccion select { margin: 5px 0; padding: 8px; width: 100%; border-radius: 6px; border: 1px solid #0097a7; }
+    .panel-seccion button { margin-top: 10px; padding: 10px 15px; background-color: #00bcd4; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .panel-seccion button:hover { background-color: #0097a7; }
 
-    .menu-opciones {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .menu-opciones button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      background-color: #00bcd4;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .menu-opciones button:hover {
-      background-color: #0097a7;
-    }
-
-    .panel {
-      display: none;
-      background-color: #e0f2f1;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-
-    .panel.active {
-      display: block;
-    }
-
-    .panel input, .panel select {
-      padding: 8px;
-      margin: 5px 0;
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid #00796b;
-    }
-
-    .panel button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      background-color: #00796b;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .panel button:hover {
-      background-color: #004d40;
-    }
-
-    .lista-estudiantes {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .estudiante-item {
-      display: flex;
-      justify-content: space-between;
-      background-color: #b2ebf2;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    .estudiante-acciones button {
-      margin-left: 5px;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      color: white;
-    }
-
+    .lista-estudiantes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .estudiante-item { background-color: #e0f2f1; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+    .estudiante-info { font-size: 14px; color: #004d40; }
+    .estudiante-acciones button { margin-left: 5px; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #fff; transition: 0.3s; }
     .btn-reset { background-color: #00bcd4; }
     .btn-reset:hover { background-color: #0097a7; }
     .btn-borrar { background-color: #f44336; }
     .btn-borrar:hover { background-color: #d32f2f; }
 
-    .resumen-estadisticas {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 12px;
-      background-color: #b2ebf2;
-      font-weight: bold;
-      text-align: center;
-    }
+    .resumen-estadisticas { margin-top: 15px; padding: 12px; border-radius: 12px; background-color: #b2ebf2; font-weight: bold; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
 
+    @media screen and (max-width: 600px) {
+      .estudiante-item { flex-direction: column; align-items: flex-start; }
+      .estudiante-acciones { margin-top: 8px; }
+      .estudiante-info { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
 
-<h2>Bienvenido Administrador José</h2>
+<h2>Panel Administrador</h2>
+<h3 class="bienvenida" id="bienvenidaAdmin">Bienvenido Administrador José</h3>
 
-<div class="menu-opciones">
-  <button onclick="mostrarPanel('panelCrearProfesor')">Crear Profesor</button>
-  <button onclick="mostrarPanel('panelCrearEstudiante')">Crear Estudiante</button>
-  <button onclick="mostrarPanel('panelAdministrarEstudiantes')">Administrar Estudiantes</button>
-</div>
-
-<!-- Panel Crear Profesor -->
-<div id="panelCrearProfesor" class="panel">
+<!-- Crear Profesor -->
+<div class="panel-seccion">
   <h3>Crear Profesor</h3>
   <input type="email" id="emailProfesor" placeholder="Correo del profesor">
   <input type="password" id="passwordProfesor" placeholder="Contraseña">
   <button onclick="crearProfesor()">Crear Profesor</button>
 </div>
 
-<!-- Panel Crear Estudiante -->
-<div id="panelCrearEstudiante" class="panel">
+<!-- Crear Estudiante -->
+<div class="panel-seccion">
   <h3>Crear Estudiante</h3>
   <input type="text" id="nombresEst" placeholder="Nombres completos">
   <input type="text" id="apellidosEst" placeholder="Apellidos completos">
@@ -157,50 +68,43 @@
   <button onclick="crearEstudiante()">Crear Estudiante</button>
 </div>
 
-<!-- Panel Administrar Estudiantes -->
-<div id="panelAdministrarEstudiantes" class="panel">
-  <h3>Administrar Estudiantes</h3>
-  <div id="listaEstudiantes" class="lista-estudiantes"></div>
-  <div id="estadisticasEstudiantes" class="resumen-estadisticas">
-    <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
-    <strong>Por Sección:</strong> <span id="porSeccion"></span> |
-    <strong>En Línea:</strong> <span id="estudiantesOnline"></span>
-  </div>
+<!-- Lista y Estadísticas -->
+<h3>Administrar Estudiantes</h3>
+<div id="listaEstudiantes" class="lista-estudiantes"></div>
+<div id="estadisticasEstudiantes" class="resumen-estadisticas">
+  <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
+  <strong>Por Sección:</strong> <span id="porSeccion"></span> |
+  <strong>En Línea:</strong> <span id="estudiantesOnline"></span>
 </div>
 
-<button onclick="cerrarSesion()">Cerrar Sesión</button>
+<hr>
+<button onclick="cerrarSesion()" style="background-color:#0097a7; color:#fff; padding:10px 15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Cerrar Sesión</button>
 
 <script type="module">
-import { db, auth } from "./firebase.js";
-import { collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-// Mostrar panel
-function mostrarPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Cerrar sesión
-window.cerrarSesion = function() {
+window.cerrarSesion = () => {
   signOut(auth).then(() => window.location.href = "login.html");
-}
+};
 
 // Crear Profesor
-window.crearProfesor = async function() {
+window.crearProfesor = async () => {
   const email = document.getElementById("emailProfesor").value;
   const password = document.getElementById("passwordProfesor").value;
   if (!email || !password) { alert("Complete todos los campos"); return; }
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    await doc(db, "usuarios", user.uid).set({ email, rol: "profesor" });
+    await setDoc(doc(db, "usuarios", user.uid), { email, rol: "profesor" });
     alert("Profesor creado correctamente");
-  } catch (error) { alert("Error: " + error.message); }
-}
+  } catch(e) { alert("Error: " + e.message); }
+};
 
 // Crear Estudiante
-window.crearEstudiante = async function() {
+window.crearEstudiante = async () => {
   const nombres = document.getElementById("nombresEst").value.trim();
   const apellidos = document.getElementById("apellidosEst").value.trim();
   const cedula = document.getElementById("cedulaEst").value.trim();
@@ -209,36 +113,31 @@ window.crearEstudiante = async function() {
   const seccion = document.getElementById("seccionEst").value;
   const email = document.getElementById("emailEst").value.trim();
   const password = document.getElementById("passwordEst").value.trim();
-
-  if (!nombres || !apellidos || !cedula || !fechaNacimiento || !anio || !seccion || !email || !password) {
-    alert("Complete todos los campos"); return;
-  }
-
+  if (!nombres || !apellidos || !cedula || !fechaNacimiento || !anio || !seccion || !email || !password) { alert("Complete todos los campos"); return; }
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    await doc(db, "usuarios", user.uid).set({
+    await setDoc(doc(db, "usuarios", user.uid), {
       nombres, apellidos, cedula, fechaNacimiento, anio, seccion,
-      email, rol: "estudiante", estado: "offline"
+      email, rol: "estudiante", estado: "offline", nota: null, creado_en: new Date()
     });
     alert("Estudiante creado correctamente");
     cargarEstudiantes();
-  } catch (error) { alert("Error: " + error.message); }
-}
+  } catch(e) { alert("Error: " + e.message); }
+};
 
-// Cargar lista de estudiantes
+// Lista de estudiantes y estadísticas
+const totalEst = document.getElementById("totalEst");
+const porSeccion = document.getElementById("porSeccion");
+const estudiantesOnline = document.getElementById("estudiantesOnline");
+const listaDiv = document.getElementById("listaEstudiantes");
+
 async function cargarEstudiantes() {
-  const listaDiv = document.getElementById("listaEstudiantes");
   listaDiv.innerHTML = "";
-  const totalEst = document.getElementById("totalEst");
-  const porSeccion = document.getElementById("porSeccion");
-  const estudiantesOnline = document.getElementById("estudiantesOnline");
-
   const querySnapshot = await getDocs(collection(db, "usuarios"));
   let total = 0;
   const secciones = {};
   let online = [];
-
   querySnapshot.forEach(docu => {
     const data = docu.data();
     if (data.rol === "estudiante") {
@@ -248,43 +147,41 @@ async function cargarEstudiantes() {
       const div = document.createElement("div");
       div.classList.add("estudiante-item");
       div.innerHTML = `
-        <div>${data.nombres} ${data.apellidos} | Cédula: ${data.cedula} | Fecha de Nacimiento: ${data.fechaNacimiento} | Sección: ${data.seccion} | Año: ${data.anio}</div>
+        <div class="estudiante-info">
+          <strong>${data.nombres} ${data.apellidos}</strong><br>
+          Cédula: ${data.cedula} | Fecha Nac.: ${data.fechaNacimiento}<br>
+          Sección: ${data.seccion} | Año: ${data.anio}
+        </div>
         <div class="estudiante-acciones">
-          <button class="btn-reset" onclick="resetearPassword('${data.email}')">Resetear</button>
+          <button class="btn-reset" onclick="resetearPassword('${data.email}')">Resetear contraseña</button>
           <button class="btn-borrar" onclick="borrarEstudiante('${docu.id}', '${data.cedula}')">Borrar</button>
         </div>
       `;
       listaDiv.appendChild(div);
     }
   });
-
   totalEst.textContent = total;
   porSeccion.textContent = JSON.stringify(secciones);
-  estudiantesOnline.textContent = online.length ? online.join(", ") : "Ninguno";
+  estudiantesOnline.textContent = online.length > 0 ? online.join(", ") : "Ninguno";
 }
 
 // Resetear contraseña
-window.resetearPassword = async function(email) {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Correo de recuperación enviado a " + email);
-  } catch (error) { alert("Error: " + error.message); }
+window.resetearPassword = async (email) => {
+  try { await sendPasswordResetEmail(auth, email); alert("Correo de recuperación enviado a " + email); }
+  catch(e){ alert("Error: " + e.message);}
 }
 
 // Borrar estudiante
-window.borrarEstudiante = async function(uid, cedula) {
-  if (!confirm("¿Seguro quieres borrar este estudiante?")) return;
-  try {
-    await deleteDoc(doc(db, "usuarios", uid));
-    alert("Estudiante borrado correctamente");
-    cargarEstudiantes();
-  } catch (error) { alert("Error: " + error.message); }
+window.borrarEstudiante = async (uid, cedula) => {
+  if(!confirm("¿Seguro quieres borrar este estudiante?")) return;
+  try { await deleteDoc(doc(db, "usuarios", uid)); await deleteDoc(doc(db, "cedulas", cedula)); cargarEstudiantes(); alert("Estudiante borrado correctamente"); }
+  catch(e){ alert("Error: " + e.message);}
 }
 
 // Detectar cambios en tiempo real
 onSnapshot(collection(db, "usuarios"), () => cargarEstudiantes());
 
-// Ejecutar al cargar la página
+// Ejecutar al cargar
 cargarEstudiantes();
 </script>
 
