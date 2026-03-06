@@ -1,1 +1,146 @@
-667
+/* ==========================
+   Tipografía y Fondo General
+========================== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #e0f7fa; /* Turquesa muy suave de fondo */
+  margin: 0;
+  padding: 0;
+  color: #006064; /* Turquesa oscuro para letras */
+}
+
+/* ==========================
+   Encabezados
+========================== */
+h2, h3 {
+  text-align: center;
+  color: #004d40;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+/* ==========================
+   Contenedores
+========================== */
+#contenidoAdmin,
+#contenidoProfesor,
+#contenidoEstudiante,
+#registroForm {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  border-top: 5px solid #00bcd4; /* barra superior turquesa */
+}
+
+/* ==========================
+   Inputs y Selects
+========================== */
+input, select {
+  padding: 12px;
+  margin: 5px 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid #00bcd4;
+  font-size: 14px;
+}
+
+/* ==========================
+   Botones
+========================== */
+button {
+  background-color: #00bcd4; /* turquesa */
+  color: #fff;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 5px;
+  transition: 0.3s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  background-color: #0097a7; /* turquesa más oscuro al pasar */
+  transform: translateY(-2px);
+}
+
+/* ==========================
+   Lista de estudiantes y exámenes
+========================== */
+#listaEstudiantes div,
+#listaExamenes div,
+#tablaResultados tbody tr {
+  padding: 10px;
+  border-bottom: 1px solid #b2ebf2;
+  border-radius: 8px;
+  background-color: #e0f2f1;
+  margin-bottom: 5px;
+}
+
+/* ==========================
+   Tablas
+========================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #b2ebf2;
+}
+
+th {
+  background-color: #b2ebf2;
+}
+
+/* ==========================
+   Resumen de resultados
+========================== */
+.resumen {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: #b2ebf2;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ==========================
+   Mensajes personalizados
+========================== */
+.bienvenida {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #00796b;
+  margin-bottom: 15px;
+}
+
+/* ==========================
+   Responsive para móvil
+========================== */
+@media screen and (max-width: 600px) {
+  #contenidoAdmin,
+  #contenidoProfesor,
+  #contenidoEstudiante,
+  #registroForm {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  button, input, select {
+    width: 100%;
+  }
+
+  table, th, td {
+    font-size: 12px;
+  }
+}
