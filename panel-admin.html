@@ -9,112 +9,162 @@
 
 <button onclick="crearProfesor()">Crear Profesor</button>
 
+<hr>
+
+<h3>Crear Estudiante</h3>
+
+<input type="text" id="cedulaEstudiante" placeholder="Cédula"><br><br>
+<input type="text" id="nombreEstudiante" placeholder="Nombre completo"><br><br>
+<input type="date" id="fechaNacimiento"><br><br>
+<input type="email" id="emailEstudiante" placeholder="Correo"><br><br>
+<input type="password" id="passwordEstudiante" placeholder="Contraseña"><br><br>
+
+<button onclick="crearEstudiante()">Crear Estudiante</button>
+
 <br><br>
 <button onclick="cerrarSesion()">Cerrar Sesión</button>
 
 </div>
 
 <script type="module">
-  import { auth, db } from "./firebase.js";
 
-  import { 
-    signOut, 
-    onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    getAuth
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { auth, db } from "./firebase.js";
 
-  import { 
-    doc, 
-    setDoc, 
-    getDocs, 
-    collection,
-    getDoc 
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+signOut,
+onAuthStateChanged,
+createUserWithEmailAndPassword,
+getAuth
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  import { initializeApp } 
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+doc,
+setDoc,
+getDocs,
+collection,
+getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const contenidoAdmin = document.getElementById("contenidoAdmin");
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-  // 🔐 VERIFICAR ROL ADMIN
-  onAuthStateChanged(auth, async (user) => {
+const contenidoAdmin = document.getElementById("contenidoAdmin");
 
-    if (!user) {
-      window.location.href = "login.html";
-      return;
-    }
+onAuthStateChanged(auth, async (user)=>{
 
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
+if(!user){
+window.location.href="login.html";
+return;
+}
 
-    if (!userSnap.exists() || userSnap.data().rol !== "admin") {
-      document.body.innerHTML = `
-        <h2 style="color:red;">Acceso Denegado</h2>
-        <p>No tienes permisos para entrar aquí.</p>
-      `;
-      return;
-    }
+const userRef=doc(db,"usuarios",user.uid);
+const userSnap=await getDoc(userRef);
 
-    contenidoAdmin.style.display = "block";
-  });
+if(!userSnap.exists() || userSnap.data().rol!=="admin"){
+document.body.innerHTML=`
+<h2 style="color:red;">Acceso Denegado</h2>
+<p>No tienes permisos para entrar aquí</p>
+`;
+return;
+}
 
-  window.cerrarSesion = function () {
-    signOut(auth).then(() => {
-      window.location.href = "login.html";
-    });
-  };
+contenidoAdmin.style.display="block";
 
-  window.crearProfesor = async function () {
+});
 
-    const email = document.getElementById("emailProfesor").value;
-    const password = document.getElementById("passwordProfesor").value;
+window.cerrarSesion=function(){
+signOut(auth).then(()=>{
+window.location.href="login.html";
+});
+};
 
-    if (!email || !password) {
-      alert("Complete todos los campos");
-      return;
-    }
+window.crearProfesor=async function(){
 
-    // Verificar si ya existe profesor
-    const querySnapshot = await getDocs(collection(db, "usuarios"));
+const email=document.getElementById("emailProfesor").value;
+const password=document.getElementById("passwordProfesor").value;
 
-    let existeProfesor = false;
+if(!email || !password){
+alert("Complete todos los campos");
+return;
+}
 
-    querySnapshot.forEach((docu) => {
-      if (docu.data().rol === "profesor") {
-        existeProfesor = true;
-      }
-    });
+const querySnapshot=await getDocs(collection(db,"usuarios"));
 
-    if (existeProfesor) {
-      alert("Ya existe un profesor activo");
-      return;
-    }
+let existeProfesor=false;
 
-    try {
+querySnapshot.forEach((docu)=>{
+if(docu.data().rol==="profesor"){
+existeProfesor=true;
+}
+});
 
-      // 🔥 Crear segunda app temporal
-      const firebaseConfig = auth.app.options;
-      const tempApp = initializeApp(firebaseConfig, "Secondary");
-      const tempAuth = getAuth(tempApp);
+if(existeProfesor){
+alert("Ya existe un profesor activo");
+return;
+}
 
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
-      const user = userCredential.user;
+try{
 
-      await setDoc(doc(db, "usuarios", user.uid), {
-        email: email,
-        rol: "profesor"
-      });
+const firebaseConfig=auth.app.options;
+const tempApp=initializeApp(firebaseConfig,"Secondary");
+const tempAuth=getAuth(tempApp);
 
-      alert("Profesor creado correctamente");
+const userCredential=await createUserWithEmailAndPassword(tempAuth,email,password);
+const user=userCredential.user;
 
-      // 🔥 Cerrar sesión solo de la app secundaria
-      await tempAuth.signOut();
+await setDoc(doc(db,"usuarios",user.uid),{
+email:email,
+rol:"profesor"
+});
 
-    } catch (error) {
-      alert("Error: " + error.message);
-    }
+alert("Profesor creado correctamente");
 
-  };
+await tempAuth.signOut();
 
-</script> 
+}catch(error){
+alert("Error: "+error.message);
+}
+
+};
+
+window.crearEstudiante=async function(){
+
+const cedula=document.getElementById("cedulaEstudiante").value;
+const nombre=document.getElementById("nombreEstudiante").value;
+const fecha=document.getElementById("fechaNacimiento").value;
+const email=document.getElementById("emailEstudiante").value;
+const password=document.getElementById("passwordEstudiante").value;
+
+if(!cedula || !nombre || !fecha || !email || !password){
+alert("Complete todos los campos");
+return;
+}
+
+try{
+
+const firebaseConfig=auth.app.options;
+const tempApp=initializeApp(firebaseConfig,"Secondary2");
+const tempAuth=getAuth(tempApp);
+
+const userCredential=await createUserWithEmailAndPassword(tempAuth,email,password);
+const user=userCredential.user;
+
+await setDoc(doc(db,"usuarios",user.uid),{
+cedula:cedula,
+nombre:nombre,
+fecha_nacimiento:fecha,
+email:email,
+rol:"estudiante"
+});
+
+alert("Estudiante creado correctamente");
+
+await tempAuth.signOut();
+
+}catch(error){
+alert("Error: "+error.message);
+}
+
+};
+
+</script>
