@@ -4,6 +4,7 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
   color: #004d40;
 }
 
@@ -89,7 +90,7 @@ p {
   border-radius: 20px;
   text-align: center;
   width: 90%;
-  max-width: 360px; /* tamaño app */
+  max-width: 360px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
@@ -124,9 +125,9 @@ p {
    Pantalla Registro
 ========================= */
 .pantalla-registro {
-  background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png"); /* Fondo registro */
+  background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png");
   background-size: cover;
-  background-position: top right; /* escudo en esquina superior derecha */
+  background-position: top right;
   background-repeat: no-repeat;
   display: flex;
   justify-content: center;
@@ -141,7 +142,7 @@ p {
   border-radius: 20px;
   text-align: center;
   width: 90%;
-  max-width: 360px; /* tamaño app */
+  max-width: 360px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
@@ -162,41 +163,7 @@ p {
 }
 
 /* ==========================
-   Responsive (pantallas pequeñas)
-========================= */
-@media screen and (max-width:500px) {
-  .contenedor-bienvenida,
-  .contenedor-login,
-  .contenedor-registro {
-    width: 95%;
-    padding: 20px;
-  }
-
-  h1 { font-size: 20px; }
-  p { font-size: 14px; }
-
-  .botones-inicio { flex-direction: column; gap: 10px; }
-  .btn-turquesa { width: 100%; }
-
-  .emoji-mate { font-size: 40px; }
-  .contenedor-login input,
-  .contenedor-login select,
-  .contenedor-registro input,
-  .contenedor-registro select { font-size: 13px; padding: 10px; }
-}
-/* ==========================
-   General - Panel Profesor
-========================= */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f4f8;
-  color: #004d40;
-  padding: 0;
-}
-
-/* ==========================
-   Contenedor general
+   Panel Profesor
 ========================= */
 h2, h3 {
   color: #00796b;
@@ -209,190 +176,30 @@ button {
   background-color: #00bcd4;
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 8px 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 button:hover {
   background-color: #0097a7;
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
 select, input {
+  width: 95%;
   padding: 10px;
-  margin-right: 5px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  width: calc(100% - 20px); /* responsive */
-  box-sizing: border-box;
-}
-
-/* ==========================
-   Tablas
-========================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-  font-size: 14px;
-}
-
-th {
-  background-color: #e0f2f1;
-  font-weight: bold;
-}
-
-/* ==========================
-   Resumen y estudiantes en línea
-========================= */
-.resumen, .onlineList {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.resumen {
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-}
-
-.onlineList {
-  border: 1px dashed #ccc;
-  background-color: #eef;
-}
-
-/* ==========================
-   Responsive - Móvil
-========================= */
-@media screen and (max-width: 500px) {
-  body {
-    padding: 10px;
-  }
-
-  button {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  select, input {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  table th, table td {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .resumen, .onlineList {
-    font-size: 12px;
-    padding: 8px;
-  }
-/* ==========================
-   General y Body
-========================== */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f4f8;
-  margin: 0;
-  color: #004d40;
-}
-
-/* ==========================
-   Header Fijo
-========================== */
-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: #00796b;
-  color: #fff;
-  padding: 15px 20px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 1000;
-}
-
-/* ==========================
-   Layout con Menu Lateral
-========================== */
-.container {
-  display: flex;
-  margin-top: 70px; /* espacio para header */
-}
-
-/* Menu lateral */
-.sidebar {
-  width: 200px;
-  background-color: #004d40;
-  color: #fff;
-  border-radius: 0 15px 15px 0;
-  padding: 15px;
-  flex-shrink: 0;
-  height: calc(100vh - 70px);
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-}
-
-.sidebar h3 {
-  font-size: 16px;
-  margin-bottom: 15px;
-  text-align: left;
-  color: #00bcd4;
-}
-
-.sidebar button {
-  display: block;
-  width: 100%;
-  background-color: transparent;
-  color: #fff;
-  border: none;
-  padding: 10px;
-  margin-bottom: 10px;
-  text-align: left;
-  cursor: pointer;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  font-size: 14px;
 }
 
-.sidebar button:hover {
-  background-color: #00695c;
-}
-
-/* Panel principal */
-.main {
-  flex: 1;
-  padding: 20px;
-}
-
-/* ==========================
-   Tarjetas y Secciones
-========================== */
-.card {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-/* Tablas Modernas */
+/* Tablas modernas */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -417,34 +224,7 @@ tr:nth-child(even) {
   background-color: #f5f5f5;
 }
 
-/* Inputs y Selects */
-input, select {
-  width: 95%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 12px;
-}
-
-/* Botones Modernos */
-button {
-  background-color: #00bcd4;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  background-color: #0097a7;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-/* Tarjetas resumen y estudiantes online */
+/* Resumen y estudiantes online */
 .resumen, .onlineList {
   background-color: #fff;
   padding: 15px;
@@ -454,25 +234,31 @@ button:hover {
 }
 
 /* ==========================
-   Responsivo Móvil
-========================== */
+   Responsive - Móvil
+========================= */
 @media screen and (max-width: 600px){
-  .container {
-    flex-direction: column;
+  .contenedor-bienvenida,
+  .contenedor-login,
+  .contenedor-registro {
+    width: 95%;
+    padding: 20px;
   }
-  .sidebar {
-    width: 100%;
-    height: auto;
-    border-radius: 0 0 12px 12px;
-  }
-  .main {
-    padding: 10px;
-  }
-  table, input, select, button {
+
+  h1 { font-size: 20px; }
+  p { font-size: 14px; }
+
+  .botones-inicio { flex-direction: column; gap: 10px; }
+  .btn-turquesa { width: 100%; }
+
+  .emoji-mate { font-size: 40px; }
+
+  input, select, button, table, th, td {
     font-size: 13px;
-  }
-  button {
     width: 100%;
   }
-}
+
+  .resumen, .onlineList {
+    font-size: 12px;
+    padding: 8px;
+  }
 }
