@@ -1,21 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Presentar Examen</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Presentar Examen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+
+body{
+margin:0;
+padding:15px;
+background:#f0f4f8;
+font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ENCABEZADO */
+
+.header{
+background:#00796b;
+color:white;
+padding:15px;
+border-radius:12px;
+text-align:center;
+margin-bottom:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.header h2{
+margin:0;
+color:white;
+}
+
+/* CONTENEDOR EXAMEN */
+
+.contenedorExamen{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* INFO EXAMEN */
+
+#infoExamen{
+margin-bottom:15px;
+}
+
+/* TEMPORIZADOR */
+
+#temporizador{
+background:#ffebee;
+padding:10px;
+border-radius:8px;
+text-align:center;
+font-weight:bold;
+}
+
+/* PREGUNTAS */
+
+#preguntas div{
+background:#fafafa;
+border-radius:10px;
+padding:10px;
+margin-bottom:10px;
+border:1px solid #ddd;
+}
+
+/* INPUTS */
+
+input[type="text"],
+input[type="number"]{
+width:100%;
+padding:8px;
+margin-top:5px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+/* BOTON */
+
+button{
+background:#00bcd4;
+color:white;
+border:none;
+border-radius:10px;
+padding:12px;
+font-weight:bold;
+cursor:pointer;
+width:100%;
+}
+
+button:hover{
+background:#0097a7;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+
+#preguntas div{
+font-size:14px;
+}
+
+}
+
+</style>
+
 </head>
 
 <body>
 
+<div class="header">
 <h2>Presentar Examen</h2>
+</div>
+
+<div class="contenedorExamen">
 
 <div id="infoExamen"></div>
+
 <h3 id="temporizador" style="color:red;"></h3>
+
 <hr>
+
 <div id="preguntas"></div>
+
 <br>
+
 <button id="btnEnviar">Enviar Examen</button>
+
+</div>
 
 <script type="module">
 
@@ -132,9 +247,6 @@ async function cargarExamen() {
     preguntasData.push(pregunta);
 
     const div = document.createElement("div");
-    div.style.border = "1px solid gray";
-    div.style.padding = "10px";
-    div.style.marginBottom = "10px";
 
     div.innerHTML = `<h4>${numero}. ${pregunta.enunciado}</h4>`;
 
