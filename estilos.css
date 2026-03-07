@@ -1,87 +1,184 @@
 /* ==========================
-   Fondo con imagen matemática (Registro)
+   General
 ========================== */
-.pantalla-registro{
-  margin:0;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); /* Fondo del registro */
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  font-weight:bold;
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #004d40;
-  position:relative;
-}
-
-/* Imagen decorativa en la esquina */
-.decoracion-registro{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:80px; /* tamaño ajustable */
-  height:auto;
 }
 
 /* ==========================
-   Contenedor principal (Registro)
+   Pantalla Inicio
 ========================== */
-.contenedor-registro{
-  background-color: rgba(255,255,255,0.95);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  text-align:center;
-  width: 320px;
+.pantalla-inicio {
+  background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-/* Inputs y selects */
-.contenedor-registro input,
-.contenedor-registro select{
+.contenedor-bienvenida {
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #00796b;
+  font-weight: bold;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+.botones-inicio {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-turquesa {
+  background-color: #00bcd4;
+  color: #fff;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-turquesa:hover {
+  background-color: #0097a7;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================
+   Pantalla Login
+========================== */
+.pantalla-login {
+  background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-weight: bold;
+}
+
+.contenedor-login {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.contenedor-login h2 {
+  color: #00796b;
+  margin-bottom: 20px;
+}
+
+.contenedor-login input,
+.contenedor-login select {
   width: 90%;
   padding: 10px;
   border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 14px;
   margin-bottom: 15px;
+  font-weight: bold;
 }
 
-/* Título del registro */
-.contenedor-registro h2{
-  color:#00796b;
-  margin-bottom:20px;
-  font-weight:bold;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.emoji-mate {
+  font-size: 60px;
+  margin-bottom: 20px;
+  animation: girar 4s linear infinite;
 }
 
-/* Botón */
-.btn-crear{
-  background-color:#00bcd4;
-  color:#fff;
-  border:none;
-  padding:12px 25px;
-  border-radius:12px;
-  font-weight:bold;
-  font-size:14px;
-  cursor:pointer;
-  transition:0.3s;
+@keyframes girar {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.btn-crear:hover{
-  background-color:#0097a7;
-  transform:translateY(-2px);
-  box-shadow:0 5px 10px rgba(0,0,0,0.2);
+/* ==========================
+   Pantalla Registro
+========================== */
+.pantalla-registro {
+  background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); /* tu foto con escudo si quieres otra, cambia URL */
+  background-size: cover;
+  background-position: top right; /* escudo en esquina superior derecha */
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-weight: bold;
+}
+
+.contenedor-registro {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Inputs y selects en registro */
+.contenedor-registro input,
+.contenedor-registro select {
+  width: 90%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+/* Título registro */
+.contenedor-registro h2 {
+  color: #00796b;
+  margin-bottom: 20px;
 }
 
 /* ==========================
    Responsive
 ========================== */
-@media screen and (max-width:500px){
-  .contenedor-registro{
+@media screen and (max-width:500px) {
+  .contenedor-bienvenida,
+  .contenedor-login,
+  .contenedor-registro {
     width: 90%;
-    padding:30px 20px;
+    padding: 30px 20px;
   }
+
+  h1 { font-size: 20px; }
+  p { font-size: 14px; }
+
+  .botones-inicio {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-turquesa { width: 100%; }
 }
