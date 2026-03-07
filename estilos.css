@@ -107,5 +107,55 @@ p{
   .btn-turquesa{
     width:100%;
   }
+/* ==========================
+   Pantalla LOGIN
+========================== */
 
+.pantalla-login{
+  margin:0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+/* ==========================
+   Contenedor LOGIN
+========================== */
+
+.contenedor-login{
+  text-align:center;
+  background-color:rgba(255,255,255,0.9);
+  padding:40px;
+  border-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  max-width:350px;
+  width:90%;
+}
+
+/* ==========================
+   Inputs LOGIN
+========================== */
+
+.contenedor-login input{
+  width:90%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+/* ==========================
+   Título LOGIN
+========================== */
+
+.contenedor-login h2{
+  color:#00796b;
+  margin-bottom:20px;
+}
 }
