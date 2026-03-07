@@ -1,27 +1,122 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="UTF-8">
 <title>Crear Examen</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+
+body{
+margin:0;
+padding:15px;
+background:#f0f4f8;
+font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ENCABEZADO */
+
+.header{
+background:#00796b;
+color:white;
+padding:15px;
+border-radius:12px;
+text-align:center;
+margin-bottom:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.header h2{
+margin:0;
+color:white;
+}
+
+/* CONTENEDOR */
+
+.contenedor{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
+
+input{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:1px solid #ccc;
+box-sizing:border-box;
+}
+
+/* BOTONES */
+
+button{
+background:#00bcd4;
+color:white;
+border:none;
+border-radius:10px;
+padding:10px 15px;
+font-weight:bold;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+button:hover{
+background:#0097a7;
+}
+
+/* PREGUNTAS */
+
+#contenedorPreguntas{
+margin-top:15px;
+padding:10px;
+background:#f9f9f9;
+border-radius:10px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+
+button{
+width:100%;
+}
+
+}
+
+</style>
+
 </head>
 
 <body>
 
+<div class="header">
 <h2>Crear Examen</h2>
+</div>
 
-<input type="text" id="titulo" placeholder="Título del examen"><br><br>
-<input type="text" id="anio" placeholder="Año"><br><br>
-<input type="text" id="seccion" placeholder="Sección"><br><br>
-<input type="text" id="lapso" placeholder="Lapso"><br><br>
+<div class="contenedor">
 
-<!-- ⏳ REPASO OBLIGATORIO FIJO 2 MINUTOS -->
+<input type="text" id="titulo" placeholder="Título del examen">
+
+<input type="text" id="anio" placeholder="Año">
+
+<input type="text" id="seccion" placeholder="Sección">
+
+<input type="text" id="lapso" placeholder="Lapso">
+
 <p><strong>Repaso obligatorio: 2 minutos</strong></p>
+
 <input type="hidden" id="tiempoRepaso" value="2">
 
-<input type="number" id="duracion" placeholder="Duración del examen en minutos"><br><br>
+<input type="number" id="duracion" placeholder="Duración del examen en minutos">
 
-<input type="text" id="repaso" placeholder="Link Google Drive (Repaso obligatorio)"><br><br>
+<input type="text" id="repaso" placeholder="Link Google Drive (Repaso obligatorio)">
 
 <hr>
 
@@ -31,10 +126,15 @@
 
 <button id="btnAgregar">Agregar Pregunta</button>
 
-<br><br>
+<br>
+
 <button id="btnGuardar">Guardar Examen</button>
-<br><br>
+
+<br>
+
 <button onclick="volver()">Volver</button>
+
+</div>
 
 <script type="module" src="crear-examen.js"></script>
 
