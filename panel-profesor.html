@@ -164,7 +164,6 @@ font-size:13px;
 </table>
 </div>
 
-<!-- NUEVA SECCIÓN: Estudiantes Inscritos -->
 <div class="seccion">
 <h3>Estudiantes Inscritos</h3>
 <table id="tablaEstudiantesInscritos">
@@ -251,7 +250,10 @@ const onlineEstudiantesDiv = document.getElementById("onlineEstudiantes");
 let resultadosGlobal = [];
 let resultadosFiltrados = [];
 
-btnCrear.addEventListener("click", () => { window.location.href = "crear-examen.html"; });
+// Crear examen
+btnCrear.addEventListener("click", () => { 
+    window.location.href = "crear-examen.html"; 
+});
 
 // Cargar exámenes
 async function cargarExamenes(){
@@ -262,7 +264,6 @@ const examenesSnap = await getDocs(collection(db,"examenes"));
 examenesSnap.forEach(docu=>{
 const examen = docu.data();
 const tr = document.createElement("tr");
-
 tr.innerHTML = `
 <td>${examen.titulo}</td>
 <td>${examen.anio}</td>
@@ -286,7 +287,7 @@ selectExamen.appendChild(option);
 cargarEstudiantesInscritos();
 }
 
-// Funciones de exámenes
+// Funciones exámenes
 window.activarExamen = async function(id, estadoActual){
 const examenesSnap = await getDocs(collection(db,"examenes"));
 if(!estadoActual){
@@ -317,6 +318,7 @@ await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:n
 alert("Examen reseteado");
 };
 
+// Eliminar examen
 window.eliminarExamen = async function(id){
 const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
 if(!confirmar) return;
@@ -326,11 +328,10 @@ await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
 }
 await deleteDoc(doc(db,"examenes",id));
 
-// Eliminar fila directamente
 const fila = document.querySelector(`#tablaExamenes button[onclick*="${id}"]`).closest("tr");
 if(fila) fila.remove();
 alert("Examen eliminado del panel");
-cargarEstudiantesInscritos(); // refrescar lista inscritos
+cargarEstudiantesInscritos();
 };
 
 // Cargar resultados
@@ -396,7 +397,7 @@ selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResult
 filtroAnio.addEventListener("change", aplicarFiltros);
 filtroSeccion.addEventListener("change", aplicarFiltros);
 
-// PDF
+// PDF Acta General
 btnPDF.addEventListener("click", ()=>{
 if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
 const doc = new jsPDF(); let y=10;
@@ -413,6 +414,7 @@ y+=10; doc.text("Firma:",14,y); y+=15; doc.text("Prof. José Fernández",14,y); 
 doc.save("Acta_General.pdf");
 });
 
+// PDF Lista Estudiantes
 btnPDFEstudiantes.addEventListener("click", async ()=>{
 const doc = new jsPDF(); let y=10;
 doc.setFont("helvetica","bold"); doc.setFontSize(12);
@@ -448,7 +450,7 @@ onlineEstudiantesDiv.appendChild(div);
 });
 }
 
-// NUEVA FUNCIÓN: cargar estudiantes inscritos
+// Estudiantes inscritos
 async function cargarEstudiantesInscritos(){
 tablaInscritosBody.innerHTML="";
 const usuariosSnap = await getDocs(collection(db,"usuarios"));
@@ -466,11 +468,14 @@ tablaInscritosBody.appendChild(tr);
 });
 }
 
+// Autenticación y carga inicial
 onAuthStateChanged(auth,(user)=>{
 if(!user){ window.location.href="index.html"; }
-else{ cargarExamenes(); cargarEstudiantesOnline(); }
+else{ 
+cargarExamenes(); 
+cargarEstudiantesOnline(); 
+}
 });
-
 </script>
 
 </body>
