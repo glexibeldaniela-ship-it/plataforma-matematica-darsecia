@@ -1,190 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Estudiante</title>
+<title>Panel Estudiante - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="estilos.css">
 
 <style>
-/* ===== BODY ===== */
-body{
-  margin:0;
-  padding:0;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background:#f0f4f8;
+/* Estilos específicos para integrar el diseño profesional en este panel */
+.contenedor {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-/* ===== HEADER / MENU ===== */
-.header{
-  background:#00bcd4;
-  color:white;
-  padding:15px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom-left-radius:12px;
-  border-bottom-right-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+/* Títulos con estilo */
+.seccion-titulo {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #00796b;
+  margin: 25px 0 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid #00bcd4;
+  padding-bottom: 5px;
 }
 
-.header h2{
-  margin:0;
-  font-size:1.4rem;
+/* Ajustes para el Header */
+.header {
+  background: linear-gradient(135deg, #00bcd4, #00796b);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.header button{
-  background:#00796b;
-  border:none;
-  color:white;
-  padding:10px 15px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
-}
+.header h2 { margin: 0; font-size: 1.2rem; }
 
-.header button:hover{
-  background:#004d40;
-}
-
-/* ===== CONTENEDORES ===== */
-.contenedor{
-  padding:20px;
-}
-
-/* ===== DATOS PERSONALES ===== */
-.datos-personales{
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* ===== EXAMENES DISPONIBLES ===== */
-.lista-examenes div{
-  background:white;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:15px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-.lista-examenes h4{
-  margin-top:0;
-}
-
-.lista-examenes button{
-  background:#ff9800;
-  color:white;
-  border:none;
-  border-radius:10px;
-  padding:10px;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.lista-examenes button:disabled{
-  background:#ccc;
-  cursor:default;
-}
-
-.lista-examenes button:hover:enabled{
-  background:#fb8c00;
-}
-
-.lista-examenes a{
-  color:#00bcd4;
-  text-decoration:none;
-  font-weight:bold;
-}
-
-/* ===== TABLA HISTORIAL ===== */
-table{
-  border-collapse: collapse;
-  width:100%;
-  background:white;
-  border-radius:12px;
-  overflow:hidden;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-th, td{
-  border:1px solid #ddd;
-  padding:10px;
-  text-align:left;
-}
-
-th{
-  background:#00bcd4;
-  color:white;
-}
-
-/* ===== RESUMEN ===== */
-.resumen{
-  margin-top:20px;
-  padding:15px;
-  border-radius:12px;
-  background:#e0f7fa;
-  font-weight:bold;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:600px){
-  .header{
-    flex-direction:column;
-    text-align:center;
-  }
-  .lista-examenes div{
-    padding:10px;
-  }
-  .lista-examenes button{
-    width:100%;
-    margin-top:10px;
-  }
-  table, th, td{
-    font-size:12px;
-    padding:6px;
-  }
+/* Mensaje de lista vacía */
+.mensaje-vacio {
+  text-align: center;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  color: #777;
+  border: 1px dashed #ccc;
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h2>Panel Estudiante</h2>
-  <button onclick="cerrarSesion()">Cerrar Sesión</button>
+  <h2>MateEduPro 🎓</h2>
+  <button onclick="cerrarSesion()">Salir</button>
 </div>
 
 <div class="contenedor">
 
-  <div id="datosPersonales" class="datos-personales"></div>
+  <div id="datosPersonales" class="perfil-card">
+    <p>Cargando perfil...</p>
+  </div>
 
-  <h3>Exámenes Disponibles</h3>
+  <div class="seccion-titulo">📋 Exámenes Disponibles</div>
   <div id="listaExamenes" class="lista-examenes"></div>
 
-  <h3>Historial de Exámenes</h3>
-  <table id="tablaHistorial">
-    <thead>
-      <tr>
-        <th>Título</th>
-        <th>Año</th>
-        <th>Sección</th>
-        <th>Lapso</th>
-        <th>Nota</th>
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="seccion-titulo">📊 Tu Historial</div>
+  <div class="tabla-wrapper">
+    <table id="tablaHistorial">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Año/Sec</th>
+          <th>Lapso</th>
+          <th>Nota</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <div class="resumen" id="estadisticasPersonales" style="display:none;">
-    <strong>Total Exámenes:</strong> <span id="totalEx"></span> |
-    <strong>Promedio:</strong> <span id="promedio"></span> |
-    🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
-    🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+    <div style="display: flex; justify-content: space-around; width: 100%; text-align: center;">
+      <div>
+        <small>Total</small><br>
+        <strong id="totalEx" style="font-size: 1.2rem; color: #00796b;">0</strong>
+      </div>
+      <div>
+        <small>Promedio</small><br>
+        <strong id="promedio" style="font-size: 1.2rem; color: #00bcd4;">0</strong>
+      </div>
+      <div>
+        <small>Aprobados</small><br>
+        <strong id="aprobados" style="font-size: 1.2rem; color: #2e7d32;">0</strong>
+      </div>
+      <div>
+        <small>Reprobados</small><br>
+        <strong id="reprobados" style="font-size: 1.2rem; color: #c62828;">0</strong>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -212,7 +132,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    // Cargar datos personales del alumno
     const userRef = doc(db, "usuarios", user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -222,14 +141,19 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const data = userSnap.data();
+    
+    // Diseño Profesional de Perfil
     datosPersonalesDiv.innerHTML = `
-      <strong>Nombre:</strong> ${data.nombres} ${data.apellidos} |
-      <strong>Cédula:</strong> ${data.cedula} |
-      <strong>Año:</strong> ${data.anio} |
-      <strong>Sección:</strong> ${data.seccion}
+      <div class="perfil-avatar">🎓</div>
+      <div class="perfil-info">
+        <div style="font-weight: bold; font-size: 1.1rem;">${data.nombres} ${data.apellidos}</div>
+        <div style="margin-top: 5px;">
+          <span class="badge">🪪 ${data.cedula}</span>
+          <span class="badge">📚 ${data.anio}° Año "${data.seccion}"</span>
+        </div>
+      </div>
     `;
 
-    // 🚀 MEJORA CONEJO: Pasar año y sección para filtrar
     cargarExamenActivo(data.anio, data.seccion);
     cargarHistorial(user.uid, data.anio, data.seccion);
   } catch (error) {
@@ -237,50 +161,55 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Cerrar sesión
 window.cerrarSesion = function () {
   signOut(auth).then(() => { window.location.href = "login.html"; });
 };
 
-// 🔹 Exámenes disponibles (FILTRADOS POR AÑO Y SECCIÓN)
+// 🔹 Exámenes filtrados con diseño de "Tarjeta"
 async function cargarExamenActivo(anioEstudiante, seccionEstudiante) {
   lista.innerHTML = "";
-  
+
   try {
-    // 🚀 MEJORA CONEJO: Filtro de 3 niveles para que no vean exámenes de otros años
     const q = query(
       collection(db, "examenes"), 
       where("activo", "==", true),
       where("anio", "==", anioEstudiante),
       where("seccion", "==", seccionEstudiante)
     );
-    
+
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      lista.innerHTML = "<p>No hay examen activo para tu año y sección en este momento.</p>";
+      lista.innerHTML = "<div class='mensaje-vacio'>No hay exámenes activos para tu año y sección.</div>";
       return;
     }
 
     snapshot.forEach(docu => {
       const examen = docu.data();
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <h4>${examen.titulo}</h4>
-        <p>Año: ${examen.anio} - Sección: ${examen.seccion}</p>
-        <p>Duración: ${examen.duracion || "-"} minutos</p>
-        <p><strong>Repaso obligatorio (2 minutos)</strong></p>
-        <a href="${examen.repaso_link || "#"}" target="_blank">📘 Ver Repaso en Drive</a>
-        <br><br>
-        <p id="contador_${docu.id}">Disponible en 120 segundos</p>
-        <button id="btn_${docu.id}" disabled>Iniciar Examen</button>
+      const card = document.createElement("div");
+      card.className = "examen-card";
+      card.innerHTML = `
+        <div class="examen-card-header">
+          <strong>📝 ${examen.titulo}</strong>
+        </div>
+        <div class="examen-card-body">
+          <div style="margin-bottom: 10px;">
+            <span class="meta-item">⏱ ${examen.duracion || "0"} min</span>
+            <span class="meta-item">📅 Lapso ${examen.lapso || "1"}</span>
+          </div>
+          <p style="font-size: 0.9rem; color: #666;">Debes revisar el material antes de iniciar.</p>
+          <a href="${examen.repaso_link || "#"}" target="_blank" style="color: #00bcd4; font-weight: bold; text-decoration: none; display: block; margin-bottom: 15px;">📘 Ver Material de Repaso</a>
+          
+          <div id="contador_${docu.id}" style="color: #ff9800; font-weight: bold; margin-bottom: 10px; font-size: 0.85rem;">⏳ Preparando examen...</div>
+          <button id="btn_${docu.id}" class="btn-iniciar" disabled>🚀 Iniciar Examen</button>
+        </div>
       `;
-      lista.appendChild(div);
+      lista.appendChild(card);
       iniciarTemporizador(docu.id);
     });
   } catch (error) {
     console.error("Error cargando exámenes:", error);
-    lista.innerHTML = "<p>Error al cargar la lista. Verifica los índices de Firebase.</p>";
+    lista.innerHTML = "<p>Error de conexión. Intenta recargar.</p>";
   }
 }
 
@@ -291,10 +220,10 @@ function iniciarTemporizador(id) {
 
   const intervalo = setInterval(() => {
     tiempo--;
-    if (contador) contador.textContent = "Disponible en " + tiempo + " segundos";
+    if (contador) contador.textContent = "⏳ Podrás iniciar en " + tiempo + " segundos";
     if (tiempo <= 0) {
       clearInterval(intervalo);
-      if (contador) contador.textContent = "Puede iniciar el examen";
+      if (contador) contador.textContent = "✅ ¡Listo para comenzar!";
       if (boton) {
         boton.disabled = false;
         boton.onclick = () => { window.location.href = "presentar-examen.html?id=" + id; };
@@ -303,21 +232,20 @@ function iniciarTemporizador(id) {
   }, 1000);
 }
 
-// 🔹 Historial de exámenes (FILTRADO POR AÑO Y SECCIÓN)
+// 🔹 Historial con estilo de tabla moderna
 async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
   tablaHistorial.innerHTML = "";
   let total = 0, suma = 0, aprobados = 0, reprobados = 0;
 
   try {
-    // 🚀 MEJORA CONEJO: Solo buscar exámenes correspondientes al alumno
     const qExamenes = query(
       collection(db, "examenes"),
       where("anio", "==", anioEstudiante),
       where("seccion", "==", seccionEstudiante)
     );
-    
+
     const examenesSnap = await getDocs(qExamenes);
-    
+
     for (const examenDoc of examenesSnap.docs) {
       const examenId = examenDoc.id;
       const examenData = examenDoc.data();
@@ -327,19 +255,21 @@ async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
         const res = resDoc.data();
         if (res.estudiante_id === uid) {
           const fila = document.createElement("tr");
+          const notaNum = Number(res.nota);
+          const esAprobado = notaNum >= 10;
+          
           fila.innerHTML = `
             <td>${examenData.titulo}</td>
-            <td>${examenData.anio}</td>
-            <td>${examenData.seccion}</td>
+            <td>${examenData.anio}° "${examenData.seccion}"</td>
             <td>${examenData.lapso || "-"}</td>
-            <td>${res.nota != null ? res.nota : "-"}</td>
-            <td>${res.estado || "Sin presentar"}</td>
+            <td style="font-weight: bold; color: ${esAprobado ? '#2e7d32' : '#c62828'}">${res.nota || "-"}</td>
+            <td style="font-size: 0.8rem;">${res.estado || "Finalizado"}</td>
           `;
           tablaHistorial.appendChild(fila);
 
-          if (res.nota != null && !isNaN(res.nota)) {
-            total++; suma += Number(res.nota);
-            if (Number(res.nota) >= 10) aprobados++; else reprobados++;
+          if (res.nota != null && !isNaN(notaNum)) {
+            total++; suma += notaNum;
+            if (esAprobado) aprobados++; else reprobados++;
           }
         }
       });
@@ -351,8 +281,6 @@ async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
       aprobadosSpan.textContent = aprobados;
       reprobadosSpan.textContent = reprobados;
       estadisticasDiv.style.display = "block";
-    } else {
-      estadisticasDiv.style.display = "none";
     }
   } catch (error) {
     console.error("Error cargando historial:", error);
