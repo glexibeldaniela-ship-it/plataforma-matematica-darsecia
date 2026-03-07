@@ -2,97 +2,117 @@
 <html lang="es">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Registro Estudiante</title>
+  <link rel="stylesheet" href="estilos.css">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-<title>Registro Estudiante</title>
+  <style>
+    /* optimización para APK */
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
 
-<link rel="stylesheet" href="estilos.css">
+    /* animación suave */
+    .contenedor-registro {
+      animation: aparecer 0.7s ease;
+    }
 
-<style>
+    @keyframes aparecer {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-/* optimización para APK */
-html, body{
-height:100%;
-overflow-x:hidden;
-}
+    /* mejorar espacio entre campos */
+    .contenedor-registro input,
+    .contenedor-registro select {
+      margin-bottom: 10px;
+    }
 
-/* animación suave */
-.contenedor-registro{
-animation: aparecer 0.7s ease;
-}
-
-@keyframes aparecer{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* mejorar espacio entre campos */
-.contenedor-registro input,
-.contenedor-registro select{
-margin-bottom:10px;
-}
-
-</style>
-
+    /* ── ESTILOS NUEVOS PARA LA VERIFICACIÓN ── */
+    .fila-verificacion {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .btn-enviar-codigo {
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .estado-codigo {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .badge-validado {
+      display: none;
+      color: #2e7d32;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 
 <body class="pantalla-registro">
 
-<div class="contenedor-registro">
+  <div class="contenedor-registro">
+    <h2>Registro de Estudiante</h2>
+    <div class="emoji-mate">📏✏️</div>
 
-<h2>Registro de Estudiante</h2>
+    <form id="formRegistro">
+      <input type="text" id="cedula" placeholder="Cédula" required>
+      <input type="text" id="nombres" placeholder="Nombres completos" required>
+      <input type="text" id="apellidos" placeholder="Apellidos completos" required>
+      <input type="date" id="fechaNacimiento" required>
 
-<div class="emoji-mate">📏✏️</div>
+      <div class="fila-verificacion">
+        <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
+        <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">Enviar Código</button>
+      </div>
 
-<form id="formRegistro">
+      <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" disabled maxlength="6">
+      
+      <button type="button" id="btnVerificar" class="btn-turquesa" style="background:#ff9800; margin-bottom:10px;" disabled onclick="validarCodigo()">Verificar Código</button>
+      
+      <div id="reenviarRow" style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
+      <div id="estadoCodigo" class="estado-codigo"></div>
+      <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
+      <hr style="border:0; border-top:1px dashed #ccc; margin-bottom:15px;">
+      <input type="password" id="password" placeholder="Contraseña" required>
 
-<input type="text" id="cedula" placeholder="Cédula" required>
+      <select id="anio" required>
+        <option value="">Seleccione Año</option>
+        <option value="1">1° Año</option>
+        <option value="2">2° Año</option>
+        <option value="3">3° Año</option>
+      </select>
 
-<input type="text" id="nombres" placeholder="Nombres completos" required>
+      <select id="seccion" required>
+        <option value="">Seleccione Sección</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+      </select>
 
-<input type="text" id="apellidos" placeholder="Apellidos completos" required>
+      <select id="lapso" required>
+        <option value="">Seleccione Lapso</option>
+        <option value="1">Lapso 1</option>
+        <option value="2">Lapso 2</option>
+        <option value="3">Lapso 3</option>
+      </select>
 
-<input type="date" id="fechaNacimiento" required>
+      <button type="submit" id="btnRegistro" class="btn-turquesa" disabled>Crear Cuenta</button>
+    </form>
+  </div>
 
-<input type="email" id="email" placeholder="Correo" required>
-
-<input type="password" id="password" placeholder="Contraseña" required>
-
-<select id="anio" required>
-<option value="">Seleccione Año</option>
-<option value="1">1° Año</option>
-<option value="2">2° Año</option>
-<option value="3">3° Año</option>
-</select>
-
-<select id="seccion" required>
-<option value="">Seleccione Sección</option>
-<option value="A">A</option>
-<option value="B">B</option>
-</select>
-
-<select id="lapso" required>
-<option value="">Seleccione Lapso</option>
-<option value="1">Lapso 1</option>
-<option value="2">Lapso 2</option>
-<option value="3">Lapso 3</option>
-</select>
-
-<button type="submit" class="btn-turquesa">Crear Cuenta</button>
-
-</form>
-
-</div>
-
-<script type="module" src="./registro.js"></script>
-
+  <script type="module" src="./registro.js"></script>
 </body>
 </html>
