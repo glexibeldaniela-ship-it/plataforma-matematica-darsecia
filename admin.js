@@ -29,3 +29,5 @@ async function hacerAdmin() {
 }
 
 hacerAdmin();
+
+{}
