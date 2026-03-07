@@ -1,51 +1,199 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Estudiante</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
-    .resumen { margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #f5f5f5; }
-    h3 { margin-top: 30px; }
-  </style>
+<meta charset="UTF-8">
+<title>Panel Estudiante</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+/* ===== BODY ===== */
+body{
+  margin:0;
+  padding:0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:#f0f4f8;
+}
+
+/* ===== HEADER / MENU ===== */
+.header{
+  background:#00bcd4;
+  color:white;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom-left-radius:12px;
+  border-bottom-right-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.header h2{
+  margin:0;
+  font-size:1.4rem;
+}
+
+.header button{
+  background:#00796b;
+  border:none;
+  color:white;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.header button:hover{
+  background:#004d40;
+}
+
+/* ===== CONTENEDORES ===== */
+.contenedor{
+  padding:20px;
+}
+
+/* ===== DATOS PERSONALES ===== */
+.datos-personales{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== EXAMENES DISPONIBLES ===== */
+.lista-examenes div{
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.lista-examenes h4{
+  margin-top:0;
+}
+
+.lista-examenes button{
+  background:#ff9800;
+  color:white;
+  border:none;
+  border-radius:10px;
+  padding:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.lista-examenes button:disabled{
+  background:#ccc;
+  cursor:default;
+}
+
+.lista-examenes button:hover:enabled{
+  background:#fb8c00;
+}
+
+.lista-examenes a{
+  color:#00bcd4;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+/* ===== TABLA HISTORIAL ===== */
+table{
+  border-collapse: collapse;
+  width:100%;
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td{
+  border:1px solid #ddd;
+  padding:10px;
+  text-align:left;
+}
+
+th{
+  background:#00bcd4;
+  color:white;
+}
+
+/* ===== RESUMEN ===== */
+.resumen{
+  margin-top:20px;
+  padding:15px;
+  border-radius:12px;
+  background:#e0f7fa;
+  font-weight:bold;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .header{
+    flex-direction:column;
+    text-align:center;
+  }
+  .lista-examenes div{
+    padding:10px;
+  }
+  .lista-examenes button{
+    width:100%;
+    margin-top:10px;
+  }
+  table, th, td{
+    font-size:12px;
+    padding:6px;
+  }
+}
+</style>
 </head>
 <body>
 
-<h2>Bienvenido Estudiante</h2>
-
-<div id="datosPersonales"></div>
-
-<h3>Examenes Disponibles</h3>
-<div id="listaExamenes"></div>
-
-<h3>Historial de Exámenes</h3>
-<table id="tablaHistorial">
-  <thead>
-    <tr>
-      <th>Título</th>
-      <th>Año</th>
-      <th>Sección</th>
-      <th>Lapso</th>
-      <th>Nota</th>
-      <th>Intento</th>
-      <th>Estado</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<div class="resumen" id="estadisticasPersonales" style="display:none;">
-  <strong>Total Exámenes:</strong> <span id="totalEx"></span> |
-  <strong>Promedio:</strong> <span id="promedio"></span> |
-  🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
-  🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+<!-- HEADER / MENÚ -->
+<div class="header">
+  <h2>Panel Estudiante</h2>
+  <button onclick="cerrarSesion()">Cerrar Sesión</button>
 </div>
 
-<br>
-<button onclick="cerrarSesion()">Cerrar Sesión</button>
+<div class="contenedor">
+
+  <!-- DATOS PERSONALES -->
+  <div id="datosPersonales" class="datos-personales"></div>
+
+  <!-- EXAMENES DISPONIBLES -->
+  <h3>Exámenes Disponibles</h3>
+  <div id="listaExamenes" class="lista-examenes"></div>
+
+  <!-- HISTORIAL -->
+  <h3>Historial de Exámenes</h3>
+  <table id="tablaHistorial">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Año</th>
+        <th>Sección</th>
+        <th>Lapso</th>
+        <th>Nota</th>
+        <th>Intento</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="resumen" id="estadisticasPersonales" style="display:none;">
+    <strong>Total Exámenes:</strong> <span id="totalEx"></span> |
+    <strong>Promedio:</strong> <span id="promedio"></span> |
+    🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
+    🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+  </div>
+
+</div>
 
 <script type="module">
 import { auth, db } from "./firebase.js";
@@ -87,10 +235,7 @@ onAuthStateChanged(auth, async (user) => {
     <strong>Sección:</strong> ${data.seccion}
   `;
 
-  // Cargar exámenes activos
   cargarExamenActivo();
-
-  // Cargar historial de exámenes y estadísticas
   cargarHistorial(user.uid);
 });
 
@@ -113,10 +258,6 @@ async function cargarExamenActivo() {
   snapshot.forEach(docu => {
     const examen = docu.data();
     const div = document.createElement("div");
-    div.style.border = "1px solid gray";
-    div.style.padding = "15px";
-    div.style.marginBottom = "15px";
-
     div.innerHTML = `
       <h4>${examen.titulo}</h4>
       <p>Año: ${examen.anio}</p>
@@ -128,7 +269,6 @@ async function cargarExamenActivo() {
       <p id="contador_${docu.id}">Disponible en 120 segundos</p>
       <button id="btn_${docu.id}" disabled>Iniciar Examen</button>
     `;
-
     lista.appendChild(div);
     iniciarTemporizador(docu.id);
   });
@@ -178,7 +318,6 @@ async function cargarHistorial(uid) {
         `;
         tablaHistorial.appendChild(fila);
 
-        // Estadísticas
         if (res.nota != null && !isNaN(res.nota)) {
           total++; suma += Number(res.nota);
           if (Number(res.nota) >= 10) aprobados++; else reprobados++;
