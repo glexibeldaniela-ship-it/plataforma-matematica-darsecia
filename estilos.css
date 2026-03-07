@@ -1,6 +1,6 @@
 /* ==========================
    General
-========================== */
+========================= */
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -9,7 +9,7 @@ body {
 
 /* ==========================
    Pantalla Inicio
-========================== */
+========================= */
 .pantalla-inicio {
   background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
   background-size: cover;
@@ -70,7 +70,7 @@ p {
 
 /* ==========================
    Pantalla Login
-========================== */
+========================= */
 .pantalla-login {
   background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png");
   background-size: cover;
@@ -85,10 +85,11 @@ p {
 
 .contenedor-login {
   background: rgba(255, 255, 255, 0.95);
-  padding: 40px;
+  padding: 30px 20px;
   border-radius: 20px;
   text-align: center;
-  width: 320px;
+  width: 90%;
+  max-width: 360px; /* tamaño app */
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
@@ -99,18 +100,18 @@ p {
 
 .contenedor-login input,
 .contenedor-login select {
-  width: 90%;
-  padding: 10px;
-  border-radius: 10px;
+  width: 95%;
+  padding: 12px;
+  border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 14px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   font-weight: bold;
 }
 
 .emoji-mate {
-  font-size: 60px;
-  margin-bottom: 20px;
+  font-size: 50px;
+  margin-bottom: 15px;
   animation: girar 4s linear infinite;
 }
 
@@ -121,9 +122,9 @@ p {
 
 /* ==========================
    Pantalla Registro
-========================== */
+========================= */
 .pantalla-registro {
-  background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); /* tu foto con escudo si quieres otra, cambia URL */
+  background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png"); /* Fondo registro */
   background-size: cover;
   background-position: top right; /* escudo en esquina superior derecha */
   background-repeat: no-repeat;
@@ -136,49 +137,50 @@ p {
 
 .contenedor-registro {
   background: rgba(255, 255, 255, 0.95);
-  padding: 40px;
+  padding: 30px 20px;
   border-radius: 20px;
   text-align: center;
-  width: 320px;
+  width: 90%;
+  max-width: 360px; /* tamaño app */
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Inputs y selects en registro */
 .contenedor-registro input,
 .contenedor-registro select {
-  width: 90%;
-  padding: 10px;
-  border-radius: 10px;
+  width: 95%;
+  padding: 12px;
+  border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 14px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   font-weight: bold;
 }
 
-/* Título registro */
 .contenedor-registro h2 {
   color: #00796b;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 /* ==========================
-   Responsive
-========================== */
+   Responsive (pantallas pequeñas)
+========================= */
 @media screen and (max-width:500px) {
   .contenedor-bienvenida,
   .contenedor-login,
   .contenedor-registro {
-    width: 90%;
-    padding: 30px 20px;
+    width: 95%;
+    padding: 20px;
   }
 
   h1 { font-size: 20px; }
   p { font-size: 14px; }
 
-  .botones-inicio {
-    flex-direction: column;
-    gap: 10px;
-  }
-
+  .botones-inicio { flex-direction: column; gap: 10px; }
   .btn-turquesa { width: 100%; }
+
+  .emoji-mate { font-size: 40px; }
+  .contenedor-login input,
+  .contenedor-login select,
+  .contenedor-registro input,
+  .contenedor-registro select { font-size: 13px; padding: 10px; }
 }
