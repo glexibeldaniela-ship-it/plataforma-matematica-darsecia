@@ -251,6 +251,7 @@ let resultadosFiltrados = [];
 window.irCrearExamen = () => { window.location.href = "crear-examen.html"; }
 window.verResultados = () => { document.getElementById('seccionResultados').scrollIntoView(); }
 window.verEstudiantesEnLinea = () => { document.getElementById('onlineEstudiantes').scrollIntoView(); }
+
 window.descargarActa = () => {
     if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
     const doc = new jsPDF(); let y=10;
@@ -265,21 +266,27 @@ window.descargarActa = () => {
     y+=10; doc.text("Firma:",14,y); y+=15; doc.text("Prof. José Fernández",14,y); y+=6; doc.text("C.I: 28.123.219",14,y);
     doc.save("Acta_General.pdf");
 }
+
 window.descargarLista = async () => {
     const doc = new jsPDF(); let y=10;
     doc.setFont("helvetica","bold"); doc.setFontSize(12);
     doc.text("Lista de Estudiantes",105,y,{align:"center"}); y+=10;
-    const usuariosSnap = await getDocs(collection(db,"usuarios"));
-    let estudiantes = [];
-    usuariosSnap.forEach(docu=>{
-        const u = docu.data();
-        if(u.rol==="estudiante") estudiantes.push(u);
-    });
-    estudiantes.forEach((u,i)=>{
-        doc.setFont("helvetica","normal");
-        doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
-        y+=6; if(y>280){ doc.addPage(); y=10; }
-    });
+    try {
+        const usuariosSnap = await getDocs(collection(db,"usuarios"));
+        let estudiantes = [];
+        usuariosSnap.forEach(docu=>{
+            const u = docu.data();
+            if(u.rol==="estudiante") estudiantes.push(u);
+        });
+        estudiantes.forEach((u,i)=>{
+            doc.setFont("helvetica","normal");
+            doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
+            y+=6; if(y>280){ doc.addPage(); y=10; }
+        });
+    } catch(e){
+        alert("Error al generar lista de estudiantes");
+        console.error(e);
+    }
     doc.save("Lista_Estudiantes.pdf");
 }
 
@@ -310,51 +317,41 @@ async function cargarExamenes(){
         option.textContent = examen.titulo;
         selectExamen.appendChild(option);
     });
-    cargarEstudiantesInscritos();
 }
 
-window.activarExamen = async function(id, estadoActual){
-    if(!estadoActual){
-        const examenesSnap = await getDocs(collection(db,"examenes"));
-        for(const docu of examenesSnap.docs){
-            await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
-        }
+// ---------------- Estudiantes ----------------
+async function cargarEstudiantesInscritos(){
+    tablaInscritosBody.innerHTML="";
+    try{
+        const usuariosSnap = await getDocs(collection(db,"usuarios"));
+        usuariosSnap.forEach(docu=>{
+            const u = docu.data();
+            if(u.rol==="estudiante"){
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td>${u.nombres} ${u.apellidos}</td><td>${u.cedula}</td><td>${u.anio}</td><td>${u.seccion}</td>`;
+                tablaInscritosBody.appendChild(tr);
+            }
+        });
+    } catch(e){
+        console.error("Error al cargar estudiantes inscritos", e);
     }
-    await updateDoc(doc(db,"examenes",id),{ activo:!estadoActual });
-    alert("Estado actualizado");
-    cargarExamenes();
 }
 
-window.editarExamen = async function(id){
-    const nuevoTitulo = prompt("Nuevo título del examen:");
-    if(!nuevoTitulo) return;
-    await updateDoc(doc(db,"examenes",id),{ titulo:nuevoTitulo });
-    alert("Examen editado");
-    cargarExamenes();
-}
-
-window.resetearExamen = async function(id){
-    const confirmar = confirm("Se reseteará este examen (borrar resultados). ¿Continuar?");
-    if(!confirmar) return;
-    const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-    for(const docu of resultadosSnap.docs){
-        await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:null });
+async function cargarEstudiantesOnline(){
+    onlineEstudiantesDiv.innerHTML="";
+    try{
+        const usuariosSnap = await getDocs(collection(db,"usuarios"));
+        usuariosSnap.forEach(docu=>{
+            const u = docu.data();
+            if(u.rol==="estudiante" && u.estado==="en_linea"){
+                const div = document.createElement("div");
+                div.textContent = `${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
+                onlineEstudiantesDiv.appendChild(div);
+            }
+        });
+    } catch(e){
+        console.error("Error al cargar estudiantes en línea", e);
     }
-    alert("Examen reseteado");
-}
-
-window.eliminarExamen = async function(id){
-    const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
-    if(!confirmar) return;
-    const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-    for(const docu of resultadosSnap.docs){
-        await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
-    }
-    await deleteDoc(doc(db,"examenes",id));
-    const fila = document.querySelector(`#tablaExamenes button[onclick*="${id}"]`).closest("tr");
-    if(fila) fila.remove();
-    alert("Examen eliminado del panel");
-    cargarEstudiantesInscritos();
 }
 
 // ---------------- Resultados ----------------
@@ -363,11 +360,13 @@ async function cargarResultados(examenId){
     filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
     filtroSeccion.innerHTML='<option value="">Filtrar por Sección</option>';
     resultadosGlobal = [];
-    const resultadosSnap = await getDocs(collection(db,"examenes",examenId,"resultados"));
-    resultadosSnap.forEach(docu=>{
-        const data = docu.data();
-        if(data.nombre && !isNaN(data.nota)) resultadosGlobal.push(data);
-    });
+    try{
+        const resultadosSnap = await getDocs(collection(db,"examenes",examenId,"resultados"));
+        resultadosSnap.forEach(docu=>{
+            const data = docu.data();
+            if(data.nombre && !isNaN(data.nota)) resultadosGlobal.push(data);
+        });
+    } catch(e){ console.error(e); }
     mostrarResultados(resultadosGlobal);
 }
 
@@ -403,38 +402,12 @@ selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResult
 filtroAnio.addEventListener("change", aplicarFiltros);
 filtroSeccion.addEventListener("change", aplicarFiltros);
 
-// ---------------- Estudiantes ----------------
-async function cargarEstudiantesOnline(){
-    const usuariosSnap = await getDocs(collection(db,"usuarios"));
-    onlineEstudiantesDiv.innerHTML="";
-    usuariosSnap.forEach(docu=>{
-        const u = docu.data();
-        if(u.rol==="estudiante" && u.estado==="en_linea"){
-            const div = document.createElement("div");
-            div.textContent = `${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
-            onlineEstudiantesDiv.appendChild(div);
-        }
-    });
-}
-
-async function cargarEstudiantesInscritos(){
-    tablaInscritosBody.innerHTML="";
-    const usuariosSnap = await getDocs(collection(db,"usuarios"));
-    usuariosSnap.forEach(docu=>{
-        const u = docu.data();
-        if(u.rol==="estudiante"){
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${u.nombres} ${u.apellidos}</td><td>${u.cedula}</td><td>${u.anio}</td><td>${u.seccion}</td>`;
-            tablaInscritosBody.appendChild(tr);
-        }
-    });
-}
-
 // ---------------- Autenticación ----------------
 onAuthStateChanged(auth,(user)=>{
     if(!user) window.location.href="index.html";
     else{
         cargarExamenes();
+        cargarEstudiantesInscritos(); // <-- asegurado
         cargarEstudiantesOnline();
     }
 });
