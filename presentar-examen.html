@@ -4,20 +4,14 @@
 <meta charset="UTF-8">
 <title>Presentar Examen</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link rel="stylesheet" href="estilos.css">
-
 <style>
-
 body{
 margin:0;
 padding:15px;
 background:#f0f4f8;
 font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-/* ENCABEZADO */
-
 .header{
 background:#00796b;
 color:white;
@@ -27,29 +21,19 @@ text-align:center;
 margin-bottom:20px;
 box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
-
 .header h2{
 margin:0;
 color:white;
 }
-
-/* CONTENEDOR EXAMEN */
-
 .contenedorExamen{
 background:white;
 padding:20px;
 border-radius:12px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
-
-/* INFO EXAMEN */
-
 #infoExamen{
 margin-bottom:15px;
 }
-
-/* TEMPORIZADOR */
-
 #temporizador{
 background:#ffebee;
 padding:10px;
@@ -57,9 +41,6 @@ border-radius:8px;
 text-align:center;
 font-weight:bold;
 }
-
-/* PREGUNTAS */
-
 #preguntas div{
 background:#fafafa;
 border-radius:10px;
@@ -67,9 +48,6 @@ padding:10px;
 margin-bottom:10px;
 border:1px solid #ddd;
 }
-
-/* INPUTS */
-
 input[type="text"],
 input[type="number"]{
 width:100%;
@@ -78,9 +56,6 @@ margin-top:5px;
 border-radius:6px;
 border:1px solid #ccc;
 }
-
-/* BOTON */
-
 button{
 background:#00bcd4;
 color:white;
@@ -91,25 +66,16 @@ font-weight:bold;
 cursor:pointer;
 width:100%;
 }
-
 button:hover{
 background:#0097a7;
 }
-
-/* RESPONSIVE */
-
 @media(max-width:600px){
-
 #preguntas div{
 font-size:14px;
 }
-
 }
-
 </style>
-
 </head>
-
 <body>
 
 <div class="header">
@@ -117,23 +83,15 @@ font-size:14px;
 </div>
 
 <div class="contenedorExamen">
-
 <div id="infoExamen"></div>
-
 <h3 id="temporizador" style="color:red;"></h3>
-
 <hr>
-
 <div id="preguntas"></div>
-
 <br>
-
 <button id="btnEnviar">Enviar Examen</button>
-
 </div>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
 import { doc, getDoc, collection, getDocs, setDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -172,28 +130,21 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-/* Verificar intento único */
 async function yaPresentoExamen(uid) {
   const resultadoRef = doc(db, "examenes", examenId, "resultados", uid);
   const resultadoSnap = await getDoc(resultadoRef);
   return resultadoSnap.exists();
 }
 
-/* Temporizador */
 function iniciarTemporizador(minutos) {
-
   examenIniciado = true;
   duracionTotal = minutos * 60;
   tiempoRestante = duracionTotal;
 
   intervaloTimer = setInterval(() => {
-
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
-
-    temporizadorDiv.innerText =
-      `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
-
+    temporizadorDiv.innerText = `Tiempo restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
     tiempoRestante--;
 
     if (tiempoRestante < 0) {
@@ -201,13 +152,10 @@ function iniciarTemporizador(minutos) {
       alert("Tiempo agotado. Nota 0.");
       enviarExamen(true);
     }
-
   }, 1000);
 }
 
-/* Cargar examen */
 async function cargarExamen() {
-
   const examenRef = doc(db, "examenes", examenId);
   const examenSnap = await getDoc(examenRef);
 
@@ -234,23 +182,19 @@ async function cargarExamen() {
 
   iniciarTemporizador(examen.duracion);
 
-  const preguntasSnap = await getDocs(
-    collection(db, "examenes", examenId, "preguntas")
-  );
-
+  const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
   let numero = 1;
 
   preguntasSnap.forEach(docu => {
-
     const pregunta = docu.data();
     pregunta.id = docu.id;
     preguntasData.push(pregunta);
 
     const div = document.createElement("div");
-
     div.innerHTML = `<h4>${numero}. ${pregunta.enunciado}</h4>`;
 
-    if (pregunta.tipo === "opcion_multiple") {
+    // FIX CONEJO: Verificación de Array para evitar TypeError
+    if (pregunta.tipo === "opcion_multiple" && Array.isArray(pregunta.opciones)) {
       pregunta.opciones.forEach(op => {
         div.innerHTML += `
           <label>
@@ -279,12 +223,9 @@ async function cargarExamen() {
     preguntasDiv.appendChild(div);
     numero++;
   });
-
 }
 
-/* Enviar examen BLINDADO */
 async function enviarExamen(forzado = false) {
-
   if (examenEnviado) return;
   examenEnviado = true;
 
@@ -304,15 +245,13 @@ async function enviarExamen(forzado = false) {
 
   if (!forzado) {
     preguntasData.forEach(pregunta => {
-
       const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
                     document.querySelector(`[name="preg_${pregunta.id}"]`);
-
       if (!input) return;
 
       const respuestaUsuario = input.value;
 
-      if (pregunta.tipo === "opcion_multiple") {
+      if (pregunta.tipo === "opcion_multiple" && Array.isArray(pregunta.opciones)) {
         const correcta = pregunta.opciones.find(op => op.correcta);
         if (correcta && respuestaUsuario === correcta.texto) correctas++;
       }
@@ -322,19 +261,18 @@ async function enviarExamen(forzado = false) {
       }
 
       if (pregunta.tipo === "completar") {
-        if (respuestaUsuario.trim().toLowerCase() === 
-            pregunta.respuestaCorrecta.trim().toLowerCase()) correctas++;
+        if (respuestaUsuario.trim().toLowerCase() === pregunta.respuestaCorrecta.trim().toLowerCase()) correctas++;
       }
 
       if (pregunta.tipo === "verdadero_falso") {
         if (respuestaUsuario === pregunta.respuestaCorrecta) correctas++;
       }
-
     });
   }
 
   const total = preguntasData.length;
-  const nota = forzado ? 0 : (correctas / total) * 20;
+  // FIX CONEJO: Evitar división por cero
+  const nota = forzado || total === 0 ? 0 : (correctas / total) * 20;
   const tiempoConsumido = duracionTotal - tiempoRestante;
 
   const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
@@ -343,9 +281,12 @@ async function enviarExamen(forzado = false) {
   const examenSnap = await getDoc(doc(db, "examenes", examenId));
   const examenData = examenSnap.data();
 
+  // FIX CONEJO: Nombre completo usando nombres y apellidos
+  const nombreEstudiante = `${usuarioData.nombres || ""} ${usuarioData.apellidos || ""}`.trim() || "Sin nombre";
+
   await setDoc(resultadoRef, {
     estudiante_id: usuarioActual.uid,
-    nombre: usuarioData.nombre || "Sin nombre",
+    nombre: nombreEstudiante,
     grado: examenData.anio,
     seccion: examenData.seccion,
     lapso: examenData.lapso || "No definido",
@@ -362,29 +303,19 @@ async function enviarExamen(forzado = false) {
 btnEnviar.addEventListener("click", () => enviarExamen(false));
 
 onAuthStateChanged(auth, async (user) => {
-
   if (!user) {
     window.location.href = "index.html";
     return;
   }
-
   usuarioActual = user;
-
   const yaPresento = await yaPresentoExamen(user.uid);
-
   if (yaPresento) {
-    infoDiv.innerHTML = `
-      <h2 style="color:red;">⚠ Ya presentaste este examen</h2>
-      <p>No puedes repetirlo.</p>
-    `;
+    infoDiv.innerHTML = `<h2 style="color:red;">⚠ Ya presentaste este examen</h2><p>No puedes repetirlo.</p>`;
     btnEnviar.style.display = "none";
     return;
   }
-
   await cargarExamen();
-
 });
-
 </script>
 
 </body>
