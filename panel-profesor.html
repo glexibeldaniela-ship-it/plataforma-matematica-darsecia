@@ -1,98 +1,283 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel ProfesorJose</title>
+<title>Panel Profesor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{ font-family: Arial; padding:20px; margin:0; background:#f8f9fa; }
-header{ background:#0056b3; color:#fff; padding:15px; text-align:center; font-size:1.2em; border-radius:8px; margin-bottom:15px; }
-select, input{ padding:5px; margin-right:10px; margin-bottom:5px; }
-button{ padding:6px 10px; cursor:pointer; margin-right:5px; margin-bottom:5px; }
-table{ margin-top:10px; border-collapse: collapse; width:100%; }
-th, td{ padding:5px; border:1px solid #ccc; text-align:center; }
-.resumen{ margin-top:15px; padding:10px; border:1px solid #ccc; border-radius:8px; background:#f5f5f5; }
-.onlineList{ margin-top:10px; padding:10px; border:1px dashed #ccc; border-radius:8px; background:#eef; }
-</style>
+/* ==========================
+   General y Body
+========================== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+  margin: 0;
+  color: #004d40;
+  padding: 0;
+}
 
+/* ==========================
+   Header Fijo
+========================== */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #00796b;
+  color: #fff;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+/* ==========================
+   Layout con Menu Lateral
+========================== */
+.container {
+  display: flex;
+  margin-top: 70px; /* espacio para header */
+}
+
+/* Menu lateral */
+.sidebar {
+  width: 200px;
+  background-color: #004d40;
+  color: #fff;
+  border-radius: 0 15px 15px 0;
+  padding: 15px;
+  flex-shrink: 0;
+  height: calc(100vh - 70px);
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+.sidebar h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  text-align: left;
+  color: #00bcd4;
+}
+.sidebar button {
+  display: block;
+  width: 100%;
+  background-color: transparent;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.sidebar button:hover {
+  background-color: #00695c;
+}
+
+/* Panel principal */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* ==========================
+   Tarjetas y Secciones
+========================== */
+.card {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* Tablas modernas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+}
+th, td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+th {
+  background-color: #00796b;
+  color: #fff;
+}
+tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+/* Inputs y Selects */
+input, select, textarea {
+  width: 95%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+/* Botones modernos */
+button {
+  background-color: #00bcd4;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+button:hover {
+  background-color: #0097a7;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+/* Tarjetas resumen y estudiantes online */
+.resumen, .onlineList {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* Sub-panel Crear Examen */
+#crearExamenPanel {
+  display: none;
+}
+
+/* ==========================
+   Responsive Móvil
+========================== */
+@media screen and (max-width: 600px){
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 12px 12px;
+  }
+  .main {
+    padding: 10px;
+  }
+  table, input, select, textarea, button {
+    font-size: 13px;
+  }
+  button {
+    width: 100%;
+  }
+}
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-
 <body>
+<header>Bienvenido Profesor José Fernández</header>
+<div class="container">
+  <div class="sidebar">
+    <h3>Menú</h3>
+    <button onclick="mostrarPanel('panelPrincipal')">Panel Principal</button>
+    <button onclick="mostrarPanel('crearExamenPanel')">Crear Examen</button>
+  </div>
+  <div class="main">
+    <!-- ======================
+         Panel Principal
+    ====================== -->
+    <div id="panelPrincipal">
+      <h2>Panel del Profesor</h2>
+      <hr>
+      <h3>Lista de Exámenes</h3>
+      <button id="btnCrear" onclick="mostrarPanel('crearExamenPanel')">➕ Crear Examen</button>
+      <table id="tablaExamenes">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Año</th>
+            <th>Sección</th>
+            <th>Lapso</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <hr>
+      <h3>Resultados</h3>
+      <select id="selectExamen">
+        <option value="">Selecciona un examen</option>
+      </select>
+      <select id="filtroAnio">
+        <option value="">Filtrar por Año</option>
+      </select>
+      <select id="filtroSeccion">
+        <option value="">Filtrar por Sección</option>
+      </select>
+      <button id="btnPDF">📄 Descargar Acta General</button>
+      <button id="btnPDFEstudiantes">📄 Descargar Lista Estudiantes</button>
+      <hr>
+      <table id="tablaResultados">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Grado</th>
+            <th>Sección</th>
+            <th>Lapso</th>
+            <th>Tiempo</th>
+            <th>Nota</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="resumen" id="resumenBox" style="display:none;">
+        <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
+        <strong>Promedio:</strong> <span id="promedio"></span> |
+        🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
+        🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+      </div>
+      <h3>Estudiantes en Línea</h3>
+      <div class="onlineList" id="onlineEstudiantes"></div>
+    </div>
 
-<header>Bienvenido Profesor José</header>
-
-<h2>Panel del Profesor</h2>
-<button id="btnCrear">➕ Crear Examen</button>
-
-<hr>
-<h3>Lista de Exámenes</h3>
-<table id="tablaExamenes">
-<thead>
-<tr>
-<th>Título</th>
-<th>Año</th>
-<th>Sección</th>
-<th>Lapso</th>
-<th>Estado</th>
-<th>Acciones</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
-<hr>
-<h3>Resultados</h3>
-<select id="selectExamen">
-<option value="">Selecciona un examen</option>
-</select>
-<select id="filtroAnio">
-<option value="">Filtrar por Año</option>
-</select>
-<select id="filtroSeccion">
-<option value="">Filtrar por Sección</option>
-</select>
-<button id="btnPDF">📄 Descargar Acta General</button>
-<button id="btnPDFEstudiantes">📄 Descargar Lista Estudiantes</button>
-
-<hr>
-<table id="tablaResultados">
-<thead>
-<tr>
-<th>Nombre</th>
-<th>Grado</th>
-<th>Sección</th>
-<th>Lapso</th>
-<th>Tiempo</th>
-<th>Nota</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
-<div class="resumen" id="resumenBox" style="display:none;">
-<strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
-<strong>Promedio:</strong> <span id="promedio"></span> |
-🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
-🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
+    <!-- ======================
+         Sub-panel Crear Examen
+    ====================== -->
+    <div id="crearExamenPanel">
+      <h2>Crear Examen</h2>
+      <hr>
+      <input type="text" id="nuevoTitulo" placeholder="Título del examen">
+      <input type="text" id="nuevoAnio" placeholder="Año">
+      <input type="text" id="nuevoSeccion" placeholder="Sección">
+      <input type="text" id="nuevoLapso" placeholder="Lapso">
+      <textarea id="preguntasExamen" placeholder="Ingresa preguntas separadas por salto de línea"></textarea>
+      <button id="guardarExamen">💾 Guardar Examen</button>
+      <button onclick="mostrarPanel('panelPrincipal')">↩ Volver al Panel</button>
+    </div>
+  </div>
 </div>
-
-<h3>Estudiantes en Línea</h3>
-<div class="onlineList" id="onlineEstudiantes"></div>
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, updateDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const { jsPDF } = window.jspdf;
 
+/* ==========================
+   Variables
+========================== */
 const tablaExamenesBody = document.querySelector("#tablaExamenes tbody");
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
-const btnCrear = document.getElementById("btnCrear");
-const filtroAnio = document.getElementById("filtroAnio");
-const filtroSeccion = document.getElementById("filtroSeccion");
 const btnPDF = document.getElementById("btnPDF");
 const btnPDFEstudiantes = document.getElementById("btnPDFEstudiantes");
 const totalEst = document.getElementById("totalEst");
@@ -102,183 +287,185 @@ const reprobadosSpan = document.getElementById("reprobados");
 const resumenBox = document.getElementById("resumenBox");
 const onlineEstudiantesDiv = document.getElementById("onlineEstudiantes");
 
+/* ==========================
+   Panel Switching
+========================== */
+function mostrarPanel(id) {
+  document.getElementById("panelPrincipal").style.display = id==="panelPrincipal"?"block":"none";
+  document.getElementById("crearExamenPanel").style.display = id==="crearExamenPanel"?"block":"none";
+}
+
+/* ==========================
+   Cargar Exámenes
+========================== */
 let resultadosGlobal = [];
 let resultadosFiltrados = [];
 
-btnCrear.addEventListener("click", () => { window.location.href = "crear-examen.html"; });
-
-// 🔹 Cargar Exámenes
 async function cargarExamenes(){
-tablaExamenesBody.innerHTML="";
-selectExamen.innerHTML='<option value="">Selecciona un examen</option>';
-const examenesSnap = await getDocs(collection(db,"examenes"));
-examenesSnap.forEach(docu=>{
-const examen = docu.data();
-const tr = document.createElement("tr");
-tr.innerHTML = `
-<td>${examen.titulo}</td>
-<td>${examen.anio}</td>
-<td>${examen.seccion}</td>
-<td>${examen.lapso}</td>
-<td>${examen.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
-<td>
-<button onclick="activarExamen('${docu.id}', ${examen.activo})">${examen.activo ? "Desactivar" : "Activar"}</button>
-<button onclick="editarExamen('${docu.id}')">✏️ Editar</button>
-<button onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
-</td>
-`;
-tablaExamenesBody.appendChild(tr);
+  tablaExamenesBody.innerHTML="";
+  selectExamen.innerHTML='<option value="">Selecciona un examen</option>';
 
-const option = document.createElement("option");
-option.value = docu.id;
-option.textContent = examen.titulo;
-selectExamen.appendChild(option);
-});
+  const examenesSnap = await getDocs(collection(db,"examenes"));
+  examenesSnap.forEach(docu=>{
+    const examen = docu.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${examen.titulo}</td>
+      <td>${examen.anio}</td>
+      <td>${examen.seccion}</td>
+      <td>${examen.lapso}</td>
+      <td>${examen.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
+      <td>
+        <button onclick="activarExamen('${docu.id}', ${examen.activo})">${examen.activo ? "Desactivar" : "Activar"}</button>
+        <button onclick="editarExamen('${docu.id}')">✏️ Editar</button>
+        <button onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
+      </td>
+    `;
+    tablaExamenesBody.appendChild(tr);
+
+    const option = document.createElement("option");
+    option.value = docu.id;
+    option.textContent = examen.titulo;
+    selectExamen.appendChild(option);
+  });
 }
 
-// 🔹 Activar / Desactivar examen
+/* ==========================
+   Funciones Activar, Editar, Resetear
+========================== */
 window.activarExamen = async function(id, estadoActual){
-const examenesSnap = await getDocs(collection(db,"examenes"));
-if(!estadoActual){
-examenesSnap.forEach(async (docu)=>{
-await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
-});
-}
-await updateDoc(doc(db,"examenes",id),{ activo:!estadoActual });
-alert("Estado actualizado");
-cargarExamenes();
+  const examenesSnap = await getDocs(collection(db,"examenes"));
+  if(!estadoActual){
+    examenesSnap.forEach(async (docu)=>{
+      await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
+    });
+  }
+  await updateDoc(doc(db,"examenes",id),{ activo:!estadoActual });
+  alert("Estado actualizado");
+  cargarExamenes();
 };
 
-// 🔹 Editar examen
 window.editarExamen = async function(id){
-const nuevoTitulo = prompt("Nuevo título del examen:");
-if(!nuevoTitulo) return;
-await updateDoc(doc(db,"examenes",id),{ titulo:nuevoTitulo });
-alert("Examen editado");
-cargarExamenes();
+  const nuevoTitulo = prompt("Nuevo título del examen:");
+  if(!nuevoTitulo) return;
+  await updateDoc(doc(db,"examenes",id),{ titulo:nuevoTitulo });
+  alert("Examen editado");
+  cargarExamenes();
 };
 
-// 🔹 Resetear examen
 window.resetearExamen = async function(id){
-const confirmar = confirm("Se reseteará este examen (borrar resultados). ¿Continuar?");
-if(!confirmar) return;
-const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-resultadosSnap.forEach(async docu=>{ await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:null }); });
-alert("Examen reseteado");
+  const confirmar = confirm("Se reseteará este examen (borrar resultados). ¿Continuar?");
+  if(!confirmar) return;
+  const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
+  resultadosSnap.forEach(async docu=>{ await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:null }); });
+  alert("Examen reseteado");
 };
 
-// 🔹 Cargar Resultados
+/* ==========================
+   Guardar Examen Nuevo
+========================== */
+document.getElementById("guardarExamen").addEventListener("click", async ()=>{
+  const titulo = document.getElementById("nuevoTitulo").value;
+  const anio = document.getElementById("nuevoAnio").value;
+  const seccion = document.getElementById("nuevoSeccion").value;
+  const lapso = document.getElementById("nuevoLapso").value;
+  const preguntas = document.getElementById("preguntasExamen").value.split("\n");
+
+  if(!titulo || !anio || !seccion || !lapso){ alert("Todos los campos son obligatorios"); return; }
+
+  await addDoc(collection(db,"examenes"), {
+    titulo, anio, seccion, lapso, preguntas, activo:false
+  });
+
+  alert("Examen creado correctamente");
+  document.getElementById("nuevoTitulo").value="";
+  document.getElementById("nuevoAnio").value="";
+  document.getElementById("nuevoSeccion").value="";
+  document.getElementById("nuevoLapso").value="";
+  document.getElementById("preguntasExamen").value="";
+  mostrarPanel("panelPrincipal");
+  cargarExamenes();
+});
+
+/* ==========================
+   Cargar Resultados y Filtros
+========================== */
 async function cargarResultados(examenId){
-tablaBody.innerHTML="";
-filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
-filtroSeccion.innerHTML='<option value="">Filtrar por Sección</option>';
-resultadosGlobal = [];
-const resultadosSnap = await getDocs(collection(db,"examenes",examenId,"resultados"));
-resultadosSnap.forEach(docu=>{
-const data = docu.data();
-if(data.nombre && !isNaN(data.nota)){
-resultadosGlobal.push(data);
-}
-});
-mostrarResultados(resultadosGlobal);
+  tablaBody.innerHTML="";
+  document.getElementById("filtroAnio").innerHTML='<option value="">Filtrar por Año</option>';
+  document.getElementById("filtroSeccion").innerHTML='<option value="">Filtrar por Sección</option>';
+  resultadosGlobal = [];
+
+  const resultadosSnap = await getDocs(collection(db,"examenes",examenId,"resultados"));
+  resultadosSnap.forEach(docu=>{
+    const data = docu.data();
+    if(data.nombre && !isNaN(data.nota)){
+      resultadosGlobal.push(data);
+    }
+  });
+  mostrarResultados(resultadosGlobal);
 }
 
-// 🔹 Mostrar resultados
 function mostrarResultados(lista){
-resultadosFiltrados = lista;
-tablaBody.innerHTML="";
-let suma=0, aprobados=0, reprobados=0;
-lista.forEach(data=>{
-const nota = Number(data.nota);
-suma += nota;
-if(nota>=10) aprobados++; else reprobados++;
-const fila = document.createElement("tr");
-fila.innerHTML = `
-<td>${data.nombre}</td>
-<td>${data.grado}</td>
-<td>${data.seccion}</td>
-<td>${data.lapso}</td>
-<td>${data.tiempo||"-"}</td>
-<td><strong>${nota}</strong></td>
-`;
-tablaBody.appendChild(fila);
-});
-if(lista.length>0){
-const promedio=(suma/lista.length).toFixed(2);
-totalEst.textContent=lista.length;
-promedioSpan.textContent=promedio;
-aprobadosSpan.textContent=aprobados;
-reprobadosSpan.textContent=reprobados;
-resumenBox.style.display="block";
-}else{resumenBox.style.display="none";}
+  resultadosFiltrados = lista;
+  tablaBody.innerHTML="";
+  let suma = 0;
+  let aprobados = 0;
+  let reprobados = 0;
+
+  lista.forEach(data=>{
+    const nota = Number(data.nota);
+    suma += nota;
+    if(nota >= 10) aprobados++; else reprobados++;
+
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${data.nombre}</td>
+      <td>${data.grado}</td>
+      <td>${data.seccion}</td>
+      <td>${data.lapso}</td>
+      <td>${data.tiempo||"-"}</td>
+      <td><strong>${nota}</strong></td>
+    `;
+    tablaBody.appendChild(fila);
+  });
+
+  if(lista.length>0){
+    const promedio = (suma/lista.length).toFixed(2);
+    totalEst.textContent = lista.length;
+    promedioSpan.textContent = promedio;
+    aprobadosSpan.textContent = aprobados;
+    reprobadosSpan.textContent = reprobados;
+    resumenBox.style.display="block";
+  }else{ resumenBox.style.display="none"; }
 }
 
-// 🔹 Filtros
 function aplicarFiltros(){
-let filtrado=resultadosGlobal;
-if(filtroAnio.value) filtrado=filtrado.filter(r=>r.grado==filtroAnio.value);
-if(filtroSeccion.value) filtrado=filtrado.filter(r=>r.seccion==filtroSeccion.value);
-mostrarResultados(filtrado);
+  let filtrado = resultadosGlobal;
+  const filtroAnioVal = document.getElementById("filtroAnio").value;
+  const filtroSeccionVal = document.getElementById("filtroSeccion").value;
+  if(filtroAnioVal) filtrado = filtrado.filter(r=>r.grado==filtroAnioVal);
+  if(filtroSeccionVal) filtrado = filtrado.filter(r=>r.seccion==filtroSeccionVal);
+  mostrarResultados(filtrado);
 }
-selectExamen.addEventListener("change",()=>{if(selectExamen.value) cargarResultados(selectExamen.value);});
-filtroAnio.addEventListener("change", aplicarFiltros);
-filtroSeccion.addEventListener("change", aplicarFiltros);
 
-// 🔹 Generar Acta PDF
+selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResultados(selectExamen.value); });
+document.getElementById("filtroAnio").addEventListener("change", aplicarFiltros);
+document.getElementById("filtroSeccion").addEventListener("change", aplicarFiltros);
+
+/* ==========================
+   Generar PDF
+========================== */
 btnPDF.addEventListener("click", ()=>{
-if(resultadosFiltrados.length===0){alert("No hay datos"); return;}
-const doc = new jsPDF(); let y=10;
-doc.setFont("helvetica","bold"); doc.setFontSize(12);
-doc.text("República Bolivariana de Venezuela",105,y,{align:"center"}); y+=6;
-doc.text("Ministerio del Poder Popular para la Educación",105,y,{align:"center"}); y+=6;
-doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita",105,y,{align:"center"}); y+=6;
-doc.text("U.E.E. Cecilia Núñez Sucre",105,y,{align:"center"}); y+=10;
-doc.setFont("helvetica","normal");
-doc.text("Fecha: "+ new Date().toLocaleDateString(),14,y); y+=10;
-resultadosFiltrados.forEach((r,i)=>{doc.text(`${i+1}. ${r.nombre} - Nota: ${r.nota}`,14,y); y+=6;});
-y+=10; doc.text("Firma:",14,y); y+=15; doc.text("Prof. José Fernández",14,y); y+=6; doc.text("C.I: 28.123.219",14,y);
-doc.save("Acta_General.pdf");
-});
+  if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
+  const doc = new jsPDF(); let y=10;
+  doc.setFont("helvetica","bold"); doc.setFontSize(12);
+  doc.text("República Bolivariana de Venezuela",105,y,{align:"center"}); y+=6;
+  doc.text("Ministerio del Poder Popular para la Educación",105,y,{align:"center"}); y+=6;
+  doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita",105,y,{align:"center"}); y+=6;
+  doc.text("U.E.E. Cecilia Núñez Sucre",105,y,{align:"center"}); y+=10;
+  doc.setFont("helvetica","normal");
+  doc.text("Fecha: "+ new Date().toLocaleDateString(),14,y); y+=10;
 
-// 🔹 Generar Lista de Estudiantes PDF
-btnPDFEstudiantes.addEventListener("click", async ()=>{
-const doc = new jsPDF(); let y=10;
-doc.setFont("helvetica","bold"); doc.setFontSize(12);
-doc.text("Lista de Estudiantes",105,y,{align:"center"}); y+=10;
-const usuariosSnap = await getDocs(collection(db,"usuarios"));
-let estudiantes = [];
-usuariosSnap.forEach(docu=>{
-const u=docu.data();
-if(u.rol==="estudiante") estudiantes.push(u);
-});
-estudiantes.forEach((u,i)=>{
-doc.setFont("helvetica","normal");
-doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Fecha Nac: ${u.fechaNacimiento} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
-y+=6; if(y>280){doc.addPage(); y=10;}
-});
-doc.save("Lista_Estudiantes.pdf");
-});
-
-// 🔹 Ver estudiantes en línea
-async function cargarEstudiantesOnline(){
-const usuariosSnap = await getDocs(collection(db,"usuarios"));
-onlineEstudiantesDiv.innerHTML="";
-usuariosSnap.forEach(docu=>{
-const u = docu.data();
-if(u.rol==="estudiante" && u.estado==="en_linea"){
-const div=document.createElement("div");
-div.textContent=`${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
-onlineEstudiantesDiv.appendChild(div);
-}
-});
-}
-
-// 🔹 Autenticación
-onAuthStateChanged(auth,(user)=>{
-if(!user){window.location.href="index.html";}
-else{cargarExamenes(); cargarEstudiantesOnline();}
-});
-</script>
-
-</body>
-</html>
+  resultadosFiltrados.forEach((r,i)=>{ doc.text(`${i+1}. ${r.nombre} - Nota: ${r.nota}`,14,y); y+=6; });
+  y
