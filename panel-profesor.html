@@ -9,96 +9,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* ===== ESTILOS PROFESIONALES DEL CONEJITO (INTACTOS) ===== */
-body {
-  margin: 0; padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f4f8;
-  min-height: 100vh;
-}
-
-.header {
-  background: linear-gradient(135deg, #00bcd4, #00796b);
-  color: white;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  position: sticky; top: 0; z-index: 100;
-}
-
-.tabs-bar {
-  display: flex;
-  overflow-x: auto;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  position: sticky; top: 78px; z-index: 90;
-}
-
-.tab-btn {
-  flex: 1; min-width: 100px;
-  background: none; border: none;
-  padding: 14px; font-size: 0.85rem; font-weight: 600;
-  color: #777; cursor: pointer;
-}
-
-.tab-btn.activo {
-  color: #00796b; border-bottom: 3px solid #00bcd4;
-  background: #f0fdfd;
-}
-
+/* ===== TU DISEÑO FAVORITO (INTACTO) ===== */
+body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
+.tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 78px; z-index: 90; }
+.tab-btn { flex: 1; min-width: 100px; background: none; border: none; padding: 14px; font-size: 0.85rem; font-weight: 600; color: #777; cursor: pointer; }
+.tab-btn.activo { color: #00796b; border-bottom: 3px solid #00bcd4; background: #f0fdfd; }
 .contenedor { padding: 20px; max-width: 960px; margin: 0 auto; }
 .tab-panel { display: none; }
 .tab-panel.activo { display: block; }
+.examen-card { background: white; border-radius: 12px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e0f7fa; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+.examen-card-header { background: #00796b; color: white; padding: 12px 15px; display: flex; justify-content: space-between; }
 
-.stats-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 15px; margin-bottom: 25px;
-}
-.stat-card {
-  background: white; border-radius: 12px; padding: 15px;
-  text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  border-top: 4px solid #00bcd4;
-}
-
-.examen-card {
-  background: white; border-radius: 12px; margin-bottom: 15px;
-  overflow: hidden; border: 1px solid #e0f7fa;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-}
-.examen-card-header {
-  background: #00796b; color: white; padding: 12px 15px;
-  display: flex; justify-content: space-between;
-}
-
-.btn-primary {
-  background: #ff9800; color: white; border: none;
-  padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;
-}
-
-/* NUEVOS BOTONES DE ACCIÓN (Añadidos para que funcionen) */
-.btn-accion {
-  padding: 6px 12px; border-radius: 6px; border: none; 
-  color: white; cursor: pointer; font-size: 11px; margin-top: 10px; font-weight: bold;
-}
+/* BOTONES DE CONTROL (Añadidos con sutileza) */
+.btn-accion { padding: 6px 12px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 5px; }
 .btn-activar { background: #4caf50; }
-.btn-desactivar { background: #ff5722; }
+.btn-desactivar { background: #ff9800; }
 .btn-eliminar { background: #d32f2f; margin-left: 5px; }
-.btn-pdf { background: #607d8b; width: 100%; margin-top: 10px; padding: 10px; }
+.btn-pdf { background: #00796b; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin: 10px 0; cursor: pointer; font-weight: bold; }
 
-@media (max-width: 600px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-}
+/* Filtros */
+.filtros-box { display: flex; gap: 10px; margin-bottom: 15px; }
+select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div>
-    <h2 style="margin:0">Centro de Control</h2>
-    <small id="nombreProfesor">Prof. José Agustín Fernández</small>
-  </div>
+  <div><h2 style="margin:0">Centro de Control</h2><small>Prof. José Agustín Fernández</small></div>
   <button onclick="cerrarSesion()" style="background:rgba(255,255,255,0.2); color:white; border:1px solid white; padding:5px 10px; border-radius:10px;">Salir</button>
 </div>
 
@@ -106,73 +44,38 @@ body {
   <button class="tab-btn activo" onclick="cambiarTab('examenes', this)">📋 Exámenes</button>
   <button class="tab-btn" onclick="cambiarTab('estudiantes', this)">👥 Estudiantes</button>
   <button class="tab-btn" onclick="cambiarTab('resultados', this)">📊 Notas</button>
-  <button class="tab-btn" onclick="cambiarTab('multimedia', this)">🖼️ Imágenes</button>
 </div>
 
 <div class="contenedor">
 
   <div class="tab-panel activo" id="tab-examenes">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div style="font-size:1.5rem; font-weight:800; color:#00796b" id="statTotal">0</div>
-        <div style="font-size:0.7rem; color:#888">TOTAL EXÁMENES</div>
-      </div>
-      <div class="stat-card">
-        <div style="font-size:1.5rem; font-weight:800; color:#43a047" id="statActivos">0</div>
-        <div style="font-size:0.7rem; color:#888">ACTIVOS</div>
-      </div>
-    </div>
-
     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-      <h3 style="margin:0; color:#00796b">Lista de Exámenes</h3>
-      <button class="btn-primary" onclick="window.location.href='crear-examen.html'">+ Nuevo</button>
+      <h3 style="margin:0; color:#00796b">Mis Evaluaciones</h3>
+      <button onclick="window.location.href='crear-examen.html'" style="background:#ff9800; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">+ Nuevo</button>
     </div>
-
     <div id="listaExamenes"></div>
   </div>
 
   <div class="tab-panel" id="tab-estudiantes">
-    <h3 style="color:#00796b">Estudiantes Inscritos</h3>
-    <button class="btn-pdf" onclick="descargarListaPDF()">📥 Descargar Lista de Alumnos (PDF)</button>
-    <div style="overflow-x:auto; background:white; border-radius:12px; margin-top:15px;">
-      <table id="tablaEstudiantes" style="width:100%; border-collapse:collapse; text-align:left;">
-        <thead style="background:#00bcd4; color:white;">
-          <tr>
-            <th style="padding:10px">Nombre</th>
-            <th style="padding:10px">Cédula</th>
-            <th style="padding:10px">Año/Sec</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <h3 style="color:#00796b">Lista de Inscritos</h3>
+    <div class="filtros-box">
+      <select id="fAnio" onchange="cargarEstudiantes()"><option value="todos">Todos los Años</option><option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option></select>
+      <select id="fSec" onchange="cargarEstudiantes()"><option value="todas">Todas las Secciones</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
     </div>
+    <button class="btn-pdf" onclick="descargarPDF('estudiantes')">📥 Descargar Lista Filtrada (PDF)</button>
+    <table id="tablaEstudiantes" style="width:100%; background:white; border-radius:10px; overflow:hidden; border-collapse:collapse;">
+      <thead style="background:#00bcd4; color:white;"><tr><th style="padding:10px">Cédula</th><th style="padding:10px">Nombre Completo</th><th style="padding:10px">Año/Sec</th></tr></thead>
+      <tbody id="bodyEstudiantes"></tbody>
+    </table>
   </div>
 
   <div class="tab-panel" id="tab-resultados">
     <h3 style="color:#00796b">Acta de Calificaciones</h3>
-    <button class="btn-pdf" onclick="descargarActaPDF()">📥 Descargar Acta de Notas (PDF)</button>
-    <div style="overflow-x:auto; background:white; border-radius:12px; margin-top:15px;">
-      <table id="tablaResultados" style="width:100%; border-collapse:collapse; text-align:left;">
-        <thead style="background:#00bcd4; color:white;">
-          <tr>
-            <th style="padding:10px">Alumno</th>
-            <th style="padding:10px">Evaluación</th>
-            <th style="padding:10px">Nota</th>
-          </tr>
-        </thead>
-        <tbody id="tablaResultadosBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="tab-multimedia">
-    <h3 style="color:#00796b">Gestor de Imágenes</h3>
-    <div class="upload-zone" onclick="document.getElementById('inputImg').click()">
-      <div style="font-size:2rem">📤</div>
-      <p>Subir imagen para examen</p>
-      <input type="file" id="inputImg" style="display:none" accept="image/*">
-    </div>
-    <div id="galeriaImagenes" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; margin-top:20px;"></div>
+    <button class="btn-pdf" onclick="descargarPDF('notas')">📥 Descargar Acta General (PDF)</button>
+    <table id="tablaNotas" style="width:100%; background:white; border-radius:10px; overflow:hidden; border-collapse:collapse;">
+      <thead style="background:#00bcd4; color:white;"><tr><th style="padding:10px">Alumno</th><th style="padding:10px">Examen</th><th style="padding:10px">Nota</th></tr></thead>
+      <tbody id="bodyNotas"></tbody>
+    </table>
   </div>
 
 </div>
@@ -182,80 +85,70 @@ import { auth, db } from "./firebase.js";
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-window.cambiarTab = function(tabName, btn) {
+window.cambiarTab = (name, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-  document.getElementById('tab-' + tabName).classList.add('activo');
+  document.getElementById('tab-' + name).classList.add('activo');
   btn.classList.add('activo');
-  if(tabName === 'estudiantes') cargarEstudiantes();
-  if(tabName === 'resultados') cargarTodasLasNotas();
-}
+  if(name === 'estudiantes') cargarEstudiantes();
+  if(name === 'resultados') cargarNotas();
+};
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) { window.location.href = "login.html"; }
-  cargarMisExamenes();
-});
+onAuthStateChanged(auth, (user) => { if(!user) window.location.href="login.html"; cargarExamenes(); });
 
-// --- CARGAR EXÁMENES CON BOTONES DE ACTIVAR/ELIMINAR ---
-async function cargarMisExamenes() {
+async function cargarExamenes() {
   const lista = document.getElementById("listaExamenes");
-  lista.innerHTML = "<p>Cargando...</p>";
-  const q = query(collection(db, "examenes"));
-  const snap = await getDocs(q);
   lista.innerHTML = "";
-  let activos = 0;
-
-  snap.forEach(docu => {
-    const ex = docu.data();
-    if(ex.activo) activos++;
-    const div = document.createElement("div");
-    div.className = "examen-card";
-    div.innerHTML = `
-      <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
-        <strong>${ex.titulo}</strong>
-        <span>${ex.activo ? '🟢 Activo' : '🔴 Inactivo'}</span>
-      </div>
-      <div style="padding:15px">
-        <small>Año: ${ex.anio} | Sección: ${ex.seccion}</small><br>
-        <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleExamen('${docu.id}', ${ex.activo})">
-          ${ex.activo ? 'Desactivar' : 'Activar'}
-        </button>
-        <button class="btn-accion btn-eliminar" onclick="eliminarExamen('${docu.id}')">Eliminar</button>
-        <button onclick="window.location.href='ver-resultados.html?id=${docu.id}'" style="margin-left:5px; border:1px solid #00796b; background:none; padding:5px; border-radius:5px; font-size:11px;">Notas</button>
-      </div>
-    `;
-    lista.appendChild(div);
+  const snap = await getDocs(collection(db, "examenes"));
+  snap.forEach(d => {
+    const ex = d.data();
+    lista.innerHTML += `
+      <div class="examen-card">
+        <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
+          <strong>${ex.titulo}</strong>
+          <span>${ex.activo ? 'Activo' : 'Inactivo'}</span>
+        </div>
+        <div style="padding:15px">
+          <small>${ex.anio}° Año - Sección ${ex.seccion}</small><br>
+          <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">${ex.activo ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">Eliminar</button>
+        </div>
+      </div>`;
   });
-  document.getElementById("statTotal").textContent = snap.size;
-  document.getElementById("statActivos").textContent = activos;
 }
 
-// --- FUNCIONES DE ACCIÓN RECUPERADAS ---
-window.toggleExamen = async (id, estadoActual) => {
-  await updateDoc(doc(db, "examenes", id), { activo: !estadoActual });
-  cargarMisExamenes();
-};
+window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); cargarExamenes(); };
+window.borrarEx = async (id) => { if(confirm("¿Eliminar examen?")) { await deleteDoc(doc(db, "examenes", id)); cargarExamenes(); } };
 
-window.eliminarExamen = async (id) => {
-  if(confirm("¿Seguro que quieres eliminar este examen?")) {
-    await deleteDoc(doc(db, "examenes", id));
-    cargarMisExamenes();
-  }
-};
+async function cargarEstudiantes() {
+  const anio = document.getElementById("fAnio").value;
+  const sec = document.getElementById("fSec").value;
+  const body = document.getElementById("bodyEstudiantes");
+  body.innerHTML = "";
+  const snap = await getDocs(collection(db, "usuarios"));
+  snap.forEach(d => {
+    const u = d.data();
+    if(u.rol === 'estudiante' && (anio === 'todos' || u.anio == anio) && (sec === 'todas' || u.seccion == sec)) {
+      body.innerHTML += `<tr><td style="padding:10px">${u.cedula}</td><td style="padding:10px">${u.nombres} ${u.apellidos}</td><td style="padding:10px">${u.anio}° ${u.seccion}</td></tr>`;
+    }
+  });
+}
 
-// --- PDF RECUPERADOS ---
-window.descargarListaPDF = () => {
+async function cargarNotas() {
+  const body = document.getElementById("bodyNotas");
+  body.innerHTML = "";
+  const snap = await getDocs(collection(db, "resultados"));
+  snap.forEach(d => {
+    const n = d.data();
+    body.innerHTML += `<tr><td style="padding:10px">${n.nombreEstudiante}</td><td style="padding:10px">${n.tituloExamen}</td><td style="padding:10px; font-weight:bold; color:#00796b">${n.nota}/20</td></tr>`;
+  });
+}
+
+window.descargarPDF = (tipo) => {
   const docPDF = new jspdf.jsPDF();
-  docPDF.text("Lista de Estudiantes Inscritos", 10, 10);
-  docPDF.autoTable({ html: '#tablaEstudiantes' });
-  docPDF.save("estudiantes.pdf");
-};
-
-window.descargarActaPDF = () => {
-  const docPDF = new jspdf.jsPDF();
-  docPDF.text("Acta de Calificaciones - MateEduPro", 10, 10);
-  docPDF.autoTable({ html: '#tablaResultados' });
-  docPDF.save("acta_notas.pdf");
+  docPDF.text(tipo === 'estudiantes' ? "Lista de Alumnos - Cecilia Núñez Sucre" : "Acta de Calificaciones", 14, 15);
+  docPDF.autoTable({ html: tipo === 'estudiantes' ? '#tablaEstudiantes' : '#tablaNotas', margin: { top: 25 } });
+  docPDF.save(tipo + ".pdf");
 };
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
