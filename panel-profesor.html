@@ -5,119 +5,142 @@
 <title>Panel Profesor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link rel="stylesheet" href="estilos.css">
+
 <style>
+
 body{
-  margin:0;
-  padding:15px;
-  background:#f0f4f8;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+margin:0;
+padding:15px;
+background:#f0f4f8;
+font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* ENCABEZADO */
+
 .header{
-  background:#00796b;
-  color:white;
-  padding:15px;
-  border-radius:12px;
-  text-align:center;
-  margin-bottom:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+background:#00796b;
+color:white;
+padding:15px;
+border-radius:12px;
+text-align:center;
+margin-bottom:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
-.header h2{ margin:0; color:white; }
-.header p{ margin:5px 0 0 0; font-size:14px; }
+
+.header h2{
+margin:0;
+color:white;
+}
+
+.header p{
+margin:5px 0 0 0;
+font-size:14px;
+}
 
 /* MENU */
+
 .menu{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-bottom:20px;
-  justify-content:center;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-bottom:20px;
+justify-content:center;
 }
+
 .menu button{
-  background:#00bcd4;
-  color:white;
-  border:none;
-  border-radius:10px;
-  padding:12px 18px;
-  font-weight:bold;
-  cursor:pointer;
-  font-size:16px;
+background:#00bcd4;
+color:white;
+border:none;
+border-radius:10px;
+padding:10px 15px;
+font-weight:bold;
+cursor:pointer;
 }
-.menu button:hover{ background:#0097a7; }
+
+.menu button:hover{
+background:#0097a7;
+}
 
 /* SECCIONES */
+
 .seccion{
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+background:white;
+padding:15px;
+border-radius:12px;
+margin-bottom:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* TABLAS */
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-  font-size:14px;
-}
-th{
-  background:#00796b;
-  color:white;
-  padding:10px;
-}
-td{
-  padding:10px;
-  border-bottom:1px solid #ddd;
-  text-align:center;
-}
-tr:nth-child(even){ background:#f5f5f5; }
 
-/* BOTONES ACCIONES */
-.actionBtn{
-  background:#ff5722;
-  color:white;
-  border:none;
-  border-radius:8px;
-  padding:5px 8px;
-  cursor:pointer;
-  margin:2px;
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
 }
-.actionBtn:hover{ background:#e64a19; }
+
+th{
+background:#00796b;
+color:white;
+padding:8px;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+tr:nth-child(even){
+background:#f5f5f5;
+}
 
 /* FILTROS */
+
 select{
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  margin-right:5px;
-  margin-bottom:5px;
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+margin-right:5px;
+margin-bottom:5px;
 }
 
 /* RESUMEN */
+
 .resumen{
-  margin-top:10px;
-  padding:10px;
-  border-radius:10px;
-  background:#e0f7fa;
+margin-top:10px;
+padding:10px;
+border-radius:10px;
+background:#e0f7fa;
 }
 
-/* ONLINE / INSCRITOS */
-.onlineList, .inscritosList{
-  padding:10px;
-  background:#e8f5e9;
-  border-radius:10px;
-  max-height:250px;
-  overflow-y:auto;
+/* ONLINE */
+
+.onlineList{
+padding:10px;
+background:#e8f5e9;
+border-radius:10px;
 }
 
 /* RESPONSIVE */
+
 @media(max-width:600px){
-  .menu{ flex-direction:column; }
-  .menu button{ width:100%; }
-  table{ font-size:13px; }
+
+.menu{
+flex-direction:column;
 }
+
+.menu button{
+width:100%;
+}
+
+table{
+font-size:13px;
+}
+
+}
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -131,16 +154,30 @@ select{
 </div>
 
 <div class="menu">
+
 <button id="btnCrear">➕ Crear Examen</button>
-<button onclick="document.getElementById('seccionResultados').scrollIntoView()">📊 Ver Resultados</button>
-<button onclick="document.getElementById('onlineEstudiantes').scrollIntoView()">🟢 Estudiantes en Línea</button>
-<button onclick="document.getElementById('inscritosEstudiantes').scrollIntoView()">📋 Estudiantes Inscritos</button>
+
+<button onclick="document.getElementById('seccionResultados').scrollIntoView()">
+📊 Ver Resultados
+</button>
+
+<button onclick="document.getElementById('onlineEstudiantes').scrollIntoView()">
+🟢 Estudiantes en Línea
+</button>
+
+<button onclick="document.getElementById('seccionInscritos').scrollIntoView()">
+👨‍🎓 Estudiantes Inscritos
+</button>
+
 </div>
 
-<!-- LISTA DE EXÁMENES -->
+
 <div class="seccion">
+
 <h3>Lista de Exámenes</h3>
+
 <table id="tablaExamenes">
+
 <thead>
 <tr>
 <th>Título</th>
@@ -151,21 +188,39 @@ select{
 <th>Acciones</th>
 </tr>
 </thead>
+
 <tbody></tbody>
+
 </table>
+
 </div>
 
-<!-- RESULTADOS -->
+
 <div class="seccion" id="seccionResultados">
+
 <h3>Resultados</h3>
-<select id="selectExamen"><option value="">Selecciona un examen</option></select>
-<select id="filtroAnio"><option value="">Filtrar por Año</option></select>
-<select id="filtroSeccion"><option value="">Filtrar por Sección</option></select>
+
+<select id="selectExamen">
+<option value="">Selecciona un examen</option>
+</select>
+
+<select id="filtroAnio">
+<option value="">Filtrar por Año</option>
+</select>
+
+<select id="filtroSeccion">
+<option value="">Filtrar por Sección</option>
+</select>
+
 <br><br>
+
 <button id="btnPDF">📄 Descargar Acta General</button>
 <button id="btnPDFEstudiantes">📄 Descargar Lista Estudiantes</button>
+
 <table id="tablaResultados">
+
 <thead>
+
 <tr>
 <th>Nombre</th>
 <th>Grado</th>
@@ -174,32 +229,47 @@ select{
 <th>Tiempo</th>
 <th>Nota</th>
 </tr>
+
 </thead>
+
 <tbody></tbody>
+
 </table>
+
 <div class="resumen" id="resumenBox" style="display:none;">
+
 <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
+
 <strong>Promedio:</strong> <span id="promedio"></span> |
+
 🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
+
 🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
-</div>
+
 </div>
 
-<!-- ESTUDIANTES EN LÍNEA -->
-<div class="seccion">
-<h3>Estudiantes en Línea</h3>
-<div class="onlineList" id="onlineEstudiantes"></div>
 </div>
 
-<!-- ESTUDIANTES INSCRITOS -->
-<div class="seccion" id="inscritosEstudiantes">
+
+<div class="seccion" id="seccionInscritos">
 <h3>Estudiantes Inscritos</h3>
-<div class="inscritosList" id="listaInscritos"></div>
+<div id="listaInscritos"></div>
 </div>
+
+
+<div class="seccion">
+
+<h3>Estudiantes en Línea</h3>
+
+<div class="onlineList" id="onlineEstudiantes"></div>
+
+</div>
+
 
 <script type="module">
+
 import { auth, db } from "./firebase.js";
-import { collection, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const { jsPDF } = window.jspdf;
 
@@ -234,7 +304,6 @@ examenesSnap.forEach(docu=>{
 const examen = docu.data();
 const tr = document.createElement("tr");
 
-// ACCIONES: editar, activar/desactivar, resetear, eliminar
 tr.innerHTML = `
 <td>${examen.titulo}</td>
 <td>${examen.anio}</td>
@@ -242,11 +311,11 @@ tr.innerHTML = `
 <td>${examen.lapso}</td>
 <td>${examen.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
 <td>
-<button class="actionBtn" onclick="activarExamen('${docu.id}', ${examen.activo})">
+<button onclick="activarExamen('${docu.id}', ${examen.activo})">
 ${examen.activo ? "Desactivar" : "Activar"}</button>
-<button class="actionBtn" onclick="editarExamen('${docu.id}')">✏️ Editar</button>
-<button class="actionBtn" onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
-<button class="actionBtn" onclick="eliminarExamen('${docu.id}')">🗑️ Eliminar</button>
+<button onclick="editarExamen('${docu.id}')">✏️ Editar</button>
+<button onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
+<button onclick="eliminarExamen('${docu.id}')">🗑️ Eliminar</button>
 </td>
 `;
 tablaExamenesBody.appendChild(tr);
@@ -258,10 +327,9 @@ selectExamen.appendChild(option);
 });
 }
 
-// 🔹 Funciones de Exámenes
 window.activarExamen = async function(id, estadoActual){
-const examenesSnap = await getDocs(collection(db,"examenes"));
 if(!estadoActual){
+const examenesSnap = await getDocs(collection(db,"examenes"));
 examenesSnap.forEach(async (docu)=>{
 await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
 });
@@ -287,10 +355,15 @@ resultadosSnap.forEach(async docu=>{ await updateDoc(doc(db,"examenes",id,"resul
 alert("Examen reseteado");
 };
 
-// 🔹 NUEVA FUNCION ELIMINAR EXAMEN
 window.eliminarExamen = async function(id){
-const confirmar = confirm("¿Desea eliminar este examen completamente?");
+const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
 if(!confirmar) return;
+// borrar resultados
+const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
+for(const docu of resultadosSnap.docs){
+await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
+}
+// borrar examen
 await deleteDoc(doc(db,"examenes",id));
 alert("Examen eliminado");
 cargarExamenes();
@@ -316,39 +389,52 @@ mostrarResultados(resultadosGlobal);
 function mostrarResultados(lista){
 resultadosFiltrados = lista;
 tablaBody.innerHTML="";
-let suma=0, aprobados=0, reprobados=0;
+
+let suma = 0;
+let aprobados = 0;
+let reprobados = 0;
+
 lista.forEach(data=>{
 const nota = Number(data.nota);
-suma+=nota;
-if(nota>=10) aprobados++; else reprobados++;
+suma += nota;
+if(nota >= 10) aprobados++; else reprobados++;
+
 const fila = document.createElement("tr");
-fila.innerHTML = `<td>${data.nombre}</td><td>${data.grado}</td><td>${data.seccion}</td><td>${data.lapso}</td><td>${data.tiempo||"-"}</td><td><strong>${nota}</strong></td>`;
+fila.innerHTML = `
+<td>${data.nombre}</td>
+<td>${data.grado}</td>
+<td>${data.seccion}</td>
+<td>${data.lapso}</td>
+<td>${data.tiempo||"-"}</td>
+<td><strong>${nota}</strong></td>
+`;
 tablaBody.appendChild(fila);
 });
+
 if(lista.length>0){
 const promedio = (suma/lista.length).toFixed(2);
-totalEst.textContent=lista.length;
-promedioSpan.textContent=promedio;
-aprobadosSpan.textContent=aprobados;
-reprobadosSpan.textContent=reprobados;
+totalEst.textContent = lista.length;
+promedioSpan.textContent = promedio;
+aprobadosSpan.textContent = aprobados;
+reprobadosSpan.textContent = reprobados;
 resumenBox.style.display="block";
-}else{resumenBox.style.display="none";}
+}else{ resumenBox.style.display="none"; }
 }
 
 function aplicarFiltros(){
-let filtrado=resultadosGlobal;
-if(filtroAnio.value) filtrado=filtrado.filter(r=>r.grado==filtroAnio.value);
-if(filtroSeccion.value) filtrado=filtrado.filter(r=>r.seccion==filtroSeccion.value);
+let filtrado = resultadosGlobal;
+if(filtroAnio.value) filtrado = filtrado.filter(r=>r.grado==filtroAnio.value);
+if(filtroSeccion.value) filtrado = filtrado.filter(r=>r.seccion==filtroSeccion.value);
 mostrarResultados(filtrado);
 }
 
-selectExamen.addEventListener("change",()=>{if(selectExamen.value) cargarResultados(selectExamen.value);});
-filtroAnio.addEventListener("change",aplicarFiltros);
-filtroSeccion.addEventListener("change",aplicarFiltros);
+selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResultados(selectExamen.value); });
+filtroAnio.addEventListener("change", aplicarFiltros);
+filtroSeccion.addEventListener("change", aplicarFiltros);
 
-// 🔹 PDF Acta General
+// Descargar Acta General
 btnPDF.addEventListener("click", ()=>{
-if(resultadosFiltrados.length===0){alert("No hay datos"); return;}
+if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
 const doc = new jsPDF(); let y=10;
 doc.setFont("helvetica","bold"); doc.setFontSize(12);
 doc.text("República Bolivariana de Venezuela",105,y,{align:"center"}); y+=6;
@@ -357,53 +443,63 @@ doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita",105,y,{align:"c
 doc.text("U.E.E. Cecilia Núñez Sucre",105,y,{align:"center"}); y+=10;
 doc.setFont("helvetica","normal");
 doc.text("Fecha: "+ new Date().toLocaleDateString(),14,y); y+=10;
+
 resultadosFiltrados.forEach((r,i)=>{ doc.text(`${i+1}. ${r.nombre} - Nota: ${r.nota}`,14,y); y+=6; });
 y+=10; doc.text("Firma:",14,y); y+=15; doc.text("Prof. José Fernández",14,y); y+=6; doc.text("C.I: 28.123.219",14,y);
 doc.save("Acta_General.pdf");
 });
 
-// 🔹 PDF Lista Estudiantes
+// Descargar Lista de Estudiantes
 btnPDFEstudiantes.addEventListener("click", async ()=>{
 const doc = new jsPDF(); let y=10;
 doc.setFont("helvetica","bold"); doc.setFontSize(12);
 doc.text("Lista de Estudiantes",105,y,{align:"center"}); y+=10;
+
 const usuariosSnap = await getDocs(collection(db,"usuarios"));
-let estudiantes=[];
-usuariosSnap.forEach(docu=>{ const u=docu.data(); if(u.rol==="estudiante") estudiantes.push(u); });
+let estudiantes = [];
+usuariosSnap.forEach(docu=>{
+const u = docu.data();
+if(u.rol==="estudiante") estudiantes.push(u);
+});
+
+// Lista Inscritos sección
+listaInscritosDiv.innerHTML = "";
+estudiantes.forEach((u,i)=>{
+const div = document.createElement("div");
+div.textContent = `${i+1}. ${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
+listaInscritosDiv.appendChild(div);
+});
+
+// Generar PDF
 estudiantes.forEach((u,i)=>{
 doc.setFont("helvetica","normal");
-doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
+doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Fecha Nac: ${u.fechaNacimiento} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
 y+=6; if(y>280){ doc.addPage(); y=10; }
 });
+
 doc.save("Lista_Estudiantes.pdf");
 });
 
-// 🔹 Estudiantes Online
+// Estudiantes en Línea
 async function cargarEstudiantesOnline(){
-const usuariosSnap=await getDocs(collection(db,"usuarios"));
-onlineEstudiantesDiv.innerHTML=""; listaInscritosDiv.innerHTML="";
+const usuariosSnap = await getDocs(collection(db,"usuarios"));
+onlineEstudiantesDiv.innerHTML="";
 usuariosSnap.forEach(docu=>{
-const u=docu.data();
-if(u.rol==="estudiante"){
-// Online
-if(u.estado==="en_linea"){
-const div=document.createElement("div");
-div.textContent=`${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
+const u = docu.data();
+if(u.rol==="estudiante" && u.estado==="en_linea"){
+const div = document.createElement("div");
+div.textContent = `${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
 onlineEstudiantesDiv.appendChild(div);
-}
-// Inscritos
-const divIns=document.createElement("div");
-divIns.textContent=`${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Año: ${u.anio} | Sección: ${u.seccion}`;
-listaInscritosDiv.appendChild(divIns);
 }
 });
 }
 
-// 🔹 Inicialización
+// Inicializar
 onAuthStateChanged(auth,(user)=>{
 if(!user){ window.location.href="index.html"; }
 else{ cargarExamenes(); cargarEstudiantesOnline(); }
 });
+
 </script>
 
 </body>
