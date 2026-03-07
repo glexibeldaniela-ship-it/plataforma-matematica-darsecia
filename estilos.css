@@ -1,117 +1,111 @@
 /* ==========================
-   General
-========================== */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #004d40;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* ==========================
-   Fondo pantalla inicio
+   Fondo con imagen matemática
 ========================== */
 .pantalla-inicio{
-  background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  margin:0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
 /* ==========================
    Contenedor principal
 ========================== */
-.contenedor-bienvenida {
-  text-align: center;
-  background-color: #ffffffcc; /* blanco semitransparente */
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
-  width: 90%;
+.contenedor-bienvenida{
+  text-align:center;
+  background-color:rgba(255,255,255,0.9);
+  padding:40px;
+  border-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  max-width:400px;
+  width:90%;
 }
 
 /* ==========================
-   Imagen
+   Emoji Matemática
 ========================== */
-.imagen-inicio {
-  width: 120px;
-  height: auto;
-  margin-bottom: 20px;
-  animation: girar 4s linear infinite;
+.emoji-mate{
+  font-size:60px;
+  margin-bottom:20px;
+  animation:girar 4s linear infinite;
 }
 
-@keyframes girar {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes girar{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
 }
 
 /* ==========================
-   Títulos y textos
+   Títulos
 ========================== */
-h1 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #00796b; /* turquesa oscuro */
+h1{
+  font-size:24px;
+  margin-bottom:15px;
+  color:#00796b;
 }
 
-p {
-  font-size: 16px;
-  margin-bottom: 25px;
+p{
+  font-size:16px;
+  margin-bottom:25px;
 }
 
 /* ==========================
    Botones
 ========================== */
-.botones-inicio {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
+.botones-inicio{
+  display:flex;
+  justify-content:center;
+  gap:15px;
 }
 
-.btn-turquesa {
-  background-color: #00bcd4; /* turquesa */
-  color: #ffffff;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.3s;
+.btn-turquesa{
+  background-color:#00bcd4;
+  color:#fff;
+  border:none;
+  padding:12px 25px;
+  border-radius:12px;
+  font-weight:bold;
+  font-size:14px;
+  cursor:pointer;
+  transition:0.3s;
 }
 
-.btn-turquesa:hover {
-  background-color: #0097a7; /* turquesa más oscuro */
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+.btn-turquesa:hover{
+  background-color:#0097a7;
+  transform:translateY(-2px);
+  box-shadow:0 5px 10px rgba(0,0,0,0.2);
 }
 
 /* ==========================
    Responsive
 ========================== */
-@media screen and (max-width: 500px) {
-  .contenedor-bienvenida {
-    padding: 30px 20px;
+@media screen and (max-width:500px){
+
+  .contenedor-bienvenida{
+    padding:30px 20px;
   }
 
-  h1 {
-    font-size: 20px;
+  h1{
+    font-size:20px;
   }
 
-  p {
-    font-size: 14px;
+  p{
+    font-size:14px;
   }
 
-  .botones-inicio {
-    flex-direction: column;
-    gap: 10px;
+  .botones-inicio{
+    flex-direction:column;
+    gap:10px;
   }
 
-  .btn-turquesa {
-    width: 100%;
+  .btn-turquesa{
+    width:100%;
   }
+
 }
