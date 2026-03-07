@@ -302,4 +302,177 @@ th {
     font-size: 12px;
     padding: 8px;
   }
+/* ==========================
+   General y Body
+========================== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+  margin: 0;
+  color: #004d40;
+}
+
+/* ==========================
+   Header Fijo
+========================== */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #00796b;
+  color: #fff;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+/* ==========================
+   Layout con Menu Lateral
+========================== */
+.container {
+  display: flex;
+  margin-top: 70px; /* espacio para header */
+}
+
+/* Menu lateral */
+.sidebar {
+  width: 200px;
+  background-color: #004d40;
+  color: #fff;
+  border-radius: 0 15px 15px 0;
+  padding: 15px;
+  flex-shrink: 0;
+  height: calc(100vh - 70px);
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  text-align: left;
+  color: #00bcd4;
+}
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  background-color: transparent;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.sidebar button:hover {
+  background-color: #00695c;
+}
+
+/* Panel principal */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* ==========================
+   Tarjetas y Secciones
+========================== */
+.card {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* Tablas Modernas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+th {
+  background-color: #00796b;
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+/* Inputs y Selects */
+input, select {
+  width: 95%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+}
+
+/* Botones Modernos */
+button {
+  background-color: #00bcd4;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #0097a7;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+/* Tarjetas resumen y estudiantes online */
+.resumen, .onlineList {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* ==========================
+   Responsivo Móvil
+========================== */
+@media screen and (max-width: 600px){
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 12px 12px;
+  }
+  .main {
+    padding: 10px;
+  }
+  table, input, select, button {
+    font-size: 13px;
+  }
+  button {
+    width: 100%;
+  }
+}
 }
