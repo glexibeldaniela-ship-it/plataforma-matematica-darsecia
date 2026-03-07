@@ -4,42 +4,50 @@
   <meta charset="UTF-8">
   <title>Registro Estudiante</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="estilos.css">
 </head>
 
-<body>
+<body class="pantalla-login"> <!-- fondo con imagen -->
 
-  <h2>Registro de Estudiante</h2>
+  <div class="contenedor-login">
+    <h2>Registro de Estudiante</h2>
 
-  <input type="text" id="cedula" placeholder="Cédula"><br><br>
-  <input type="text" id="nombres" placeholder="Nombres completos"><br><br>
-  <input type="text" id="apellidos" placeholder="Apellidos completos"><br><br>
-  <input type="date" id="fechaNacimiento" placeholder="Fecha de Nacimiento"><br><br>
-  <input type="email" id="email" placeholder="Correo"><br><br>
-  <input type="password" id="password" placeholder="Contraseña"><br><br>
+    <!-- Emoji divertido de matemáticas -->
+    <div class="emoji-mate">📏✏️</div>
 
-  <select id="anio">
-    <option value="">Seleccione Año</option>
-    <option value="1">1° Año</option>
-    <option value="2">2° Año</option>
-    <option value="3">3° Año</option>
-  </select><br><br>
+    <form id="formRegistro">
+      <input type="text" id="cedula" placeholder="Cédula" required><br>
+      <input type="text" id="nombres" placeholder="Nombres completos" required><br>
+      <input type="text" id="apellidos" placeholder="Apellidos completos" required><br>
+      <input type="date" id="fechaNacimiento" placeholder="Fecha de Nacimiento" required><br>
+      <input type="email" id="email" placeholder="Correo" required><br>
+      <input type="password" id="password" placeholder="Contraseña" required><br>
 
-  <select id="seccion">
-    <option value="">Seleccione Sección</option>
-    <option value="A">A</option>
-    <option value="B">B</option>
-  </select><br><br>
+      <select id="anio" required>
+        <option value="">Seleccione Año</option>
+        <option value="1">1° Año</option>
+        <option value="2">2° Año</option>
+        <option value="3">3° Año</option>
+      </select><br><br>
 
-  <select id="lapso">
-    <option value="">Seleccione Lapso</option>
-    <option value="1">Lapso 1</option>
-    <option value="2">Lapso 2</option>
-    <option value="3">Lapso 3</option>
-  </select><br><br>
+      <select id="seccion" required>
+        <option value="">Seleccione Sección</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+      </select><br><br>
 
-  <button id="btnRegistro">Crear Cuenta</button>
+      <select id="lapso" required>
+        <option value="">Seleccione Lapso</option>
+        <option value="1">Lapso 1</option>
+        <option value="2">Lapso 2</option>
+        <option value="3">Lapso 3</option>
+      </select><br><br>
 
-  <!-- SOLO ESTE SCRIPT -->
+      <button type="submit" class="btn-turquesa">Crear Cuenta</button>
+    </form>
+  </div>
+
+  <!-- Scripts Firebase -->
   <script type="module" src="./registro.js"></script>
 
 </body>
