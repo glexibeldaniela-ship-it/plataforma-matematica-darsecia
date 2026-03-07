@@ -1,189 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Administrador</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 10px; background-color: #e0f7fa; }
-    h2 { text-align: center; color: #00796b; }
-    .bienvenida { text-align: center; font-size: 20px; font-weight: bold; color: #00796b; margin-bottom: 20px; }
+<meta charset="UTF-8">
+<title>Panel Administrador – Centro de Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ===== ESTILOS DEL CONEJITO (Mantenidos y Optimizados) ===== */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; min-height: 100vh; }
 
-    .panel-seccion { background: #b2ebf2; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-    .panel-seccion input, .panel-seccion select { margin: 5px 0; padding: 8px; width: 100%; border-radius: 6px; border: 1px solid #0097a7; }
-    .panel-seccion button { margin-top: 10px; padding: 10px 15px; background-color: #00bcd4; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-    .panel-seccion button:hover { background-color: #0097a7; }
+.header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
+.header-info { display: flex; align-items: center; gap: 14px; }
+.header-avatar { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.5); }
+.header-title { margin: 0; font-size: 1.1rem; font-weight: 700; }
+.header-subtitle { margin: 2px 0 0; font-size: 0.78rem; opacity: 0.85; }
 
-    .lista-estudiantes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .estudiante-item { background-color: #e0f2f1; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-    .estudiante-info { font-size: 14px; color: #004d40; }
-    .estudiante-acciones button { margin-left: 5px; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #fff; transition: 0.3s; }
-    .btn-reset { background-color: #00bcd4; }
-    .btn-reset:hover { background-color: #0097a7; }
-    .btn-borrar { background-color: #f44336; }
-    .btn-borrar:hover { background-color: #d32f2f; }
+.tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 78px; z-index: 90; }
+.tab-btn { flex: 1; min-width: 120px; background: none; border: none; border-bottom: 3px solid transparent; padding: 14px; font-weight: 600; color: #777; cursor: pointer; transition: 0.2s; }
+.tab-btn.activo { color: #00796b; border-bottom-color: #00bcd4; background: #f0fdfd; }
 
-    .resumen-estadisticas { margin-top: 15px; padding: 12px; border-radius: 12px; background-color: #b2ebf2; font-weight: bold; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+.contenedor { padding: 20px; max-width: 960px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.activo { display: block; }
 
-    @media screen and (max-width: 600px) {
-      .estudiante-item { flex-direction: column; align-items: flex-start; }
-      .estudiante-acciones { margin-top: 8px; }
-      .estudiante-info { font-size: 13px; }
-    }
-  </style>
+/* STATS CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 3px 14px rgba(0,0,0,0.07); border-top: 4px solid #00bcd4; }
+.stat-valor { font-size: 2rem; font-weight: 800; color: #00796b; }
+.stat-label { font-size: 0.72rem; color: #888; text-transform: uppercase; }
+
+/* TABLAS Y FORMULARIOS */
+.tabla-wrapper { width: 100%; overflow-x: auto; border-radius: 14px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); background: white; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: #00796b; color: white; }
+th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px solid #eee; }
+
+/* MODALES */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; padding: 15px; }
+.modal-overlay.abierto { display: flex; }
+.modal-caja { background: white; border-radius: 18px; width: 100%; max-width: 500px; overflow: hidden; }
+.modal-header { background: #00796b; color: white; padding: 15px; display: flex; justify-content: space-between; }
+.modal-body { padding: 20px; }
+
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; }
+.form-group input, .form-group select { width: 100%; padding: 10px; border: 1.5px solid #b2ebf2; border-radius: 8px; }
+
+.btn-primary { background: #00bcd4; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.btn-cerrar { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; border-radius: 20px; padding: 5px 15px; cursor: pointer; }
+</style>
 </head>
 <body>
 
-<h2>Panel Administrador</h2>
-<h3 class="bienvenida" id="bienvenidaAdmin">Bienvenido Administrador José</h3>
-
-<!-- Crear Profesor -->
-<div class="panel-seccion">
-  <h3>Crear Profesor</h3>
-  <input type="email" id="emailProfesor" placeholder="Correo del profesor">
-  <input type="password" id="passwordProfesor" placeholder="Contraseña">
-  <button onclick="crearProfesor()">Crear Profesor</button>
+<div class="header">
+  <div class="header-info">
+    <div class="header-avatar">🛡️</div>
+    <div>
+      <p class="header-title">Panel Administrador</p>
+      <p class="header-subtitle">Bienvenido, José Agustín</p>
+    </div>
+  </div>
+  <button class="btn-cerrar" onclick="cerrarSesion()">Salir</button>
 </div>
 
-<!-- Crear Estudiante -->
-<div class="panel-seccion">
-  <h3>Crear Estudiante</h3>
-  <input type="text" id="nombresEst" placeholder="Nombres completos">
-  <input type="text" id="apellidosEst" placeholder="Apellidos completos">
-  <input type="text" id="cedulaEst" placeholder="Cédula">
-  <input type="date" id="fechaNacimientoEst" placeholder="Fecha de Nacimiento">
-  <input type="email" id="emailEst" placeholder="Correo">
-  <input type="password" id="passwordEst" placeholder="Contraseña">
-  <select id="anioEst">
-    <option value="">Seleccione Año</option>
-    <option value="1">1° Año</option>
-    <option value="2">2° Año</option>
-    <option value="3">3° Año</option>
-  </select>
-  <select id="seccionEst">
-    <option value="">Seleccione Sección</option>
-    <option value="A">A</option>
-    <option value="B">B</option>
-  </select>
-  <button onclick="crearEstudiante()">Crear Estudiante</button>
+<div class="tabs-bar">
+  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">👥 Usuarios</button>
+  <button class="tab-btn" onclick="cambiarTab('estructura', this)">🏫 Estructura</button>
+  <button class="tab-btn" onclick="cambiarTab('seguridad', this)">🔒 Seguridad</button>
 </div>
 
-<!-- Lista y Estadísticas -->
-<h3>Administrar Estudiantes</h3>
-<div id="listaEstudiantes" class="lista-estudiantes"></div>
-<div id="estadisticasEstudiantes" class="resumen-estadisticas">
-  <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
-  <strong>Por Sección:</strong> <span id="porSeccion"></span> |
-  <strong>En Línea:</strong> <span id="estudiantesOnline"></span>
+<div class="contenedor">
+  <div class="tab-panel activo" id="tab-usuarios">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-valor" id="statEst">0</div><div class="stat-label">Alumnos</div></div>
+      <div class="stat-card" style="border-top-color:#43a047"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Profesores</div></div>
+    </div>
+    <div style="margin-bottom:20px; display:flex; gap:10px;">
+      <button class="btn-primary" onclick="abrirModal('modalEstudiante')">+ Estudiante</button>
+      <button class="btn-primary" style="background:#43a047" onclick="abrirModal('modalProfesor')">+ Profesor</button>
+    </div>
+    <div class="tabla-wrapper">
+      <table>
+        <thead><tr><th>Nombre</th><th>Cédula</th><th>Rol</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaUsuariosBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-estructura">
+    <h3>Gestión Escolar</h3>
+    <p>Añade años y secciones que aparecerán en los formularios.</p>
+    </div>
 </div>
 
-<hr>
-<button onclick="cerrarSesion()" style="background-color:#0097a7; color:#fff; padding:10px 15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Cerrar Sesión</button>
+<div class="modal-overlay" id="modalEstudiante">
+  <div class="modal-caja">
+    <div class="modal-header"><h3>Crear Estudiante</h3><button onclick="cerrarModal('modalEstudiante')">X</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nombres</label><input type="text" id="nombresEst"></div>
+      <div class="form-group"><label>Apellidos</label><input type="text" id="apellidosEst"></div>
+      <div class="form-group"><label>Cédula</label><input type="text" id="cedulaEst"></div>
+      <div class="form-group"><label>Correo</label><input type="email" id="emailEst"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="passEst"></div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div class="form-group"><label>Año</label><select id="anioEst"><option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option></select></div>
+        <div class="form-group"><label>Sección</label><select id="seccionEst"><option value="A">A</option><option value="B">B</option></select></div>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="crearEstudiante()">Guardar Estudiante</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Cerrar sesión
-window.cerrarSesion = () => {
-  signOut(auth).then(() => window.location.href = "login.html");
+window.cambiarTab = (name, btn) => {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+  document.getElementById('tab-' + name).classList.add('activo');
+  btn.classList.add('activo');
 };
 
-// Crear Profesor
-window.crearProfesor = async () => {
-  const email = document.getElementById("emailProfesor").value;
-  const password = document.getElementById("passwordProfesor").value;
-  if (!email || !password) { alert("Complete todos los campos"); return; }
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await setDoc(doc(db, "usuarios", user.uid), { email, rol: "profesor" });
-    alert("Profesor creado correctamente");
-  } catch(e) { alert("Error: " + e.message); }
-};
+window.abrirModal = (id) => document.getElementById(id).classList.add('abierto');
+window.cerrarModal = (id) => document.getElementById(id).classList.remove('abierto');
 
-// Crear Estudiante
+// CREAR ESTUDIANTE
 window.crearEstudiante = async () => {
-  const nombres = document.getElementById("nombresEst").value.trim();
-  const apellidos = document.getElementById("apellidosEst").value.trim();
-  const cedula = document.getElementById("cedulaEst").value.trim();
-  const fechaNacimiento = document.getElementById("fechaNacimientoEst").value;
-  const anio = document.getElementById("anioEst").value;
-  const seccion = document.getElementById("seccionEst").value;
-  const email = document.getElementById("emailEst").value.trim();
-  const password = document.getElementById("passwordEst").value.trim();
-  if (!nombres || !apellidos || !cedula || !fechaNacimiento || !anio || !seccion || !email || !password) { alert("Complete todos los campos"); return; }
+  const n = document.getElementById("nombresEst").value;
+  const a = document.getElementById("apellidosEst").value;
+  const c = document.getElementById("cedulaEst").value;
+  const e = document.getElementById("emailEst").value;
+  const p = document.getElementById("passEst").value;
+  const an = document.getElementById("anioEst").value;
+  const s = document.getElementById("seccionEst").value;
+
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await setDoc(doc(db, "usuarios", user.uid), {
-      nombres, apellidos, cedula, fechaNacimiento, anio, seccion,
-      email, rol: "estudiante", estado: "offline", nota: null, creado_en: new Date()
+    const cred = await createUserWithEmailAndPassword(auth, e, p);
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombres: n, apellidos: a, cedula: c, email: e, anio: an, seccion: s, rol: "estudiante"
     });
-    alert("Estudiante creado correctamente");
-    cargarEstudiantes();
-  } catch(e) { alert("Error: " + e.message); }
+    alert("Estudiante Creado");
+    cerrarModal('modalEstudiante');
+  } catch(err) { alert(err.message); }
 };
 
-// Lista de estudiantes y estadísticas
-const totalEst = document.getElementById("totalEst");
-const porSeccion = document.getElementById("porSeccion");
-const estudiantesOnline = document.getElementById("estudiantesOnline");
-const listaDiv = document.getElementById("listaEstudiantes");
-
-async function cargarEstudiantes() {
-  listaDiv.innerHTML = "";
-  const querySnapshot = await getDocs(collection(db, "usuarios"));
-  let total = 0;
-  const secciones = {};
-  let online = [];
-  querySnapshot.forEach(docu => {
-    const data = docu.data();
-    if (data.rol === "estudiante") {
-      total++;
-      secciones[data.seccion] = (secciones[data.seccion] || 0) + 1;
-      if (data.estado === "online") online.push(`${data.nombres} ${data.apellidos}`);
-      const div = document.createElement("div");
-      div.classList.add("estudiante-item");
-      div.innerHTML = `
-        <div class="estudiante-info">
-          <strong>${data.nombres} ${data.apellidos}</strong><br>
-          Cédula: ${data.cedula} | Fecha Nac.: ${data.fechaNacimiento}<br>
-          Sección: ${data.seccion} | Año: ${data.anio}
-        </div>
-        <div class="estudiante-acciones">
-          <button class="btn-reset" onclick="resetearPassword('${data.email}')">Resetear contraseña</button>
-          <button class="btn-borrar" onclick="borrarEstudiante('${docu.id}', '${data.cedula}')">Borrar</button>
-        </div>
-      `;
-      listaDiv.appendChild(div);
-    }
+// CARGAR DATOS EN TIEMPO REAL
+onSnapshot(collection(db, "usuarios"), (snap) => {
+  const body = document.getElementById("tablaUsuariosBody");
+  let est = 0, prof = 0;
+  body.innerHTML = "";
+  snap.forEach(d => {
+    const u = d.data();
+    if(u.rol === 'estudiante') est++; else if(u.rol === 'profesor') prof++;
+    body.innerHTML += `<tr><td>${u.nombres}</td><td>${u.cedula}</td><td>${u.rol}</td><td><button onclick="borrarU('${d.id}')">Eliminar</button></td></tr>`;
   });
-  totalEst.textContent = total;
-  porSeccion.textContent = JSON.stringify(secciones);
-  estudiantesOnline.textContent = online.length > 0 ? online.join(", ") : "Ninguno";
-}
+  document.getElementById("statEst").innerText = est;
+  document.getElementById("statProf").innerText = prof;
+});
 
-// Resetear contraseña
-window.resetearPassword = async (email) => {
-  try { await sendPasswordResetEmail(auth, email); alert("Correo de recuperación enviado a " + email); }
-  catch(e){ alert("Error: " + e.message);}
-}
-
-// Borrar estudiante
-window.borrarEstudiante = async (uid, cedula) => {
-  if(!confirm("¿Seguro quieres borrar este estudiante?")) return;
-  try { await deleteDoc(doc(db, "usuarios", uid)); await deleteDoc(doc(db, "cedulas", cedula)); cargarEstudiantes(); alert("Estudiante borrado correctamente"); }
-  catch(e){ alert("Error: " + e.message);}
-}
-
-// Detectar cambios en tiempo real
-onSnapshot(collection(db, "usuarios"), () => cargarEstudiantes());
-
-// Ejecutar al cargar
-cargarEstudiantes();
+window.borrarU = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "usuarios", id)); };
+window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
 </script>
-
 </body>
 </html>
