@@ -142,17 +142,9 @@ font-size:13px;
 </div>
 
 <div class="menu">
-
 <button id="btnCrear">➕ Crear Examen</button>
-
-<button onclick="document.getElementById('seccionResultados').scrollIntoView()">
-📊 Ver Resultados
-</button>
-
-<button onclick="document.getElementById('onlineEstudiantes').scrollIntoView()">
-🟢 Estudiantes en Línea
-</button>
-
+<button onclick="document.getElementById('seccionResultados').scrollIntoView()">📊 Ver Resultados</button>
+<button onclick="document.getElementById('onlineEstudiantes').scrollIntoView()">🟢 Estudiantes en Línea</button>
 </div>
 
 <div class="seccion">
@@ -166,6 +158,22 @@ font-size:13px;
 <th>Lapso</th>
 <th>Estado</th>
 <th>Acciones</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<!-- NUEVA SECCIÓN: Estudiantes Inscritos -->
+<div class="seccion">
+<h3>Estudiantes Inscritos</h3>
+<table id="tablaEstudiantesInscritos">
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Cédula</th>
+<th>Año</th>
+<th>Sección</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -220,13 +228,14 @@ font-size:13px;
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { collection, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const { jsPDF } = window.jspdf;
 
 const tablaExamenesBody = document.querySelector("#tablaExamenes tbody");
 const selectExamen = document.getElementById("selectExamen");
 const tablaBody = document.querySelector("#tablaResultados tbody");
+const tablaInscritosBody = document.querySelector("#tablaEstudiantesInscritos tbody");
 const btnCrear = document.getElementById("btnCrear");
 const filtroAnio = document.getElementById("filtroAnio");
 const filtroSeccion = document.getElementById("filtroSeccion");
@@ -244,7 +253,7 @@ let resultadosFiltrados = [];
 
 btnCrear.addEventListener("click", () => { window.location.href = "crear-examen.html"; });
 
-// 🔹 Cargar Exámenes
+// Cargar exámenes
 async function cargarExamenes(){
 tablaExamenesBody.innerHTML="";
 selectExamen.innerHTML='<option value="">Selecciona un examen</option>';
@@ -261,8 +270,7 @@ tr.innerHTML = `
 <td>${examen.lapso}</td>
 <td>${examen.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
 <td>
-<button onclick="activarExamen('${docu.id}', ${examen.activo})">
-${examen.activo ? "Desactivar" : "Activar"}</button>
+<button onclick="activarExamen('${docu.id}', ${examen.activo})">${examen.activo ? "Desactivar" : "Activar"}</button>
 <button onclick="editarExamen('${docu.id}')">✏️ Editar</button>
 <button onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
 <button onclick="eliminarExamen('${docu.id}')">❌ Eliminar</button>
@@ -275,8 +283,10 @@ option.value = docu.id;
 option.textContent = examen.titulo;
 selectExamen.appendChild(option);
 });
+cargarEstudiantesInscritos();
 }
 
+// Funciones de exámenes
 window.activarExamen = async function(id, estadoActual){
 const examenesSnap = await getDocs(collection(db,"examenes"));
 if(!estadoActual){
@@ -307,25 +317,23 @@ await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:n
 alert("Examen reseteado");
 };
 
-// 🔹 NUEVA FUNCIÓN: Eliminar examen completamente
 window.eliminarExamen = async function(id){
-    const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
-    if(!confirmar) return;
+const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
+if(!confirmar) return;
+const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
+for(const docu of resultadosSnap.docs){
+await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
+}
+await deleteDoc(doc(db,"examenes",id));
 
-    const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-    for(const docu of resultadosSnap.docs){
-        await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
-    }
-
-    await deleteDoc(doc(db,"examenes",id));
-
-    // Eliminar fila directamente
-    const fila = document.querySelector(`#tablaExamenes button[onclick*="${id}"]`).closest("tr");
-    if(fila) fila.remove();
-
-    alert("Examen eliminado del panel");
+// Eliminar fila directamente
+const fila = document.querySelector(`#tablaExamenes button[onclick*="${id}"]`).closest("tr");
+if(fila) fila.remove();
+alert("Examen eliminado del panel");
+cargarEstudiantesInscritos(); // refrescar lista inscritos
 };
 
+// Cargar resultados
 async function cargarResultados(examenId){
 tablaBody.innerHTML="";
 filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
@@ -388,6 +396,7 @@ selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResult
 filtroAnio.addEventListener("change", aplicarFiltros);
 filtroSeccion.addEventListener("change", aplicarFiltros);
 
+// PDF
 btnPDF.addEventListener("click", ()=>{
 if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
 const doc = new jsPDF(); let y=10;
@@ -425,6 +434,7 @@ y+=6; if(y>280){ doc.addPage(); y=10; }
 doc.save("Lista_Estudiantes.pdf");
 });
 
+// Estudiantes en línea
 async function cargarEstudiantesOnline(){
 const usuariosSnap = await getDocs(collection(db,"usuarios"));
 onlineEstudiantesDiv.innerHTML="";
@@ -435,6 +445,24 @@ const div = document.createElement("div");
 div.textContent = `${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
 onlineEstudiantesDiv.appendChild(div);
 }
+});
+}
+
+// NUEVA FUNCIÓN: cargar estudiantes inscritos
+async function cargarEstudiantesInscritos(){
+tablaInscritosBody.innerHTML="";
+const usuariosSnap = await getDocs(collection(db,"usuarios"));
+usuariosSnap.forEach(docu=>{
+const u = docu.data();
+if(u.rol==="estudiante"){
+const tr = document.createElement("tr");
+tr.innerHTML = `
+<td>${u.nombres} ${u.apellidos}</td>
+<td>${u.cedula}</td>
+<td>${u.anio}</td>
+<td>${u.seccion}</td>
+`;
+tablaInscritosBody.appendChild(tr);
 });
 }
 
