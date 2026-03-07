@@ -7,42 +7,103 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<link rel="stylesheet" href="estilos.css">
+
 <style>
 body{
-  font-family: Arial, sans-serif;
-  padding:20px;
+  margin:0;
+  padding:15px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:#f0f4f8;
 }
+
+.header{
+  background:#00796b;
+  color:white;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  margin-bottom:20px;
+}
+
+.header h2{
+  margin:0;
+}
+
+/* CONTENEDOR RESULTADO */
+
+.contenedorResultado{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* TARJETA RESULTADO */
 
 .card{
-  border:1px solid #ccc;
-  padding:20px;
+  border:1px solid #ddd;
   border-radius:10px;
-  margin-top:20px;
+  padding:20px;
+  margin-top:15px;
+  background:#fafafa;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
+/* BOTON PDF */
+
 button{
-  padding:10px 15px;
-  font-size:16px;
-  margin-top:15px;
+  background:#00bcd4;
+  color:white;
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  font-weight:bold;
   cursor:pointer;
+  width:100%;
+  margin-top:15px;
 }
+
+button:hover{
+  background:#0097a7;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+  .card{
+    font-size:14px;
+    padding:15px;
+  }
+  button{
+    padding:10px;
+    font-size:14px;
+  }
+}
+
 </style>
+
 </head>
 
 <body>
 
+<div class="header">
 <h2>Resultado del Examen</h2>
+</div>
 
+<div class="contenedorResultado">
 <div id="resultado" class="card"></div>
 
 <button id="btnPDF">Descargar Acta Oficial PDF</button>
+</div>
 
 <script type="module">
 
 import { auth, db } from "./firebase.js";
-import { doc, getDoc, collection, getDocs, query, where } 
+import { doc, getDoc, collection, getDocs, query, where }     
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { onAuthStateChanged } 
+import { onAuthStateChanged }     
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const { jsPDF } = window.jspdf;
