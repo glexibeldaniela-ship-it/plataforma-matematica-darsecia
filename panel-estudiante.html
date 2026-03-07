@@ -211,26 +211,30 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Cargar datos personales
-  const userRef = doc(db, "usuarios", user.uid);
-  const userSnap = await getDoc(userRef);
+  try {
+    // Cargar datos personales del alumno
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
 
-  if (!userSnap.exists()) {
-    datosPersonalesDiv.innerHTML = "<p>Error: usuario no encontrado.</p>";
-    return;
+    if (!userSnap.exists()) {
+      datosPersonalesDiv.innerHTML = "<p>Error: usuario no encontrado.</p>";
+      return;
+    }
+
+    const data = userSnap.data();
+    datosPersonalesDiv.innerHTML = `
+      <strong>Nombre:</strong> ${data.nombres} ${data.apellidos} |
+      <strong>Cédula:</strong> ${data.cedula} |
+      <strong>Año:</strong> ${data.anio} |
+      <strong>Sección:</strong> ${data.seccion}
+    `;
+
+    // 🚀 MEJORA CONEJO: Pasar año y sección para filtrar
+    cargarExamenActivo(data.anio, data.seccion);
+    cargarHistorial(user.uid, data.anio, data.seccion);
+  } catch (error) {
+    console.error("Error inicial:", error);
   }
-
-  const data = userSnap.data();
-  datosPersonalesDiv.innerHTML = `
-    <strong>Nombre:</strong> ${data.nombres} ${data.apellidos} |
-    <strong>Cédula:</strong> ${data.cedula} |
-    <strong>Fecha de Nacimiento:</strong> ${data.fechaNacimiento} |
-    <strong>Año:</strong> ${data.anio} |
-    <strong>Sección:</strong> ${data.seccion}
-  `;
-
-  cargarExamenActivo();
-  cargarHistorial(user.uid);
 });
 
 // Cerrar sesión
@@ -238,34 +242,46 @@ window.cerrarSesion = function () {
   signOut(auth).then(() => { window.location.href = "login.html"; });
 };
 
-// 🔹 Exámenes disponibles
-async function cargarExamenActivo() {
+// 🔹 Exámenes disponibles (FILTRADOS POR AÑO Y SECCIÓN)
+async function cargarExamenActivo(anioEstudiante, seccionEstudiante) {
   lista.innerHTML = "";
-  const q = query(collection(db, "examenes"), where("activo", "==", true));
-  const snapshot = await getDocs(q);
+  
+  try {
+    // 🚀 MEJORA CONEJO: Filtro de 3 niveles para que no vean exámenes de otros años
+    const q = query(
+      collection(db, "examenes"), 
+      where("activo", "==", true),
+      where("anio", "==", anioEstudiante),
+      where("seccion", "==", seccionEstudiante)
+    );
+    
+    const snapshot = await getDocs(q);
 
-  if (snapshot.empty) {
-    lista.innerHTML = "<p>No hay examen activo en este momento.</p>";
-    return;
+    if (snapshot.empty) {
+      lista.innerHTML = "<p>No hay examen activo para tu año y sección en este momento.</p>";
+      return;
+    }
+
+    snapshot.forEach(docu => {
+      const examen = docu.data();
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <h4>${examen.titulo}</h4>
+        <p>Año: ${examen.anio} - Sección: ${examen.seccion}</p>
+        <p>Duración: ${examen.duracion || "-"} minutos</p>
+        <p><strong>Repaso obligatorio (2 minutos)</strong></p>
+        <a href="${examen.repaso_link || "#"}" target="_blank">📘 Ver Repaso en Drive</a>
+        <br><br>
+        <p id="contador_${docu.id}">Disponible en 120 segundos</p>
+        <button id="btn_${docu.id}" disabled>Iniciar Examen</button>
+      `;
+      lista.appendChild(div);
+      iniciarTemporizador(docu.id);
+    });
+  } catch (error) {
+    console.error("Error cargando exámenes:", error);
+    lista.innerHTML = "<p>Error al cargar la lista. Verifica los índices de Firebase.</p>";
   }
-
-  snapshot.forEach(docu => {
-    const examen = docu.data();
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <h4>${examen.titulo}</h4>
-      <p>Año: ${examen.anio}</p>
-      <p>Sección: ${examen.seccion}</p>
-      <p>Duración: ${examen.duracion || "-"} minutos</p>
-      <p><strong>Repaso obligatorio (2 minutos)</strong></p>
-      <a href="${examen.repaso_link || "#"}" target="_blank">📘 Ver Repaso en Drive</a>
-      <br><br>
-      <p id="contador_${docu.id}">Disponible en 120 segundos</p>
-      <button id="btn_${docu.id}" disabled>Iniciar Examen</button>
-    `;
-    lista.appendChild(div);
-    iniciarTemporizador(docu.id);
-  });
 }
 
 function iniciarTemporizador(id) {
@@ -275,60 +291,71 @@ function iniciarTemporizador(id) {
 
   const intervalo = setInterval(() => {
     tiempo--;
-    contador.textContent = "Disponible en " + tiempo + " segundos";
+    if (contador) contador.textContent = "Disponible en " + tiempo + " segundos";
     if (tiempo <= 0) {
       clearInterval(intervalo);
-      contador.textContent = "Puede iniciar el examen";
-      boton.disabled = false;
-      boton.onclick = () => { window.location.href = "presentar-examen.html?id=" + id; };
+      if (contador) contador.textContent = "Puede iniciar el examen";
+      if (boton) {
+        boton.disabled = false;
+        boton.onclick = () => { window.location.href = "presentar-examen.html?id=" + id; };
+      }
     }
   }, 1000);
 }
 
-// 🔹 Historial de exámenes
-async function cargarHistorial(uid) {
+// 🔹 Historial de exámenes (FILTRADO POR AÑO Y SECCIÓN)
+async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
   tablaHistorial.innerHTML = "";
-  // FIX CONEJO: Declarar variable
-  let resultadosGlobal = [];
   let total = 0, suma = 0, aprobados = 0, reprobados = 0;
 
-  const examenesSnap = await getDocs(collection(db, "examenes"));
-  for (const examenDoc of examenesSnap.docs) {
-    const examenId = examenDoc.id;
-    const examenData = examenDoc.data();
+  try {
+    // 🚀 MEJORA CONEJO: Solo buscar exámenes correspondientes al alumno
+    const qExamenes = query(
+      collection(db, "examenes"),
+      where("anio", "==", anioEstudiante),
+      where("seccion", "==", seccionEstudiante)
+    );
+    
+    const examenesSnap = await getDocs(qExamenes);
+    
+    for (const examenDoc of examenesSnap.docs) {
+      const examenId = examenDoc.id;
+      const examenData = examenDoc.data();
 
-    const resultadosSnap = await getDocs(collection(db, `examenes/${examenId}/resultados`));
-    resultadosSnap.forEach(resDoc => {
-      const res = resDoc.data();
-      // FIX CONEJO: Corregir campo de filtrado (estudiante_id en lugar de uid)
-      if (res.estudiante_id === uid) {
-        const fila = document.createElement("tr");
-        fila.innerHTML = `
-          <td>${examenData.titulo}</td>
-          <td>${examenData.anio}</td>
-          <td>${examenData.seccion}</td>
-          <td>${examenData.lapso || "-"}</td>
-          <td>${res.nota != null ? res.nota : "-"}</td>
-          <td>${res.estado || "Sin presentar"}</td>
-        `;
-        tablaHistorial.appendChild(fila);
+      const resultadosSnap = await getDocs(collection(db, `examenes/${examenId}/resultados`));
+      resultadosSnap.forEach(resDoc => {
+        const res = resDoc.data();
+        if (res.estudiante_id === uid) {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${examenData.titulo}</td>
+            <td>${examenData.anio}</td>
+            <td>${examenData.seccion}</td>
+            <td>${examenData.lapso || "-"}</td>
+            <td>${res.nota != null ? res.nota : "-"}</td>
+            <td>${res.estado || "Sin presentar"}</td>
+          `;
+          tablaHistorial.appendChild(fila);
 
-        if (res.nota != null && !isNaN(res.nota)) {
-          total++; suma += Number(res.nota);
-          if (Number(res.nota) >= 10) aprobados++; else reprobados++;
+          if (res.nota != null && !isNaN(res.nota)) {
+            total++; suma += Number(res.nota);
+            if (Number(res.nota) >= 10) aprobados++; else reprobados++;
+          }
         }
-      }
-    });
-  }
+      });
+    }
 
-  if (total > 0) {
-    totalEx.textContent = total;
-    promedioSpan.textContent = (suma/total).toFixed(2);
-    aprobadosSpan.textContent = aprobados;
-    reprobadosSpan.textContent = reprobados;
-    estadisticasDiv.style.display = "block";
-  } else {
-    estadisticasDiv.style.display = "none";
+    if (total > 0) {
+      totalEx.textContent = total;
+      promedioSpan.textContent = (suma/total).toFixed(2);
+      aprobadosSpan.textContent = aprobados;
+      reprobadosSpan.textContent = reprobados;
+      estadisticasDiv.style.display = "block";
+    } else {
+      estadisticasDiv.style.display = "none";
+    }
+  } catch (error) {
+    console.error("Error cargando historial:", error);
   }
 }
 </script>
