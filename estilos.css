@@ -1,10 +1,10 @@
 /* ==========================
-   Fondo con imagen matemática (Pantalla Inicio)
+   Fondo con imagen matemática (Registro)
 ========================== */
-.pantalla-inicio{
+.pantalla-registro{
   margin:0;
   font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
+  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); /* Fondo del registro */
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -12,63 +12,53 @@
   justify-content:center;
   align-items:center;
   height:100vh;
+  font-weight:bold;
+  color: #004d40;
+  position:relative;
+}
+
+/* Imagen decorativa en la esquina */
+.decoracion-registro{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:80px; /* tamaño ajustable */
+  height:auto;
 }
 
 /* ==========================
-   Contenedor principal (Pantalla Inicio)
+   Contenedor principal (Registro)
 ========================== */
-.contenedor-bienvenida{
+.contenedor-registro{
+  background-color: rgba(255,255,255,0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
   text-align:center;
-  background-color:rgba(255,255,255,0.9);
-  padding:40px;
-  border-radius:20px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.2);
-  max-width:400px;
-  width:90%;
+  width: 320px;
 }
 
-/* ==========================
-   Emoji Matemática
-========================== */
-.emoji-mate{
-  font-size:60px;
-  margin-bottom:20px;
-  animation:girar 4s linear infinite;
+/* Inputs y selects */
+.contenedor-registro input,
+.contenedor-registro select{
+  width: 90%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-bottom: 15px;
 }
 
-@keyframes girar{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
-}
-
-/* ==========================
-   Títulos
-========================== */
-h1{
-  font-size:24px;
-  margin-bottom:15px;
+/* Título del registro */
+.contenedor-registro h2{
   color:#00796b;
+  margin-bottom:20px;
   font-weight:bold;
   font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-p{
-  font-size:16px;
-  margin-bottom:25px;
-  font-weight:bold;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* ==========================
-   Botones
-========================== */
-.botones-inicio{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-}
-
-.btn-turquesa{
+/* Botón */
+.btn-crear{
   background-color:#00bcd4;
   color:#fff;
   border:none;
@@ -80,83 +70,18 @@ p{
   transition:0.3s;
 }
 
-.btn-turquesa:hover{
+.btn-crear:hover{
   background-color:#0097a7;
   transform:translateY(-2px);
   box-shadow:0 5px 10px rgba(0,0,0,0.2);
 }
 
 /* ==========================
-   Pantalla LOGIN
+   Responsive
 ========================== */
-.pantalla-login {
-  background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); /* Nueva imagen para login */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* letras bonitas y corridas */
-  font-weight: bold; /* negritas */
-  color: #004d40;
-}
-
-/* Caja del login */
-.contenedor-login {
-  background: rgba(255,255,255,0.95);
-  padding: 40px;
-  border-radius: 20px;
-  text-align: center;
-  width: 320px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-}
-
-/* Inputs */
-.contenedor-login input{
-  width: 90%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-bottom: 15px;
-}
-
-/* Título del login */
-.contenedor-login h2{
-  color:#00796b;
-  margin-bottom:20px;
-}
-
-/* Responsive */
 @media screen and (max-width:500px){
-
-  .contenedor-bienvenida{
-    padding:30px 20px;
-  }
-
-  h1{
-    font-size:20px;
-  }
-
-  p{
-    font-size:14px;
-  }
-
-  .botones-inicio{
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .btn-turquesa{
-    width:100%;
-  }
-
-  .contenedor-login{
+  .contenedor-registro{
     width: 90%;
-    padding: 30px 20px;
+    padding:30px 20px;
   }
 }
