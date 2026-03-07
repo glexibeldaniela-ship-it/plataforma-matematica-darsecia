@@ -1,157 +1,146 @@
-/* ==========================        
-   Fondo con imagen matemática        
-========================== */        
-.pantalla-inicio{        
-  margin:0;        
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;        
-  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");        
-  background-size:cover;        
-  background-position:center;        
-  background-repeat:no-repeat;        
-  display:flex;        
-  justify-content:center;        
-  align-items:center;        
-  height:100vh;        
-}        
-        
-/* ==========================        
-   Contenedor principal        
-========================== */        
-.contenedor-bienvenida{        
-  text-align:center;        
-  background-color:rgba(255,255,255,0.9);        
-  padding:40px;        
-  border-radius:20px;        
-  box-shadow:0 8px 20px rgba(0,0,0,0.2);        
-  max-width:400px;        
-  width:90%;        
-}        
-        
-/* ==========================        
-   Emoji Matemática        
-========================== */        
-.emoji-mate{        
-  font-size:60px;        
-  margin-bottom:20px;        
-  animation:girar 4s linear infinite;        
-}        
-        
-@keyframes girar{        
-  from{transform:rotate(0deg);}        
-  to{transform:rotate(360deg);}        
-}        
-        
-/* ==========================        
-   Títulos        
-========================== */        
-h1{        
-  font-size:24px;        
-  margin-bottom:15px;        
-  color:#00796b;        
-}        
-        
-p{        
-  font-size:16px;        
-  margin-bottom:25px;        
-}        
-        
-/* ==========================        
-   Botones        
-========================== */        
-.botones-inicio{        
-  display:flex;        
-  justify-content:center;        
-  gap:15px;        
-}        
-        
-.btn-turquesa{        
-  background-color:#00bcd4;        
-  color:#fff;        
-  border:none;        
-  padding:12px 25px;        
-  border-radius:12px;        
-  font-weight:bold;        
-  font-size:14px;        
-  cursor:pointer;        
-  transition:0.3s;        
-}        
-        
-.btn-turquesa:hover{        
-  background-color:#0097a7;        
-  transform:translateY(-2px);        
-  box-shadow:0 5px 10px rgba(0,0,0,0.2);        
-}        
-        
-/* ==========================        
-   Responsive        
-========================== */        
-@media screen and (max-width:500px){        
-        
-  .contenedor-bienvenida{        
-    padding:30px 20px;        
-  }        
-        
-  h1{        
-    font-size:20px;        
-  }        
-        
-  p{        
-    font-size:14px;        
-  }        
-        
-  .botones-inicio{        
-    flex-direction:column;        
-    gap:10px;        
-  }        
-        
-  .btn-turquesa{        
-    width:100%;        
-  }        
-        
-}
-
-/* ==========================
-   PANTALLA LOGIN
-========================== */
-
-.pantalla-login{
-  margin:0;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-image:url("https://i.postimg.cc/bNjCFPqs/a279c091e928533a83d56a0d1c8f3255.jpg");
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-
+/* ==========================          
+   Fondo con imagen matemática          
+========================== */          
+.pantalla-inicio{          
+  margin:0;          
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;          
+  background-image:url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");          
+  background-size:cover;          
+  background-position:center;          
+  background-repeat:no-repeat;          
+  display:flex;          
+  justify-content:center;          
+  align-items:center;          
+  height:100vh;          
+}          
+          
+/* ==========================          
+   Contenedor principal          
+========================== */          
+.contenedor-bienvenida{          
+  text-align:center;          
+  background-color:rgba(255,255,255,0.9);          
+  padding:40px;          
+  border-radius:20px;          
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);          
+  max-width:400px;          
+  width:90%;          
+}          
+          
+/* ==========================          
+   Emoji Matemática          
+========================== */          
+.emoji-mate{          
+  font-size:60px;          
+  margin-bottom:20px;          
+  animation:girar 4s linear infinite;          
+}          
+          
+@keyframes girar{          
+  from{transform:rotate(0deg);}          
+  to{transform:rotate(360deg);}          
+}          
+          
+/* ==========================          
+   Títulos          
+========================== */          
+h1{          
+  font-size:24px;          
+  margin-bottom:15px;          
+  color:#00796b;          
+}          
+          
+p{          
+  font-size:16px;          
+  margin-bottom:25px;          
+}          
+          
+/* ==========================          
+   Botones          
+========================== */          
+.botones-inicio{          
+  display:flex;          
+  justify-content:center;          
+  gap:15px;          
+}          
+          
+.btn-turquesa{          
+  background-color:#00bcd4;          
+  color:#fff;          
+  border:none;          
+  padding:12px 25px;          
+  border-radius:12px;          
+  font-weight:bold;          
+  font-size:14px;          
+  cursor:pointer;          
+  transition:0.3s;          
+}          
+          
+.btn-turquesa:hover{          
+  background-color:#0097a7;          
+  transform:translateY(-2px);          
+  box-shadow:0 5px 10px rgba(0,0,0,0.2);          
+}          
+          
+/* ==========================          
+   LOGIN (NUEVA IMAGEN)          
+========================== */          
+.pantalla-login{          
+  margin:0;          
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;          
+  background-image:url("https://i.postimg.cc/bNjCFPqs/a279c091e928533a83d56a0d1c8f3255.jpg");          
+  background-size:80%;          
+  background-position:center;          
+  background-repeat:no-repeat;          
+  background-color:#e0f7fa;          
+  display:flex;          
+  justify-content:center;          
+  align-items:center;          
+  height:100vh;          
+}          
+          
 /* Caja login */
-
-.contenedor-login{
-  background-color:rgba(255,255,255,0.92);
-  padding:40px;
-  border-radius:20px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
-  text-align:center;
-  width:320px;
-}
-
-/* Inputs */
-
-.contenedor-login input{
-  width:90%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:10px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
-
-/* Título */
-
-.contenedor-login h2{
-  color:#00796b;
-  margin-bottom:20px;
+.contenedor-login{          
+  text-align:center;          
+  background-color:rgba(255,255,255,0.95);          
+  padding:40px;          
+  border-radius:20px;          
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);          
+  width:320px;          
+}          
+          
+.contenedor-login input{          
+  width:90%;          
+  padding:10px;          
+  border-radius:10px;          
+  border:1px solid #ccc;          
+  font-size:14px;          
+}          
+          
+/* ==========================          
+   Responsive          
+========================== */          
+@media screen and (max-width:500px){          
+          
+  .contenedor-bienvenida{          
+    padding:30px 20px;          
+  }          
+          
+  h1{          
+    font-size:20px;          
+  }          
+          
+  p{          
+    font-size:14px;          
+  }          
+          
+  .botones-inicio{          
+    flex-direction:column;          
+    gap:10px;          
+  }          
+          
+  .btn-turquesa{          
+    width:100%;          
+  }          
+          
 }
