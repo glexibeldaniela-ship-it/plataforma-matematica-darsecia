@@ -9,7 +9,7 @@ body {
 }
 
 /* ==========================
-   Pantalla Inicio
+   Pantalla Inicio (Mantiene tu fondo)
 ========================= */
 .pantalla-inicio {
   background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
@@ -32,45 +32,8 @@ body {
   width: 90%;
 }
 
-h1 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #00796b;
-  font-weight: bold;
-}
-
-p {
-  font-size: 16px;
-  margin-bottom: 25px;
-  font-weight: bold;
-}
-
-.botones-inicio {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.btn-turquesa {
-  background-color: #00bcd4;
-  color: #fff;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn-turquesa:hover {
-  background-color: #0097a7;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-
 /* ==========================
-   Pantalla Login
+   Pantalla Login (Mantiene tu fondo)
 ========================= */
 .pantalla-login {
   background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png");
@@ -81,48 +44,10 @@ p {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-weight: bold;
-}
-
-.contenedor-login {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 30px 20px;
-  border-radius: 20px;
-  text-align: center;
-  width: 90%;
-  max-width: 360px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.contenedor-login h2 {
-  color: #00796b;
-  margin-bottom: 20px;
-}
-
-.contenedor-login input,
-.contenedor-login select {
-  width: 95%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-bottom: 12px;
-  font-weight: bold;
-}
-
-.emoji-mate {
-  font-size: 50px;
-  margin-bottom: 15px;
-  animation: girar 4s linear infinite;
-}
-
-@keyframes girar {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* ==========================
-   Pantalla Registro
+   Pantalla Registro (Mantiene tu fondo)
 ========================= */
 .pantalla-registro {
   background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png");
@@ -133,132 +58,132 @@ p {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-weight: bold;
-}
-
-.contenedor-registro {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 30px 20px;
-  border-radius: 20px;
-  text-align: center;
-  width: 90%;
-  max-width: 360px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.contenedor-registro input,
-.contenedor-registro select {
-  width: 95%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-bottom: 12px;
-  font-weight: bold;
-}
-
-.contenedor-registro h2 {
-  color: #00796b;
-  margin-bottom: 15px;
 }
 
 /* ==========================
-   Panel Profesor
+   COMPONENTES PROFESIONALES (NUEVOS)
 ========================= */
-h2, h3 {
+
+/* Perfil del Estudiante Estilo "Card" */
+.perfil-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(0, 188, 212, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-left: 6px solid #00bcd4;
+}
+
+.perfil-avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00bcd4, #00796b);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+}
+
+.badge {
+  background: #e0f7fa;
   color: #00796b;
-  margin-bottom: 10px;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
   font-weight: bold;
-  text-align: center;
+  border: 1px solid #b2ebf2;
+  margin-right: 5px;
+  display: inline-block;
 }
 
-button {
-  background-color: #00bcd4;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* Tarjetas de Examen Modernas */
+.examen-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #e0f2f1;
 }
 
-button:hover {
-  background-color: #0097a7;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+.examen-card-header {
+  background: linear-gradient(90deg, #00bcd4, #00acc1);
+  padding: 12px 20px;
+  color: white;
 }
 
-select, input {
-  width: 95%;
-  padding: 10px;
+.examen-card-body {
+  padding: 20px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f8f9;
+  padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-  font-size: 14px;
+  font-size: 13px;
+  margin-right: 8px;
+  color: #555;
 }
 
-/* Tablas modernas */
+/* Botones con Estilo */
+.btn-iniciar {
+  width: 100%;
+  background-color: #ff9800;
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-iniciar:hover:enabled {
+  background-color: #f57c00;
+  transform: scale(1.02);
+}
+
+.btn-iniciar:disabled {
+  background-color: #ccc;
+}
+
+/* Tablas con Scroll para Móvil */
+.tabla-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-}
-
-th, td {
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #e0e0e0;
+  background: white;
 }
 
 th {
   background-color: #00796b;
-  color: #fff;
+  color: white;
+  padding: 12px;
 }
 
-tr:nth-child(even) {
-  background-color: #f5f5f5;
-}
-
-/* Resumen y estudiantes online */
-.resumen, .onlineList {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
 }
 
 /* ==========================
-   Responsive - Móvil
+   Responsive
 ========================= */
 @media screen and (max-width: 600px){
-  .contenedor-bienvenida,
-  .contenedor-login,
-  .contenedor-registro {
-    width: 95%;
-    padding: 20px;
-  }
-
+  .perfil-card { flex-direction: column; text-align: center; }
+  .contenedor-bienvenida { padding: 20px; }
   h1 { font-size: 20px; }
-  p { font-size: 14px; }
-
-  .botones-inicio { flex-direction: column; gap: 10px; }
-  .btn-turquesa { width: 100%; }
-
-  .emoji-mate { font-size: 40px; }
-
-  input, select, button, table, th, td {
-    font-size: 13px;
-    width: 100%;
-  }
-
-  .resumen, .onlineList {
-    font-size: 12px;
-    padding: 8px;
-  }
 }
