@@ -21,14 +21,12 @@ body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #
 .examen-card { background: white; border-radius: 12px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e0f7fa; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
 .examen-card-header { background: #00796b; color: white; padding: 12px 15px; display: flex; justify-content: space-between; }
 
-/* BOTONES DE CONTROL (Añadidos con sutileza) */
 .btn-accion { padding: 6px 12px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 5px; }
 .btn-activar { background: #4caf50; }
 .btn-desactivar { background: #ff9800; }
 .btn-eliminar { background: #d32f2f; margin-left: 5px; }
 .btn-pdf { background: #00796b; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin: 10px 0; cursor: pointer; font-weight: bold; }
 
-/* Filtros */
 .filtros-box { display: flex; gap: 10px; margin-bottom: 15px; }
 select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; }
 </style>
@@ -99,49 +97,80 @@ onAuthStateChanged(auth, (user) => { if(!user) window.location.href="login.html"
 async function cargarExamenes() {
   const lista = document.getElementById("listaExamenes");
   lista.innerHTML = "";
-  const snap = await getDocs(collection(db, "examenes"));
-  snap.forEach(d => {
-    const ex = d.data();
-    lista.innerHTML += `
-      <div class="examen-card">
-        <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
-          <strong>${ex.titulo}</strong>
-          <span>${ex.activo ? 'Activo' : 'Inactivo'}</span>
-        </div>
-        <div style="padding:15px">
-          <small>${ex.anio}° Año - Sección ${ex.seccion}</small><br>
-          <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">${ex.activo ? 'Desactivar' : 'Activar'}</button>
-          <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">Eliminar</button>
-        </div>
-      </div>`;
-  });
+  try {
+    const snap = await getDocs(collection(db, "examenes"));
+    snap.forEach(d => {
+      const ex = d.data();
+      lista.innerHTML += `
+        <div class="examen-card">
+          <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
+            <strong>${ex.titulo}</strong>
+            <span>${ex.activo ? 'Activo' : 'Inactivo'}</span>
+          </div>
+          <div style="padding:15px">
+            <small>${ex.anio}° Año - Sección ${ex.seccion}</small><br>
+            <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">${ex.activo ? 'Desactivar' : 'Activar'}</button>
+            <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">Eliminar</button>
+          </div>
+        </div>`;
+    });
+  } catch(e) { console.error(e); }
 }
 
 window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); cargarExamenes(); };
 window.borrarEx = async (id) => { if(confirm("¿Eliminar examen?")) { await deleteDoc(doc(db, "examenes", id)); cargarExamenes(); } };
 
+// ESTA ES LA FUNCIÓN QUE CORREGÍ PARA QUE APAREZCAN TUS ESTUDIANTES
 async function cargarEstudiantes() {
-  const anio = document.getElementById("fAnio").value;
-  const sec = document.getElementById("fSec").value;
+  const anioSel = document.getElementById("fAnio").value;
+  const secSel = document.getElementById("fSec").value;
   const body = document.getElementById("bodyEstudiantes");
-  body.innerHTML = "";
-  const snap = await getDocs(collection(db, "usuarios"));
-  snap.forEach(d => {
-    const u = d.data();
-    if(u.rol === 'estudiante' && (anio === 'todos' || u.anio == anio) && (sec === 'todas' || u.seccion == sec)) {
-      body.innerHTML += `<tr><td style="padding:10px">${u.cedula}</td><td style="padding:10px">${u.nombres} ${u.apellidos}</td><td style="padding:10px">${u.anio}° ${u.seccion}</td></tr>`;
+  body.innerHTML = "<tr><td colspan='3' style='padding:10px'>Buscando alumnos...</td></tr>";
+  
+  try {
+    const snap = await getDocs(collection(db, "usuarios"));
+    body.innerHTML = "";
+    let hayAlumnos = false;
+
+    snap.forEach(d => {
+      const u = d.data();
+      // Verificamos si es estudiante (o si no tiene rol pero tiene año/sección)
+      if(u.rol === 'estudiante' || u.rol === undefined) {
+        const cumpleAnio = (anioSel === 'todos' || String(u.anio) === String(anioSel));
+        const cumpleSec = (secSel === 'todas' || String(u.seccion).toUpperCase() === String(secSel).toUpperCase());
+
+        if(cumpleAnio && cumpleSec) {
+          hayAlumnos = true;
+          body.innerHTML += `<tr>
+            <td style="padding:10px">${u.cedula || '---'}</td>
+            <td style="padding:10px">${u.nombres || 'Sin nombre'} ${u.apellidos || ''}</td>
+            <td style="padding:10px">${u.anio || '?'}° ${u.seccion || '?'}</td>
+          </tr>`;
+        }
+      }
+    });
+
+    if(!hayAlumnos) {
+      body.innerHTML = "<tr><td colspan='3' style='padding:10px; color:red;'>No hay alumnos en esta sección aún.</td></tr>";
     }
-  });
+  } catch(e) { 
+    console.error(e);
+    body.innerHTML = "<tr><td colspan='3' style='padding:10px'>Error al cargar: "+e.message+"</td></tr>";
+  }
 }
 
 async function cargarNotas() {
   const body = document.getElementById("bodyNotas");
-  body.innerHTML = "";
-  const snap = await getDocs(collection(db, "resultados"));
-  snap.forEach(d => {
-    const n = d.data();
-    body.innerHTML += `<tr><td style="padding:10px">${n.nombreEstudiante}</td><td style="padding:10px">${n.tituloExamen}</td><td style="padding:10px; font-weight:bold; color:#00796b">${n.nota}/20</td></tr>`;
-  });
+  body.innerHTML = "<tr><td colspan='3' style='padding:10px'>Cargando notas...</td></tr>";
+  try {
+    const snap = await getDocs(collection(db, "resultados"));
+    body.innerHTML = "";
+    snap.forEach(d => {
+      const n = d.data();
+      body.innerHTML += `<tr><td style="padding:10px">${n.nombreEstudiante}</td><td style="padding:10px">${n.tituloExamen}</td><td style="padding:10px; font-weight:bold; color:#00796b">${n.nota}/20</td></tr>`;
+    });
+    if(body.innerHTML === "") body.innerHTML = "<tr><td colspan='3' style='padding:10px'>No hay notas registradas.</td></tr>";
+  } catch(e) { console.error(e); }
 }
 
 window.descargarPDF = (tipo) => {
