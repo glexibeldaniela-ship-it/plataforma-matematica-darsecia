@@ -2,12 +2,18 @@ import { auth, db } from "./firebase.js";
 import {
   collection, addDoc, getDoc, doc, getDocs, updateDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let contador = 0;
 let examenIdEditando = null;
+let usuarioActual = null;
+
+// 🔐 Monitorear el estado de la autenticación
+onAuthStateChanged(auth, (user) => {
+  usuarioActual = user;
+});
 
 document.addEventListener("DOMContentLoaded", () => {
-
   document.getElementById("btnAgregar")
     .addEventListener("click", agregarPregunta);
 
@@ -21,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     examenIdEditando = id;
     cargarExamenParaEditar(id);
   }
-
 });
 
 async function cargarExamenParaEditar(id) {
@@ -55,7 +60,7 @@ async function cargarExamenParaEditar(id) {
 }
 
 function agregarPregunta() {
-  agregarPreguntaConDatos({}); // Llama a la función base con datos vacíos
+  agregarPreguntaConDatos({}); 
 }
 
 function agregarPreguntaConDatos(p) {
@@ -63,14 +68,21 @@ function agregarPreguntaConDatos(p) {
   const div = document.createElement("div");
   div.classList.add("pregunta");
   div.dataset.index = contador;
-  div.style.border = "1px solid gray";
-  div.style.padding = "10px";
+  div.style.border = "1px solid #00bcd4";
+  div.style.borderRadius = "10px";
+  div.style.padding = "15px";
   div.style.marginBottom = "15px";
+  div.style.background = "#fff";
+  
   const idLocal = contador;
 
   div.innerHTML = `
-    <h4>Pregunta ${contador + 1}</h4>
-    <select class="tipoPregunta">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h4 style="margin:0;">Pregunta ${contador + 1}</h4>
+      <button type="button" onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:red; cursor:pointer;">Eliminar ❌</button>
+    </div>
+    <br>
+    <select class="tipoPregunta" style="width:100%; padding:8px; border-radius:8px;">
       <option value="">Seleccione tipo</option>
       <option value="opcion_multiple">Opción múltiple</option>
       <option value="numerica">Respuesta numérica</option>
@@ -78,7 +90,7 @@ function agregarPreguntaConDatos(p) {
       <option value="verdadero_falso">Verdadero / Falso</option>
       <option value="desarrollo">Desarrollo</option>
     </select><br><br>
-    <input type="text" class="enunciado" placeholder="Enunciado"><br><br>
+    <input type="text" class="enunciado" placeholder="Enunciado de la pregunta" style="width:95%; padding:8px; border-radius:8px; border:1px solid #ccc;"><br><br>
     <div class="contenidoDinamico"></div>
   `;
   contenedor.appendChild(div);
@@ -87,12 +99,10 @@ function agregarPreguntaConDatos(p) {
   const contenido = div.querySelector(".contenidoDinamico");
   const enunciadoInput = div.querySelector(".enunciado");
 
-  // Si vienen datos del examen viejo, los ponemos
   select.value = p.tipo || "";
   enunciadoInput.value = p.enunciado || "";
 
   select.addEventListener("change", () => renderContenidoDinamico(select, contenido, idLocal, null));
-
   if (p.tipo) renderContenidoDinamico(select, contenido, idLocal, p);
 
   contador++;
@@ -103,10 +113,14 @@ function renderContenidoDinamico(select, contenido, idLocal, datos) {
 
   if (select.value === "opcion_multiple") {
     const btnAgregar = document.createElement("button");
-    btnAgregar.textContent = "Agregar opción";
+    btnAgregar.textContent = "➕ Agregar opción";
     btnAgregar.type = "button";
-    const lista = document.createElement("div");
+    btnAgregar.style.padding = "5px 10px";
+    btnAgregar.style.borderRadius = "5px";
     
+    const lista = document.createElement("div");
+    lista.style.marginTop = "10px";
+
     btnAgregar.onclick = () => {
       crearFilaOpcion(lista, idLocal, "", false);
     };
@@ -124,26 +138,20 @@ function renderContenidoDinamico(select, contenido, idLocal, datos) {
 
   if (select.value === "numerica") {
     contenido.innerHTML = `
-      <input type="number" class="respuestaNumerica"
-             value="${datos?.respuestaCorrecta ?? ""}"
-             placeholder="Respuesta correcta"><br><br>
-      <input type="number" class="margenError"
-             value="${datos?.margenError ?? ""}"
-             placeholder="Margen de error (opcional)">
+      <input type="number" class="respuestaNumerica" value="${datos?.respuestaCorrecta ?? ""}" placeholder="Respuesta correcta" style="padding:8px; border-radius:8px; border:1px solid #ccc;"><br><br>
+      <input type="number" class="margenError" value="${datos?.margenError ?? ""}" placeholder="Margen de error (opcional)" style="padding:8px; border-radius:8px; border:1px solid #ccc;">
     `;
   }
 
   if (select.value === "completar") {
     contenido.innerHTML = `
-      <input type="text" class="respuestaCompletar"
-             value="${datos?.respuestaCorrecta ?? ""}"
-             placeholder="Respuesta correcta">
+      <input type="text" class="respuestaCompletar" value="${datos?.respuestaCorrecta ?? ""}" placeholder="Respuesta correcta" style="width:95%; padding:8px; border-radius:8px; border:1px solid #ccc;">
     `;
   }
 
   if (select.value === "verdadero_falso") {
     contenido.innerHTML = `
-      <select class="respuestaVF">
+      <select class="respuestaVF" style="padding:8px; border-radius:8px;">
         <option value="verdadero" ${datos?.respuestaCorrecta === "verdadero" ? "selected" : ""}>Verdadero</option>
         <option value="falso"     ${datos?.respuestaCorrecta === "falso"     ? "selected" : ""}>Falso</option>
       </select>
@@ -151,94 +159,108 @@ function renderContenidoDinamico(select, contenido, idLocal, datos) {
   }
 
   if (select.value === "desarrollo") {
-    contenido.innerHTML = `<p>El estudiante responderá manualmente.</p>`;
+    contenido.innerHTML = `<p style="color:gray; font-style:italic;">El estudiante responderá libremente en un cuadro de texto.</p>`;
   }
 }
 
 function crearFilaOpcion(lista, idLocal, texto, esCorrecta) {
   const opcionDiv = document.createElement("div");
+  opcionDiv.style.marginBottom = "5px";
   opcionDiv.innerHTML = `
     <input type="radio" name="correcta_${idLocal}" class="correcta" ${esCorrecta ? "checked" : ""}>
-    <input type="text" class="opcionTexto" value="${texto}" placeholder="Texto de la opción">
-    <button type="button" class="eliminar">❌</button>
+    <input type="text" class="opcionTexto" value="${texto}" placeholder="Opción" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+    <button type="button" class="eliminar" style="border:none; background:none; cursor:pointer;">❌</button>
   `;
   opcionDiv.querySelector(".eliminar").onclick = () => opcionDiv.remove();
   lista.appendChild(opcionDiv);
 }
 
+// 🚀 FUNCIÓN DE GUARDADO MEJORADA POR EL CONEJO 🐇
 async function guardarExamen() {
-  const user = auth.currentUser;
-  if (!user) { alert("No autorizado"); return; }
-
-  const titulo = document.getElementById("titulo").value.trim();
-  const anio = document.getElementById("anio").value.trim();
-  const seccion = document.getElementById("seccion").value.trim();
-  const lapso = document.getElementById("lapso").value.trim();
-  const duracion = parseInt(document.getElementById("duracion").value);
-  const repaso = document.getElementById("repaso").value.trim();
-
-  if (!titulo || !anio || !seccion || !lapso || !duracion || !repaso) {
-    alert("Complete todos los campos");
-    return;
+  const user = usuarioActual || auth.currentUser;
+  if (!user) { 
+    alert("❌ Error: No se detectó sesión de usuario. Intenta recargar la página."); 
+    return; 
   }
 
-  const datosExamen = {
-    titulo, anio, seccion, lapso, duracion,
-    repaso_link: repaso,
-    tiempo_repaso_minutos: 2,
-    escala: 20,
-    creado_por: user.uid
-  };
+  try {
+    const titulo   = document.getElementById("titulo").value.trim();
+    const anio     = document.getElementById("anio").value.trim();
+    const seccion  = document.getElementById("seccion").value.trim();
+    const lapso    = document.getElementById("lapso").value.trim();
+    const duracion = parseInt(document.getElementById("duracion").value);
+    const repaso   = document.getElementById("repaso").value.trim();
 
-  let examenId;
-  if (examenIdEditando) {
-    await updateDoc(doc(db, "examenes", examenIdEditando), datosExamen);
-    examenId = examenIdEditando;
-    // Borramos preguntas viejas para re-escribirlas
-    const viejasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
-    for (const pDoc of viejasSnap.docs) {
-      await deleteDoc(doc(db, "examenes", examenId, "preguntas", pDoc.id));
-    }
-  } else {
-    const examenRef = await addDoc(collection(db, "examenes"), {
-      ...datosExamen,
-      activo: false,
-      creado_en: new Date()
-    });
-    examenId = examenRef.id;
-  }
+    // Validaciones campo por campo
+    if (!titulo)   { alert("Falta el título"); return; }
+    if (!anio)     { alert("Falta el año"); return; }
+    if (!seccion)  { alert("Falta la sección"); return; }
+    if (!lapso)    { alert("Falta el lapso"); return; }
+    if (!duracion) { alert("Falta la duración"); return; }
 
-  const preguntas = document.querySelectorAll(".pregunta");
-  for (const preguntaDiv of preguntas) {
-    const tipo = preguntaDiv.querySelector(".tipoPregunta").value;
-    const enunciado = preguntaDiv.querySelector(".enunciado").value;
-    let datosPregunta = { tipo, enunciado, puntos: 1 };
+    const datosExamen = {
+      titulo, anio, seccion, lapso, duracion,
+      repaso_link: repaso,
+      tiempo_repaso_minutos: 2,
+      escala: 20,
+      creado_por: user.uid
+    };
 
-    if (tipo === "opcion_multiple") {
-      const opciones = [];
-      const opcionesDiv = preguntaDiv.querySelectorAll(".opcionTexto");
-      const radios = preguntaDiv.querySelectorAll(".correcta");
-      opcionesDiv.forEach((input, index) => {
-        opciones.push({ texto: input.value, correcta: radios[index].checked });
+    let examenId;
+    if (examenIdEditando) {
+      await updateDoc(doc(db, "examenes", examenIdEditando), datosExamen);
+      examenId = examenIdEditando;
+      const viejasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
+      for (const pDoc of viejasSnap.docs) {
+        await deleteDoc(doc(db, "examenes", examenId, "preguntas", pDoc.id));
+      }
+    } else {
+      const examenRef = await addDoc(collection(db, "examenes"), {
+        ...datosExamen,
+        activo: false,
+        creado_en: new Date()
       });
-      datosPregunta.opciones = opciones;
-    }
-    if (tipo === "numerica") {
-      datosPregunta.respuestaCorrecta = parseFloat(preguntaDiv.querySelector(".respuestaNumerica")?.value || 0);
-      datosPregunta.margenError = parseFloat(preguntaDiv.querySelector(".margenError")?.value || 0);
-    }
-    if (tipo === "completar") {
-      datosPregunta.respuestaCorrecta = preguntaDiv.querySelector(".respuestaCompletar")?.value || "";
-    }
-    if (tipo === "verdadero_falso") {
-      datosPregunta.respuestaCorrecta = preguntaDiv.querySelector(".respuestaVF")?.value;
+      examenId = examenRef.id;
     }
 
-    await addDoc(collection(db, "examenes", examenId, "preguntas"), datosPregunta);
+    const preguntas = document.querySelectorAll(".pregunta");
+    for (const preguntaDiv of preguntas) {
+      const tipo = preguntaDiv.querySelector(".tipoPregunta").value;
+      const enunciado = preguntaDiv.querySelector(".enunciado").value;
+      if (!tipo || !enunciado) continue; // Saltarse preguntas incompletas
+
+      let datosPregunta = { tipo, enunciado, puntos: 1 };
+
+      if (tipo === "opcion_multiple") {
+        const opciones = [];
+        const opcionesDiv = preguntaDiv.querySelectorAll(".opcionTexto");
+        const radios = preguntaDiv.querySelectorAll(".correcta");
+        opcionesDiv.forEach((input, index) => {
+          opciones.push({ texto: input.value, correcta: radios[index].checked });
+        });
+        datosPregunta.opciones = opciones;
+      }
+      if (tipo === "numerica") {
+        datosPregunta.respuestaCorrecta = parseFloat(preguntaDiv.querySelector(".respuestaNumerica")?.value || 0);
+        datosPregunta.margenError = parseFloat(preguntaDiv.querySelector(".margenError")?.value || 0);
+      }
+      if (tipo === "completar") {
+        datosPregunta.respuestaCorrecta = preguntaDiv.querySelector(".respuestaCompletar")?.value || "";
+      }
+      if (tipo === "verdadero_falso") {
+        datosPregunta.respuestaCorrecta = preguntaDiv.querySelector(".respuestaVF")?.value;
+      }
+
+      await addDoc(collection(db, "examenes", examenId, "preguntas"), datosPregunta);
+    }
+
+    alert(examenIdEditando ? "✅ Examen actualizado correctamente" : "✅ Examen creado correctamente");
+    window.location.href = "panel-profesor.html";
+
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    alert("❌ Error de Firebase al guardar: " + error.message);
   }
-
-  alert(examenIdEditando ? "Examen actualizado correctamente" : "Examen creado correctamente");
-  window.location.href = "panel-profesor.html";
 }
 
 window.volver = function () {
