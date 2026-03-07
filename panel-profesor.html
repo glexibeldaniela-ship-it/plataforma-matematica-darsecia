@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="estilos.css">
 
 <style>
-
 body{
 margin:0;
 padding:15px;
@@ -17,7 +16,6 @@ font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* ENCABEZADO */
-
 .header{
 background:#00796b;
 color:white;
@@ -39,7 +37,6 @@ font-size:14px;
 }
 
 /* MENU */
-
 .menu{
 display:flex;
 flex-wrap:wrap;
@@ -63,7 +60,6 @@ background:#0097a7;
 }
 
 /* SECCIONES */
-
 .seccion{
 background:white;
 padding:15px;
@@ -73,7 +69,6 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* TABLAS */
-
 table{
 width:100%;
 border-collapse:collapse;
@@ -97,7 +92,6 @@ background:#f5f5f5;
 }
 
 /* FILTROS */
-
 select{
 padding:8px;
 border-radius:8px;
@@ -107,7 +101,6 @@ margin-bottom:5px;
 }
 
 /* RESUMEN */
-
 .resumen{
 margin-top:10px;
 padding:10px;
@@ -116,7 +109,6 @@ background:#e0f7fa;
 }
 
 /* ONLINE */
-
 .onlineList{
 padding:10px;
 background:#e8f5e9;
@@ -124,9 +116,7 @@ border-radius:10px;
 }
 
 /* RESPONSIVE */
-
 @media(max-width:600px){
-
 .menu{
 flex-direction:column;
 }
@@ -138,9 +128,7 @@ width:100%;
 table{
 font-size:13px;
 }
-
 }
-
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -165,19 +153,11 @@ font-size:13px;
 🟢 Estudiantes en Línea
 </button>
 
-<button onclick="document.getElementById('seccionInscritos').scrollIntoView()">
-👨‍🎓 Estudiantes Inscritos
-</button>
-
 </div>
 
-
 <div class="seccion">
-
 <h3>Lista de Exámenes</h3>
-
 <table id="tablaExamenes">
-
 <thead>
 <tr>
 <th>Título</th>
@@ -188,18 +168,12 @@ font-size:13px;
 <th>Acciones</th>
 </tr>
 </thead>
-
 <tbody></tbody>
-
 </table>
-
 </div>
 
-
 <div class="seccion" id="seccionResultados">
-
 <h3>Resultados</h3>
-
 <select id="selectExamen">
 <option value="">Selecciona un examen</option>
 </select>
@@ -218,9 +192,7 @@ font-size:13px;
 <button id="btnPDFEstudiantes">📄 Descargar Lista Estudiantes</button>
 
 <table id="tablaResultados">
-
 <thead>
-
 <tr>
 <th>Nombre</th>
 <th>Grado</th>
@@ -229,47 +201,26 @@ font-size:13px;
 <th>Tiempo</th>
 <th>Nota</th>
 </tr>
-
 </thead>
-
 <tbody></tbody>
-
 </table>
 
 <div class="resumen" id="resumenBox" style="display:none;">
-
 <strong>Total Estudiantes:</strong> <span id="totalEst"></span> |
-
 <strong>Promedio:</strong> <span id="promedio"></span> |
-
 🟢 <strong>Aprobados:</strong> <span id="aprobados"></span> |
-
 🔴 <strong>Reprobados:</strong> <span id="reprobados"></span>
-
 </div>
-
 </div>
-
-
-<div class="seccion" id="seccionInscritos">
-<h3>Estudiantes Inscritos</h3>
-<div id="listaInscritos"></div>
-</div>
-
 
 <div class="seccion">
-
 <h3>Estudiantes en Línea</h3>
-
 <div class="onlineList" id="onlineEstudiantes"></div>
-
 </div>
 
-
 <script type="module">
-
 import { auth, db } from "./firebase.js";
-import { collection, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const { jsPDF } = window.jspdf;
 
@@ -287,7 +238,6 @@ const aprobadosSpan = document.getElementById("aprobados");
 const reprobadosSpan = document.getElementById("reprobados");
 const resumenBox = document.getElementById("resumenBox");
 const onlineEstudiantesDiv = document.getElementById("onlineEstudiantes");
-const listaInscritosDiv = document.getElementById("listaInscritos");
 
 let resultadosGlobal = [];
 let resultadosFiltrados = [];
@@ -315,7 +265,7 @@ tr.innerHTML = `
 ${examen.activo ? "Desactivar" : "Activar"}</button>
 <button onclick="editarExamen('${docu.id}')">✏️ Editar</button>
 <button onclick="resetearExamen('${docu.id}')">🔄 Resetear</button>
-<button onclick="eliminarExamen('${docu.id}')">🗑️ Eliminar</button>
+<button onclick="eliminarExamen('${docu.id}')">❌ Eliminar</button>
 </td>
 `;
 tablaExamenesBody.appendChild(tr);
@@ -328,8 +278,8 @@ selectExamen.appendChild(option);
 }
 
 window.activarExamen = async function(id, estadoActual){
-if(!estadoActual){
 const examenesSnap = await getDocs(collection(db,"examenes"));
+if(!estadoActual){
 examenesSnap.forEach(async (docu)=>{
 await updateDoc(doc(db,"examenes",docu.id),{ activo:false });
 });
@@ -351,25 +301,31 @@ window.resetearExamen = async function(id){
 const confirmar = confirm("Se reseteará este examen (borrar resultados). ¿Continuar?");
 if(!confirmar) return;
 const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-resultadosSnap.forEach(async docu=>{ await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:null }); });
+for(const docu of resultadosSnap.docs){
+await updateDoc(doc(db,"examenes",id,"resultados",docu.id),{ nota:null, tiempo:null });
+}
 alert("Examen reseteado");
 };
 
+// 🔹 NUEVA FUNCIÓN: Eliminar examen completamente
 window.eliminarExamen = async function(id){
-const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
-if(!confirmar) return;
-// borrar resultados
-const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
-for(const docu of resultadosSnap.docs){
-await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
-}
-// borrar examen
-await deleteDoc(doc(db,"examenes",id));
-alert("Examen eliminado");
-cargarExamenes();
+    const confirmar = confirm("Se eliminará este examen y todos sus resultados. ¿Continuar?");
+    if(!confirmar) return;
+
+    const resultadosSnap = await getDocs(collection(db,"examenes",id,"resultados"));
+    for(const docu of resultadosSnap.docs){
+        await deleteDoc(doc(db,"examenes",id,"resultados",docu.id));
+    }
+
+    await deleteDoc(doc(db,"examenes",id));
+
+    // Eliminar fila directamente
+    const fila = document.querySelector(`#tablaExamenes button[onclick*="${id}"]`).closest("tr");
+    if(fila) fila.remove();
+
+    alert("Examen eliminado del panel");
 };
 
-// 🔹 Cargar Resultados
 async function cargarResultados(examenId){
 tablaBody.innerHTML="";
 filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
@@ -432,7 +388,6 @@ selectExamen.addEventListener("change",()=>{ if(selectExamen.value) cargarResult
 filtroAnio.addEventListener("change", aplicarFiltros);
 filtroSeccion.addEventListener("change", aplicarFiltros);
 
-// Descargar Acta General
 btnPDF.addEventListener("click", ()=>{
 if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
 const doc = new jsPDF(); let y=10;
@@ -449,7 +404,6 @@ y+=10; doc.text("Firma:",14,y); y+=15; doc.text("Prof. José Fernández",14,y); 
 doc.save("Acta_General.pdf");
 });
 
-// Descargar Lista de Estudiantes
 btnPDFEstudiantes.addEventListener("click", async ()=>{
 const doc = new jsPDF(); let y=10;
 doc.setFont("helvetica","bold"); doc.setFontSize(12);
@@ -462,15 +416,6 @@ const u = docu.data();
 if(u.rol==="estudiante") estudiantes.push(u);
 });
 
-// Lista Inscritos sección
-listaInscritosDiv.innerHTML = "";
-estudiantes.forEach((u,i)=>{
-const div = document.createElement("div");
-div.textContent = `${i+1}. ${u.nombres} ${u.apellidos} | Año: ${u.anio} | Sección: ${u.seccion}`;
-listaInscritosDiv.appendChild(div);
-});
-
-// Generar PDF
 estudiantes.forEach((u,i)=>{
 doc.setFont("helvetica","normal");
 doc.text(`${i+1}. ${u.nombres} ${u.apellidos} | Cédula: ${u.cedula} | Fecha Nac: ${u.fechaNacimiento} | Año: ${u.anio} | Sección: ${u.seccion}`,14,y);
@@ -480,7 +425,6 @@ y+=6; if(y>280){ doc.addPage(); y=10; }
 doc.save("Lista_Estudiantes.pdf");
 });
 
-// Estudiantes en Línea
 async function cargarEstudiantesOnline(){
 const usuariosSnap = await getDocs(collection(db,"usuarios"));
 onlineEstudiantesDiv.innerHTML="";
@@ -494,7 +438,6 @@ onlineEstudiantesDiv.appendChild(div);
 });
 }
 
-// Inicializar
 onAuthStateChanged(auth,(user)=>{
 if(!user){ window.location.href="index.html"; }
 else{ cargarExamenes(); cargarEstudiantesOnline(); }
