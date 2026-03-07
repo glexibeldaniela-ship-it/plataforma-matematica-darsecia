@@ -153,7 +153,6 @@ th{
 </head>
 <body>
 
-<!-- HEADER / MENÚ -->
 <div class="header">
   <h2>Panel Estudiante</h2>
   <button onclick="cerrarSesion()">Cerrar Sesión</button>
@@ -161,14 +160,11 @@ th{
 
 <div class="contenedor">
 
-  <!-- DATOS PERSONALES -->
   <div id="datosPersonales" class="datos-personales"></div>
 
-  <!-- EXAMENES DISPONIBLES -->
   <h3>Exámenes Disponibles</h3>
   <div id="listaExamenes" class="lista-examenes"></div>
 
-  <!-- HISTORIAL -->
   <h3>Historial de Exámenes</h3>
   <table id="tablaHistorial">
     <thead>
@@ -178,14 +174,12 @@ th{
         <th>Sección</th>
         <th>Lapso</th>
         <th>Nota</th>
-        <th>Intento</th>
         <th>Estado</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- ESTADÍSTICAS -->
   <div class="resumen" id="estadisticasPersonales" style="display:none;">
     <strong>Total Exámenes:</strong> <span id="totalEx"></span> |
     <strong>Promedio:</strong> <span id="promedio"></span> |
@@ -294,7 +288,8 @@ function iniciarTemporizador(id) {
 // 🔹 Historial de exámenes
 async function cargarHistorial(uid) {
   tablaHistorial.innerHTML = "";
-  resultadosGlobal = [];
+  // FIX CONEJO: Declarar variable
+  let resultadosGlobal = [];
   let total = 0, suma = 0, aprobados = 0, reprobados = 0;
 
   const examenesSnap = await getDocs(collection(db, "examenes"));
@@ -305,7 +300,8 @@ async function cargarHistorial(uid) {
     const resultadosSnap = await getDocs(collection(db, `examenes/${examenId}/resultados`));
     resultadosSnap.forEach(resDoc => {
       const res = resDoc.data();
-      if (res.uid === uid) {
+      // FIX CONEJO: Corregir campo de filtrado (estudiante_id en lugar de uid)
+      if (res.estudiante_id === uid) {
         const fila = document.createElement("tr");
         fila.innerHTML = `
           <td>${examenData.titulo}</td>
@@ -313,7 +309,6 @@ async function cargarHistorial(uid) {
           <td>${examenData.seccion}</td>
           <td>${examenData.lapso || "-"}</td>
           <td>${res.nota != null ? res.nota : "-"}</td>
-          <td>${res.intento ? "Sí" : "No"}</td>
           <td>${res.estado || "Sin presentar"}</td>
         `;
         tablaHistorial.appendChild(fila);
