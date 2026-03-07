@@ -4,12 +4,21 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom right, #e0f7fa, #b2ebf2); /* fondo suave turquesa */
   color: #004d40;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+}
+
+/* ==========================
+   Fondo pantalla inicio
+========================== */
+.pantalla-inicio{
+  background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* ==========================
