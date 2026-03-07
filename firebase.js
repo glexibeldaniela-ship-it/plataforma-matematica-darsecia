@@ -1,11 +1,9 @@
 // 🔥 IMPORTAR FIREBASE DESDE CDN
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 🔐 CONFIGURACIÓN DE TU PROYECTO
-
 const firebaseConfig = {
   apiKey: "AIzaSyBe0p3dhiPwwGobUdvMVUi14JD5S8X9Wvg",
   authDomain: "plataforma-matematica-darsecia.firebaseapp.com",
@@ -16,10 +14,11 @@ const firebaseConfig = {
 };
 
 // 🚀 INICIALIZAR FIREBASE
-
 const app = initializeApp(firebaseConfig);
 
 // 🔑 ACTIVAR SERVICIOS
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// ✅ DIAGNÓSTICO Y CORRECTIVO: Exportación compatible con registro.js
+export { auth, db };
