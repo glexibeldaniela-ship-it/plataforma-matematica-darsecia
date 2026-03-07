@@ -252,6 +252,43 @@ window.irCrearExamen = () => { window.location.href = "crear-examen.html"; }
 window.verResultados = () => { document.getElementById('seccionResultados').scrollIntoView(); }
 window.verEstudiantesEnLinea = () => { document.getElementById('onlineEstudiantes').scrollIntoView(); }
 
+// ---------------- ACCIONES DE EXAMEN (NUEVO) ----------------
+window.activarExamen = async (id, estadoActual) => {
+    try {
+        await updateDoc(doc(db, "examenes", id), { activo: !estadoActual });
+        cargarExamenes();
+    } catch (e) {
+        alert("Error al cambiar el estado del examen.");
+        console.error("activarExamen:", e);
+    }
+};
+
+window.editarExamen = (id) => {
+    window.location.href = "crear-examen.html?id=" + id;
+};
+
+window.resetearExamen = async (id) => {
+    if (!confirm("¿Seguro que deseas resetear este examen? Se desactivará (los resultados no se borran).")) return;
+    try {
+        await updateDoc(doc(db, "examenes", id), { activo: false });
+        cargarExamenes();
+    } catch (e) {
+        alert("Error al resetear el examen.");
+        console.error("resetearExamen:", e);
+    }
+};
+
+window.eliminarExamen = async (id) => {
+    if (!confirm("¿Seguro que deseas ELIMINAR este examen? Esta acción no se puede deshacer.")) return;
+    try {
+        await deleteDoc(doc(db, "examenes", id));
+        cargarExamenes();
+    } catch (e) {
+        alert("Error al eliminar el examen.");
+        console.error("eliminarExamen:", e);
+    }
+};
+
 window.descargarActa = () => {
     if(resultadosFiltrados.length===0){ alert("No hay datos"); return; }
     const doc = new jsPDF(); let y=10;
@@ -407,7 +444,7 @@ onAuthStateChanged(auth,(user)=>{
     if(!user) window.location.href="index.html";
     else{
         cargarExamenes();
-        cargarEstudiantesInscritos(); // <-- asegurado
+        cargarEstudiantesInscritos();
         cargarEstudiantesOnline();
     }
 });
