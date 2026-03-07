@@ -252,7 +252,7 @@ window.irCrearExamen = () => { window.location.href = "crear-examen.html"; }
 window.verResultados = () => { document.getElementById('seccionResultados').scrollIntoView(); }
 window.verEstudiantesEnLinea = () => { document.getElementById('onlineEstudiantes').scrollIntoView(); }
 
-// ---------------- ACCIONES DE EXAMEN (NUEVO) ----------------
+// ---------------- ACCIONES DE EXAMEN ----------------
 window.activarExamen = async (id, estadoActual) => {
     try {
         await updateDoc(doc(db, "examenes", id), { activo: !estadoActual });
@@ -391,7 +391,7 @@ async function cargarEstudiantesOnline(){
     }
 }
 
-// ---------------- Resultados ----------------
+// ---------------- Resultados (CORREGIDO POR CONEJO) ----------------
 async function cargarResultados(examenId){
     tablaBody.innerHTML="";
     filtroAnio.innerHTML='<option value="">Filtrar por Año</option>';
@@ -404,6 +404,24 @@ async function cargarResultados(examenId){
             if(data.nombre && !isNaN(data.nota)) resultadosGlobal.push(data);
         });
     } catch(e){ console.error(e); }
+
+    // ✅ Lógica nueva: Poblar filtros con valores únicos del examen
+    const aniosUnicos = [...new Set(resultadosGlobal.map(r => r.grado).filter(Boolean))].sort();
+    aniosUnicos.forEach(anio => {
+        const opt = document.createElement("option");
+        opt.value = anio;
+        opt.textContent = anio;
+        filtroAnio.appendChild(opt);
+    });
+
+    const seccionesUnicas = [...new Set(resultadosGlobal.map(r => r.seccion).filter(Boolean))].sort();
+    seccionesUnicas.forEach(sec => {
+        const opt = document.createElement("option");
+        opt.value = sec;
+        opt.textContent = sec;
+        filtroSeccion.appendChild(opt);
+    });
+
     mostrarResultados(resultadosGlobal);
 }
 
