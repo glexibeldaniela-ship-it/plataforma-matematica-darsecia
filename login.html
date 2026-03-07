@@ -4,16 +4,24 @@
   <meta charset="UTF-8">
   <title>Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Conectar estilos -->
+  <link rel="stylesheet" href="estilos.css">
+
 </head>
 
-<body>
+<body class="pantalla-login">
 
-  <h2>Iniciar Sesión</h2>
+  <div class="contenedor-login">
 
-  <input type="email" id="email" placeholder="Correo"><br><br>
-  <input type="password" id="password" placeholder="Contraseña"><br><br>
+    <h2>📚 Iniciar Sesión</h2>
 
-  <button id="btnLogin">Entrar</button>
+    <input type="email" id="email" placeholder="Correo"><br><br>
+    <input type="password" id="password" placeholder="Contraseña"><br><br>
+
+    <button id="btnLogin" class="btn-turquesa">Entrar</button>
+
+  </div>
 
   <!-- Firebase -->
   <script type="module" src="firebase.js"></script>
