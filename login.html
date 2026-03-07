@@ -1,31 +1,65 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="es">
 
-  <!-- Conectar estilos -->
-  <link rel="stylesheet" href="estilos.css">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Login</title>
+
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+
+/* mejora para APK */
+html, body{
+height:100%;
+overflow-x:hidden;
+}
+
+/* animación suave */
+.contenedor-login{
+animation: aparecer 0.7s ease;
+}
+
+@keyframes aparecer{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* mejora espacio inputs */
+.contenedor-login input{
+margin-bottom:10px;
+}
+
+</style>
 
 </head>
 
 <body class="pantalla-login">
 
-  <div class="contenedor-login">
+<div class="contenedor-login">
 
-    <h2>📚 Iniciar Sesión</h2>
+<h2>📚 Iniciar Sesión</h2>
 
-    <input type="email" id="email" placeholder="Correo"><br><br>
-    <input type="password" id="password" placeholder="Contraseña"><br><br>
+<input type="email" id="email" placeholder="Correo">
 
-    <button id="btnLogin" class="btn-turquesa">Entrar</button>
+<input type="password" id="password" placeholder="Contraseña">
 
-  </div>
+<button id="btnLogin" class="btn-turquesa">Entrar</button>
 
-  <!-- Firebase -->
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="auth.js"></script>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="auth.js"></script>
 
 </body>
 </html>
