@@ -10,7 +10,7 @@ html, body { height: 100%; overflow-x: hidden; }
 
 .contenedor-login { animation: aparecer 0.7s ease; }
 
-`@keyframes` aparecer {
+@keyframes aparecer {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
@@ -23,7 +23,7 @@ html, body { height: 100%; overflow-x: hidden; }
   text-align: center;
   margin-top: 14px;
   font-size: 0.82rem;
-  color: `#00796b`;
+  color: #00796b;
   cursor: pointer;
   text-decoration: underline;
   font-weight: 600;
@@ -35,17 +35,17 @@ html, body { height: 100%; overflow-x: hidden; }
 .recuperar-seccion {
   display: none;
   margin-top: 14px;
-  background: `#e0f7fa`;
+  background: #e0f7fa;
   border-radius: 12px;
   padding: 14px 16px;
-  border: 1px solid `#b2ebf2`;
+  border: 1px solid #b2ebf2;
   animation: aparecer 0.3s ease;
 }
 .recuperar-seccion.visible { display: block; }
 
 .recuperar-seccion p {
   font-size: 0.78rem;
-  color: `#004d40`;
+  color: #004d40;
   margin: 0 0 10px;
   text-align: center;
   line-height: 1.4;
@@ -53,7 +53,7 @@ html, body { height: 100%; overflow-x: hidden; }
 .recuperar-seccion input {
   width: 100%;
   padding: 11px;
-  border: 1.5px solid `#b2ebf2`;
+  border: 1.5px solid #b2ebf2;
   border-radius: 10px;
   font-size: 0.88rem;
   margin-bottom: 10px;
@@ -62,12 +62,12 @@ html, body { height: 100%; overflow-x: hidden; }
   transition: 0.2s;
 }
 .recuperar-seccion input:focus {
-  border-color: `#00bcd4`;
+  border-color: #00bcd4;
   box-shadow: 0 0 0 3px rgba(0,188,212,0.15);
 }
-.btn-recuperar {
+.btn-turquesa, .btn-recuperar {
   width: 100%;
-  background: `#00796b`;
+  background: #00796b;
   color: white;
   border: none;
   border-radius: 10px;
@@ -78,7 +78,7 @@ html, body { height: 100%; overflow-x: hidden; }
   touch-action: manipulation;
   transition: 0.2s;
 }
-.btn-recuperar:active { background: `#005a4e`; }
+.btn-turquesa:active, .btn-recuperar:active { background: #005a4e; }
 
 .msg-recuperar {
   font-size: 0.78rem;
@@ -101,10 +101,8 @@ html, body { height: 100%; overflow-x: hidden; }
 
   <button id="btnLogin" class="btn-turquesa">Entrar</button>
 
-  <!-- ENLACE OLVIDÉ MI CONTRASEÑA -->
   <span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
 
-  <!-- SECCIÓN DE RECUPERACIÓN (se muestra al hacer clic) -->
   <div class="recuperar-seccion" id="recuperarSeccion">
     <p>Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
     <input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
@@ -116,11 +114,37 @@ html, body { height: 100%; overflow-x: hidden; }
 
 </div>
 
-<!-- Firebase login (lógica existente — no se modifica) -->
 <script type="module" src="firebase.js"></script>
-<script type="module" src="auth.js"></script>
 
-<!-- Módulo independiente: Recuperación de contraseña -->
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const btnLogin = document.getElementById('btnLogin');
+
+btnLogin.addEventListener('click', async () => {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    const user = userCredential.user;
+
+    // Marcamos al usuario como ONLINE en Firestore
+    await updateDoc(doc(db, "usuarios", user.uid), {
+      online: true
+    });
+
+    // El archivo auth.js se encargará del redireccionamiento (Panel Estudiante/Profesor/Admin)
+    console.log("Usuario online:", user.email);
+    
+  } catch (error) {
+    alert("Error al entrar: " + error.message);
+  }
+});
+</script>
+
 <script type="module">
 import { auth } from "./firebase.js";
 import { sendPasswordResetEmail } from
@@ -130,7 +154,6 @@ import { sendPasswordResetEmail } from
 window.toggleRecuperar = () => {
   const sec = document.getElementById('recuperarSeccion');
   sec.classList.toggle('visible');
-  // Limpiar mensaje anterior al abrir/cerrar
   document.getElementById('msgRecuperar').textContent = '';
 };
 
@@ -145,7 +168,6 @@ window.enviarRecuperacion = async () => {
     return;
   }
 
-  // Deshabilitar botón mientras procesa
   const btn = document.querySelector('.btn-recuperar');
   btn.disabled    = true;
   btn.textContent = 'Enviando...';
@@ -159,8 +181,6 @@ window.enviarRecuperacion = async () => {
     msg.style.color = '#c62828';
     if (err.code === 'auth/user-not-found') {
       msg.textContent = '❌ No existe una cuenta con ese correo.';
-    } else if (err.code === 'auth/invalid-email') {
-      msg.textContent = '❌ El correo ingresado no es válido.';
     } else {
       msg.textContent = '❌ ' + err.message;
     }
