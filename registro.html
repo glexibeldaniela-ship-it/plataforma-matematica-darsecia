@@ -7,37 +7,35 @@
   <title>Registro Estudiante</title>
   <link rel="stylesheet" href="estilos.css">
 
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <style>
-    /* optimización para APK */
     html, body {
       height: 100%;
       overflow-x: hidden;
     }
 
-    /* animación suave */
     .contenedor-registro {
       animation: aparecer 0.7s ease;
     }
 
-    @keyframes aparecer {
+    `@keyframes` aparecer {
       from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* mejorar espacio entre campos */
     .contenedor-registro input,
     .contenedor-registro select {
       margin-bottom: 10px;
     }
 
-    /* ── ESTILOS PARA LA VERIFICACIÓN ── */
     .fila-verificacion {
       display: flex;
       gap: 5px;
       margin-bottom: 10px;
     }
     .btn-enviar-codigo {
-      background: #00796b;
+      background: `#00796b`;
       color: white;
       border: none;
       border-radius: 5px;
@@ -50,15 +48,15 @@
       margin-bottom: 10px;
       text-align: center;
     }
-    
-    /* 🔧 FIX: Colores de estado para evitar confusión */
-    .estado-codigo.ok { color: #2e7d32; font-weight: bold; }
-    .estado-codigo.error { color: #c62828; font-weight: bold; }
-    .estado-codigo.espera { color: #e65100; }
+
+    /* 🔧 FIX: Estilos de color para los estados de verificación (faltaban) */
+    .estado-codigo.ok     { color: `#2e7d32`; font-weight: bold; }
+    .estado-codigo.error  { color: `#c62828`; font-weight: bold; }
+    .estado-codigo.espera { color: `#e65100`; }
 
     .badge-validado {
       display: none;
-      color: #2e7d32;
+      color: `#2e7d32`;
       font-weight: bold;
       text-align: center;
       margin-bottom: 10px;
@@ -73,26 +71,30 @@
     <div class="emoji-mate">📏✏️</div>
 
     <form id="formRegistro">
-      <input type="text" id="cedula" placeholder="Cédula" required>
-      <input type="text" id="nombres" placeholder="Nombres completos" required>
-      <input type="text" id="apellidos" placeholder="Apellidos completos" required>
-      <input type="date" id="fechaNacimiento" required>
+      <input type="text"     id="cedula"          placeholder="Cédula"                required>
+      <input type="text"     id="nombres"          placeholder="Nombres completos"     required>
+      <input type="text"     id="apellidos"        placeholder="Apellidos completos"   required>
+      <input type="date"     id="fechaNacimiento"                                       required>
 
       <div class="fila-verificacion">
         <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
-        <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">Enviar Código</button>
+        <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo"
+                onclick="enviarCodigoVerificacion()">Enviar Código</button>
       </div>
 
-      <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" disabled maxlength="6">
+      <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos"
+             disabled maxlength="6">
 
-      <button type="button" id="btnVerificar" class="btn-turquesa" style="background:#ff9800; margin-bottom:10px;" disabled onclick="validarCodigo()">Verificar Código</button>
+      <button type="button" id="btnVerificar" class="btn-turquesa"
+              style="background:`#ff9800`; margin-bottom:10px;" disabled
+              onclick="validarCodigo()">Verificar Código</button>
 
-      <div id="reenviarRow" style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
-      <div id="estadoCodigo" class="estado-codigo"></div>
+      <div id="reenviarRow"   style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
+      <div id="estadoCodigo"  class="estado-codigo"></div>
       <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
-      
-      <hr style="border:0; border-top:1px dashed #ccc; margin-bottom:15px;">
-      
+
+      <hr style="border:0; border-top:1px dashed `#ccc`; margin-bottom:15px;">
+
       <input type="password" id="password" placeholder="Contraseña" required>
 
       <select id="anio" required>
@@ -115,11 +117,12 @@
         <option value="3">Lapso 3</option>
       </select>
 
-      <button type="submit" id="btnRegistro" class="btn-turquesa" disabled>Crear Cuenta</button>
+      <button type="submit" id="btnRegistro" class="btn-turquesa" disabled>
+        Crear Cuenta
+      </button>
     </form>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script type="module" src="./registro.js"></script>
 </body>
 </html>
