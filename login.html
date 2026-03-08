@@ -36,7 +36,6 @@ html, body { height: 100%; overflow-x: hidden; }
 .msg-recuperar { font-size: 0.78rem; text-align: center; margin-top: 9px; font-weight: 600; min-height: 18px; }
 </style>
 </head>
-
 <body class="pantalla-login">
 
 <div class="contenedor-login">
@@ -79,35 +78,34 @@ btnLogin.addEventListener('click', async () => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     const user = userCredential.user;
 
-    // 1. Intentar marcar Online (si falla, igual intentamos redirigir)
-    try {
-      await updateDoc(doc(db, "usuarios", user.uid), { online: true });
-    } catch(e) { console.log("Error status online:", e); }
-
-    // 2. Obtener el rol de Firestore
+    // 1. Obtener el rol PRIMERO para asegurar que el login sea válido
     const docSnap = await getDoc(doc(db, "usuarios", user.uid));
     
     if (docSnap.exists()) {
       const uData = docSnap.data();
       const rol = uData.rol ? uData.rol.toLowerCase() : "estudiante";
 
-      // 3. REDIRECCIÓN CRÍTICA - Revisa que tus archivos se llamen exactamente así:
+      // 2. Intentar marcar online (si fallan las reglas, que no detenga el acceso)
+      try {
+        await updateDoc(doc(db, "usuarios", user.uid), { online: true });
+      } catch(e) { console.warn("Aviso: No se pudo marcar online, pero entrando..."); }
+
+      // 3. REDIRECCIÓN CORREGIDA según tus capturas de pantalla
       if (rol === "admin") {
-        window.location.replace("admin.html");
+        window.location.replace("panel-admin.html");
       } else if (rol === "profesor") {
-        window.location.replace("profesor.html");
+        window.location.replace("panel-profesor.html");
       } else {
-        window.location.replace("estudiante.html");
+        window.location.replace("panel-estudiante.html");
       }
     } else {
-      alert("No se encontró perfil de usuario. Contacta al administrador.");
+      alert("Error: No tienes un perfil creado en la base de datos.");
       btnLogin.innerText = "Entrar";
       btnLogin.disabled = false;
     }
 
   } catch (error) {
-    console.error(error);
-    alert("Error: " + error.message);
+    alert("Error de acceso: " + error.message);
     btnLogin.innerText = "Entrar";
     btnLogin.disabled = false;
   }
@@ -121,7 +119,6 @@ import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12
 window.toggleRecuperar = () => {
   const sec = document.getElementById('recuperarSeccion');
   sec.classList.toggle('visible');
-  document.getElementById('msgRecuperar').textContent = '';
 };
 
 window.enviarRecuperacion = async () => {
