@@ -5,31 +5,24 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ──────────────────────────────────────────────────────────────
-// ⚙️ CONFIGURACIÓN DE EMAILJS (Verificada con tus imágenes)
+// ⚙️ CONFIGURACIÓN DE EMAILJS (Extraída de tus imágenes)
 // ──────────────────────────────────────────────────────────────
-const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY"; // Extraído de imagen 1000273450.jpg
-const EMAILJS_SERVICE_ID  = "service_43ampij";   // Extraído de imagen 1000273448.jpg
-const EMAILJS_TEMPLATE_ID = "template_lfbez2i";  // Extraído de imagen 1000273449.jpg
+const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY"; // Tu Public Key
+const EMAILJS_SERVICE_ID  = "service_43ampij";   // Tu Service ID (Gmail)
+const EMAILJS_TEMPLATE_ID = "template_lfbez2i";  // Tu Template ID
 
-[span_1](start_span)// 🔧 FIX: Función helper para inicializar EmailJS de forma segura[span_1](end_span)
-function getEmailJS() {
-  if (typeof emailjs === "undefined") {
-    throw new Error("La librería EmailJS no está disponible. Verifica tu conexión.");
-  }
-  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-  return emailjs;
-}
+// Variables de control de estado
+let codigoValidado = false;
+let countdownTimer = null;
+let segundosRestantes = 0;
 
-[span_2](start_span)// 🔧 FIX: Helper para extraer mensaje de error real[span_2](end_span)
+// 🔧 FUNCIÓN AUXILIAR: Extraer el mensaje real de error (evita el "undefined")
 function mensajeDeError(err) {
   if (!err) return "Error desconocido";
   return err.message || err.text || JSON.stringify(err);
 }
 
-let codigoValidado = false;
-let countdownTimer = null;
-let segundosRestantes = 0;
-
+// 🔧 FUNCIÓN AUXILIAR: Mostrar estado en la pantalla
 function setEstado(msg, tipo = "info") {
   const el = document.getElementById("estadoCodigo");
   if (el) {
@@ -38,7 +31,7 @@ function setEstado(msg, tipo = "info") {
   }
 }
 
-// 📨 ENVIAR EL CÓDIGO DE VERIFICACIÓN
+// 📨 1. ENVIAR EL CÓDIGO (Visible para el HTML mediante 'window')
 window.enviarCodigoVerificacion = async function () {
   const email = document.getElementById("email").value.trim();
   const nombres = document.getElementById("nombres").value.trim();
@@ -53,18 +46,24 @@ window.enviarCodigoVerificacion = async function () {
   setEstado("⏳ Generando código...", "espera");
 
   try {
-    const ejs = getEmailJS(); 
+    // Inicialización de EmailJS con tu Public Key
+    if (typeof emailjs === "undefined") {
+      throw new Error("La librería EmailJS no se detecta. Revisa el orden de los scripts.");
+    }
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+    // Generar código de 6 dígitos
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     const ahora = new Date();
-    const expira = new Date(ahora.getTime() + 10 * 60 * 1000); [span_3](start_span)// 10 min[span_3](end_span)
+    const expira = new Date(ahora.getTime() + 10 * 60 * 1000); // 10 minutos
 
-    [span_4](start_span)// Limpiar códigos previos en Firestore[span_4](end_span)
+    // Limpiar códigos anteriores de este correo en Firebase
     const colRef = collection(db, "codigos_verificacion");
     const q = query(colRef, where("email", "==", email));
     const snap = await getDocs(q);
     for (const d of snap.docs) await deleteDoc(d.ref);
 
-    [span_5](start_span)// Guardar nuevo código[span_5](end_span)
+    // Guardar nuevo código en la base de datos
     await addDoc(collection(db, "codigos_verificacion"), {
       email,
       codigo,
@@ -73,27 +72,28 @@ window.enviarCodigoVerificacion = async function () {
       usado: false
     });
 
-    [span_6](start_span)// 🔧 FIX: Enviar exactamente a {{to_email}}, {{to_name}} y {{codigo}}[span_6](end_span)
-    await ejs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    // ENVIAR CORREO: Usa los nombres {{to_email}}, {{to_name}} y {{codigo}}
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: email,
       to_name: nombres || "Estudiante",
       codigo: codigo
     });
 
+    // Activar campos de verificación
     document.getElementById("codigoInput").disabled = false;
     document.getElementById("btnVerificar").disabled = false;
     setEstado(`📨 Código enviado a ${email}`, "ok");
     iniciarCuentaRegresiva(60);
 
   } catch (err) {
-    console.error("Error al enviar código:", err);
-    alert("Error al enviar el código: " + mensajeDeError(err)); [span_7](start_span)//[span_7](end_span)
+    console.error("Error completo:", err);
+    alert("Error al enviar el código: " + mensajeDeError(err));
     btnEnviar.disabled = false;
     setEstado("❌ Error al enviar. Intenta de nuevo.", "error");
   }
 };
 
-// ✔️ VALIDAR EL CÓDIGO INGRESADO
+// ✔️ 2. VALIDAR EL CÓDIGO INGRESADO
 window.validarCodigo = async function () {
   const email = document.getElementById("email").value.trim();
   const codigoInput = document.getElementById("codigoInput").value.trim();
@@ -120,100 +120,18 @@ window.validarCodigo = async function () {
     }
 
     const datos = snap.docs[0].data();
-    [span_8](start_span)if (new Date() > datos.expira_en.toDate()) { // Verificación expiración[span_8](end_span)
+    if (new Date() > datos.expira_en.toDate()) {
       setEstado("❌ Código expirado.", "error");
       alert("El código ha expirado. Solicita uno nuevo.");
       return;
     }
 
+    // Código exitoso
     codigoValidado = true;
-    await deleteDoc(snap.docs[0].ref); [span_9](start_span)// Eliminar tras éxito[span_9](end_span)
+    await deleteDoc(snap.docs[0].ref);
 
     document.getElementById("badgeValidado").style.display = "block";
     document.getElementById("btnRegistro").disabled = false;
     document.getElementById("btnEnviarCodigo").disabled = true;
     document.getElementById("codigoInput").disabled = true;
-    document.getElementById("btnVerificar").disabled = true;
-    setEstado("✅ Correo verificado correctamente.", "ok");
-
-  } catch (err) {
-    console.error("Error al validar código:", err);
-    alert("Error al verificar: " + mensajeDeError(err));
-    setEstado("❌ Error al verificar.", "error");
-  }
-};
-
-function iniciarCuentaRegresiva(seg) {
-  segundosRestantes = seg;
-  const row = document.getElementById("reenviarRow");
-  if (!row) return; [span_10](start_span)// 🔧 FIX: Guardia de estabilidad[span_10](end_span)
-
-  if (countdownTimer) clearInterval(countdownTimer);
-
-  countdownTimer = setInterval(() => {
-    if (segundosRestantes <= 0) {
-      clearInterval(countdownTimer);
-      row.innerHTML = `<a href="#" onclick="enviarCodigoVerificacion(); return false;">Reenviar código</a>`;
-    } else {
-      row.textContent = `Reenviar en ${segundosRestantes}s`;
-      segundosRestantes--;
-    }
-  }, 1000);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("formRegistro");
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      registrar();
-    });
-  }
-});
-
-async function registrar() {
-  if (!codigoValidado) {
-    alert("Primero debes verificar tu correo con el código de 6 dígitos.");
-    return;
-  }
-
-  [span_11](start_span)// Captura de datos [cite: 138-143]
-  const cedula        = document.getElementById("cedula").value.trim();
-  const nombres       = document.getElementById("nombres").value.trim();
-  const apellidos     = document.getElementById("apellidos").value.trim();
-  const fechaNacimiento = document.getElementById("fechaNacimiento")?.value;
-  const email         = document.getElementById("email").value.trim();
-  const password      = document.getElementById("password").value.trim();
-  const anio          = document.getElementById("anio").value;
-  const seccion       = document.getElementById("seccion").value;
-  const lapso         = document.getElementById("lapso").value;
-
-  try {
-    const cedulaRef  = doc(db, "cedulas", cedula);
-    const cedulaSnap = await getDoc(cedulaRef);
-
-    if (cedulaSnap.exists()) {
-      alert("Esta cédula ya está registrada.");
-      return;
-    }
-
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    [cite_start]// Guardar perfil completo en Firestore[span_11](end_span)
-    await setDoc(doc(db, "usuarios", user.uid), {
-      cedula, nombres, apellidos, fechaNacimiento, email,
-      anio, seccion, lapso, rol: "estudiante",
-      creado_en: new Date(), intento: false, nota: null, estado: "sin_presentar"
-    });
-
-    await setDoc(doc(db, "cedulas", cedula), { uid: user.uid });
-
-    alert("¡Registro exitoso! Redirigiendo al inicio de sesión...");
-    window.location.href = "login.html";
-
-  } catch (error) {
-    console.error("Error en registro:", error);
-    alert("Error al registrar: " + mensajeDeError(error));
-  }
-}
+    document.
