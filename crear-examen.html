@@ -4,135 +4,150 @@
 <meta charset="UTF-8">
 <title>Crear Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="estilos.css">
-
 <style>
-/* Estilo Profesional MateEduPro */
-body {
-  margin: 0; padding: 15px;
-  background: #f0f4f8;
-  font-family: 'Segoe UI', sans-serif;
-}
+  body {
+    margin: 0; padding: 10px;
+    background: #f0f4f8;
+    font-family: 'Segoe UI', sans-serif;
+  }
 
-.header {
-  background: linear-gradient(135deg, #00796b, #004d40);
-  color: white; padding: 20px;
-  border-radius: 15px; text-align: center;
-  margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+  .header {
+    background: linear-gradient(135deg, #00796b, #004d40);
+    color: white; padding: 25px 15px;
+    border-radius: 15px; text-align: center;
+    margin-bottom: 25px; /* Más espacio debajo del banner verde */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
 
-.contenedor {
-  background: white; padding: 20px;
-  border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  max-width: 700px; margin: 0 auto;
-}
+  .contenedor {
+    max-width: 700px; margin: 0 auto;
+  }
 
-/* Inputs Modernos */
-.campo-grupo { margin-bottom: 18px; }
-label { display: block; font-weight: bold; color: #00796b; margin-bottom: 6px; font-size: 0.95rem; }
+  /* Secciones Estilizadas */
+  .seccion-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 25px; /* Espacio entre secciones */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e0e6ed;
+  }
 
-input, select, textarea {
-  width: 100%; padding: 12px;
-  border-radius: 10px; border: 1px solid #ccd6dd;
-  box-sizing: border-box; font-size: 16px;
-  font-family: inherit; transition: 0.3s;
-}
+  .seccion-titulo {
+    color: #00796b;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f0f4f8;
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center; gap: 10px;
+  }
 
-input:focus, textarea:focus {
-  border-color: #00bcd4;
-  outline: none;
-  box-shadow: 0 0 8px rgba(0,188,212,0.2);
-}
+  .campo-grupo { margin-bottom: 15px; }
+  label { display: block; font-weight: bold; color: #444; margin-bottom: 5px; font-size: 0.9rem; }
+  
+  input, select, textarea {
+    width: 100%; padding: 12px;
+    border-radius: 10px; border: 1px solid #ccd6dd;
+    box-sizing: border-box; font-size: 16px;
+    font-family: inherit;
+  }
 
-textarea { resize: vertical; min-height: 90px; }
+  textarea { min-height: 100px; resize: vertical; }
 
-/* Tarjeta de Pregunta */
-.pregunta-card {
-  background: #f9f9f9; padding: 15px;
-  border-radius: 12px; border-left: 5px solid #00bcd4;
-  margin-bottom: 20px; position: relative;
-}
+  .btn-accion {
+    width: 100%; padding: 15px;
+    border-radius: 12px; border: none;
+    font-weight: bold; cursor: pointer;
+    margin-bottom: 10px; transition: 0.3s;
+    font-size: 1rem;
+  }
 
-.btn-accion {
-  width: 100%; padding: 15px;
-  border-radius: 12px; border: none;
-  font-weight: bold; cursor: pointer;
-  margin-bottom: 10px; transition: 0.3s;
-}
+  .btn-guardar { background: #00bcd4; color: white; margin-top: 10px; }
+  .btn-agregar { background: #00796b; color: white; }
+  .btn-volver { background: #90a4ae; color: white; }
 
-.btn-guardar { background: #00bcd4; color: white; }
-.btn-agregar { background: #00796b; color: white; }
-.btn-volver { background: #90a4ae; color: white; }
+  .row { display: flex; gap: 10px; }
+  .col { flex: 1; }
 
-@media(max-width: 600px) {
-  .contenedor { padding: 15px; }
-}
+  @media(max-width: 600px) {
+    .row { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h2 style="margin:0;">📝 Configuración de Evaluación</h2>
-  <small>U.E.E. Cecilia Núñez Sucre - Panel del Docente</small>
+  <small>U.E.E. Cecilia Núñez Sucre</small>
 </div>
 
 <div class="contenedor">
 
-  <div class="campo-grupo">
-    <label>📌 Título del Examen</label>
-    <input type="text" id="titulo" placeholder="Ej: Repaso de Números Enteros - 1er Lapso">
-  </div>
-
-  <div class="campo-grupo">
-    <label>📋 Instrucciones para el Alumno</label>
-    <textarea id="descripcion" placeholder="Ej: Lee con atención. Responde las preguntas de verdadero y falso analizando cada propiedad matemática..."></textarea>
-    <small style="color: #666;">Este texto guiará a los estudiantes antes de empezar.</small>
-  </div>
-
-  <div style="display: flex; gap: 10px;">
-    <div class="campo-grupo" style="flex:1;">
-      <label>Año</label>
-      <select id="anio">
-        <option value="1">1er Año</option>
-        <option value="2">2do Año</option>
-        <option value="3">3er Año</option>
-      </select>
-    </div>
-    <div class="campo-grupo" style="flex:1;">
-      <label>Sección</label>
-      <input type="text" id="seccion" placeholder="Ej: A">
-    </div>
-  </div>
-
-  <div style="display: flex; gap: 10px;">
-    <div class="campo-grupo" style="flex:1;">
-      <label>Lapso</label>
-      <select id="lapso">
-        <option value="1">1er Lapso</option>
-        <option value="2">2do Lapso</option>
-        <option value="3">3er Lapso</option>
-      </select>
-    </div>
-    <div class="campo-grupo" style="flex:1;">
-      <label>Duración (Minutos)</label>
-      <input type="number" id="duracion" placeholder="Ej: 45">
+  <div class="seccion-card">
+    <div class="seccion-titulo">📍 Datos del Curso</div>
+    
+    <div class="row">
+      <div class="campo-grupo col">
+        <label>Año</label>
+        <select id="anio">
+          <option value="1">1er Año</option>
+          <option value="2">2do Año</option>
+          <option value="3">3er Año</option>
+        </select>
+      </div>
+      <div class="campo-grupo col">
+        <label>Sección</label>
+        <input type="text" id="seccion" placeholder="Ej: A">
+      </div>
+      <div class="campo-grupo col">
+        <label>Lapso</label>
+        <select id="lapso">
+          <option value="1">1er Lapso</option>
+          <option value="2">2do Lapso</option>
+          <option value="3">3er Lapso</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <div class="campo-grupo">
-    <label>🔗 Link de Material de Repaso (Google Drive)</label>
-    <input type="text" id="repaso" placeholder="Pega aquí el enlace de tu guía en PDF">
-    <small style="color: #666;">El sistema obligará a verlo por 2 minutos antes del examen.</small>
+  <div class="seccion-card">
+    <div class="seccion-titulo">📄 Información del Examen</div>
+    
+    <div class="campo-grupo">
+      <label>Título del Examen</label>
+      <input type="text" id="titulo" placeholder="Ej: Examen de Números Naturales">
+    </div>
+
+    <div class="campo-grupo">
+      <label>Instrucciones / Descripción</label>
+      <textarea id="descripcion" placeholder="Ej: Lee con atención..."></textarea>
+    </div>
+
+    <div class="row">
+        <div class="campo-grupo col">
+            <label>Duración (Minutos)</label>
+            <input type="number" id="duracion" placeholder="45">
+        </div>
+        <div class="campo-grupo col" style="flex: 2;">
+            <label>Link de Repaso (Google Drive)</label>
+            <input type="text" id="repaso" placeholder="https://drive.google.com/...">
+        </div>
+    </div>
   </div>
 
-  <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-
-  <h3 style="color: #00796b;">Preguntas del Examen</h3>
-  <div id="contenedorPreguntas"></div>
-
-  <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Pregunta</button>
-  <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
-  <button class="btn-accion btn-volver" onclick="history.back()">⬅️ Volver al Panel</button>
+  <div class="seccion-card">
+    <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
+    <div id="contenedorPreguntas"></div>
+    
+    <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
+    
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    
+    <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
+    <button class="btn-accion btn-volver" onclick="history.back()">⬅️ Volver al Panel</button>
+  </div>
 
 </div>
 
