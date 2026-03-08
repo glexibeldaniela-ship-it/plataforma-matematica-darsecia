@@ -2,483 +2,312 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Administrador – Centro de Control</title>
+<title>Panel Administrador – MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-/* ===== PANEL ADMINISTRADOR – MATEEDUPRO ===== */
+/* ===== PANEL ADMINISTRADOR PROFESIONAL – MATEEDUPRO ===== */
 *, *::before, *::after { box-sizing: border-box; }
 html { overflow-x: hidden; }
 body {
   margin: 0; padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: `#f0f4f8`;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f4f7f6; /* Fondo gris muy tenue para resaltar las tarjetas blancas */
+  color: #263238; /* Texto oscuro para máxima legibilidad en Android */
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* ── HEADER ─────────────────────────────────── */
+/* ── HEADER (Turquesa Verdoso) ──────────────── */
 .header {
-  background: linear-gradient(135deg, `#00bcd4`, `#00796b`);
+  background: linear-gradient(135deg, #00acc1, #00838f); /* Tu Turquesa Verdoso */
   color: white;
-  padding: 14px 18px;
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   position: sticky;
   top: 0;
   z-index: 100;
 }
-.header-info { display: flex; align-items: center; gap: 13px; }
+.header-info { display: flex; align-items: center; gap: 15px; }
 .header-avatar {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  width: 50px; height: 50px;
+  border-radius: 12px; /* Estilo más moderno que el círculo */
+  background: rgba(255,255,255,0.2);
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,0.6);
-  box-shadow: 0 0 0 4px rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.4);
 }
 .header-subtitle {
   margin: 0;
-  font-size: 0.72rem;
-  opacity: 0.85;
-  font-weight: 400;
-  letter-spacing: 0.3px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
 }
 .header-name {
-  margin: 3px 0 0;
-  font-size: 0.97rem;
+  margin: 2px 0 0;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 0.2px;
 }
 .btn-cerrar-header {
-  background: rgba(255,255,255,0.18);
-  border: 1.5px solid rgba(255,255,255,0.65);
+  background: #ff5252;
+  border: none;
   color: white;
-  border-radius: 20px;
-  padding: 8px 18px;
+  border-radius: 8px;
+  padding: 8px 15px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.82rem;
-  touch-action: manipulation;
-  white-space: nowrap;
+  font-size: 0.85rem;
 }
 
-/* ── TABS ───────────────────────────────────── */
+/* ── TABS (Navegación Móvil) ────────────────── */
 .tabs-bar {
   display: flex;
-  overflow-x: auto;
   background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-bottom: 1px solid #e0e0e0;
   position: sticky;
   top: 80px;
   z-index: 90;
-  -webkit-overflow-scrolling: touch;
 }
 .tab-btn {
   flex: 1;
-  min-width: 110px;
-  background: none;
+  padding: 15px 5px;
   border: none;
-  border-bottom: 3px solid transparent;
-  padding: 13px 8px;
+  background: none;
   font-weight: 600;
-  font-size: 0.78rem;
-  color: `#777`;
-  cursor: pointer;
-  transition: 0.2s;
-  white-space: nowrap;
-  touch-action: manipulation;
+  font-size: 0.85rem;
+  color: #78909c;
+  border-bottom: 3px solid transparent;
+  transition: 0.3s;
 }
-.tab-btn.activo { color: `#00796b`; border-bottom-color: `#00bcd4`; background: `#f0fdfd`; }
+.tab-btn.activo {
+  color: #00838f;
+  border-bottom-color: #00838f;
+}
 
-/* ── CONTENEDOR ─────────────────────────────── */
-.contenedor { padding: 16px; max-width: 960px; margin: 0 auto; }
+/* ── CONTENEDOR PRINCIPAL ───────────────────── */
+.contenedor { padding: 20px 15px; max-width: 800px; margin: 0 auto; }
 .tab-panel { display: none; }
 .tab-panel.activo { display: block; }
 
-/* ── STATS ──────────────────────────────────── */
+/* ── TARJETAS DE ESTADÍSTICAS ───────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 .stat-card {
   background: white;
-  border-radius: 14px;
-  padding: 18px;
+  border-radius: 15px;
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.07);
-  border-top: 4px solid `#00bcd4`;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-left: 5px solid #00acc1;
 }
-.stat-valor { font-size: 2rem; font-weight: 800; color: `#00796b`; }
-.stat-label { font-size: 0.7rem; color: `#888`; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-valor { font-size: 1.8rem; font-weight: 800; color: #00838f; }
+.stat-label { font-size: 0.8rem; color: #546e7a; font-weight: 600; }
 
-/* ── TABLA ──────────────────────────────────── */
+/* ── TABLA DE USUARIOS (Optimización Android) ── */
 .tabla-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: 14px;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.07);
   background: white;
-  -webkit-overflow-scrolling: touch;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
-table { width: 100%; border-collapse: collapse; min-width: 380px; }
-thead { background: `#00796b`; color: white; }
-th, td { padding: 11px 10px; text-align: left; font-size: 0.79rem; border-bottom: 1px solid `#eee`; }
-.acciones-celda { display: flex; gap: 5px; flex-wrap: wrap; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: #eceff1; }
+th { padding: 12px; text-align: left; font-size: 0.8rem; color: #455a64; text-transform: uppercase; }
+td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 
-/* ── BOTONES ─────────────────────────────────── */
-.btn-primary {
-  background: `#00bcd4`; color: white;
-  border: none; padding: 11px 16px;
-  border-radius: 10px; font-weight: bold;
-  cursor: pointer; font-size: 0.85rem;
-  touch-action: manipulation;
+/* ── BOTONES DE ACCIÓN ──────────────────────── */
+.acciones-celda { display: flex; gap: 8px; }
+.btn-reset {
+  background: #00acc1; /* Turquesa */
+  color: white; border: none;
+  padding: 8px 12px; border-radius: 6px;
+  font-size: 0.75rem; font-weight: bold;
 }
 .btn-danger {
-  background: `#e53935`; color: white;
-  border: none; padding: 7px 11px;
-  border-radius: 8px; font-size: 0.73rem;
-  cursor: pointer; touch-action: manipulation;
-}
-.btn-reset {
-  background: `#ff9800`; color: white;
-  border: none; padding: 7px 11px;
-  border-radius: 8px; font-size: 0.73rem;
-  cursor: pointer; touch-action: manipulation;
+  background: #ff5252;
+  color: white; border: none;
+  padding: 8px 12px; border-radius: 6px;
+  font-size: 0.75rem; font-weight: bold;
 }
 
-/* ── BADGES DE ROL ──────────────────────────── */
+/* ── BADGES ─────────────────────────────────── */
 .badge-rol {
-  display: inline-block; padding: 3px 10px;
-  border-radius: 12px; font-size: 0.69rem; font-weight: 700;
+  padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
 }
-.badge-rol.estudiante { background: `#e0f7fa`; color: `#00796b`; }
-.badge-rol.profesor   { background: `#e8f5e9`; color: `#2e7d32`; }
-.badge-rol.admin      { background: `#fce4ec`; color: `#c62828`; }
+.badge-rol.admin { background: #ffebee; color: #c62828; }
+.badge-rol.profesor { background: #e8f5e9; color: #2e7d32; }
+.badge-rol.estudiante { background: #e0f7fa; color: #006064; }
 
-/* ── MODALES (bottom-sheet para Android) ────── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 200;
-  justify-content: center;
-  align-items: flex-end;
-  padding: 0;
-}
-.modal-overlay.abierto { display: flex; }
-.modal-caja {
-  background: white;
-  border-radius: 20px 20px 0 0;
-  width: 100%; max-width: 560px;
-  overflow: hidden;
-  max-height: 92vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease;
-}
-`@keyframes` slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-.modal-header {
-  background: linear-gradient(90deg, `#00796b`, `#00bcd4`);
-  color: white; padding: 16px 20px;
-  display: flex; justify-content: space-between; align-items: center;
-  position: sticky; top: 0;
-}
-.modal-header h3 { margin: 0; font-size: 1rem; }
-.modal-header button {
-  background: rgba(255,255,255,0.25);
-  border: 1px solid white; color: white;
-  border-radius: 50%; width: 30px; height: 30px;
-  cursor: pointer; font-size: 1rem;
-  display: flex; align-items: center; justify-content: center;
-}
-.modal-body { padding: 20px; }
-.form-group { margin-bottom: 14px; }
-.form-group label {
-  display: block; font-size: 0.73rem; font-weight: 700;
-  margin-bottom: 5px; color: `#444`;
-  text-transform: uppercase; letter-spacing: 0.3px;
-}
-.form-group input,
-.form-group select {
-  width: 100%; padding: 12px;
-  border: 1.5px solid `#b2ebf2`;
-  border-radius: 10px; font-size: 0.9rem;
-  outline: none; transition: 0.2s;
-}
-.form-group input:focus,
-.form-group select:focus {
-  border-color: `#00bcd4`;
-  box-shadow: 0 0 0 3px rgba(0,188,212,0.15);
-}
-
-/* ── TOAST ──────────────────────────────────── */
+/* ── MODALES Y TOASTS ──────────────────────── */
 .toast {
-  position: fixed; bottom: 24px;
-  left: 50%; transform: translateX(-50%) translateY(80px);
-  background: `#323232`; color: white;
-  padding: 12px 24px; border-radius: 24px;
-  font-size: 0.84rem; z-index: 999;
-  opacity: 0; transition: all 0.3s ease;
-  white-space: nowrap; max-width: 90vw;
-  text-align: center;
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: #263238; color: white; padding: 12px 25px;
+  border-radius: 30px; font-size: 0.9rem; z-index: 1000;
+  display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
 <div class="header">
   <div class="header-info">
-    <!-- Logo profesional SVG de administrador -->
     <div class="header-avatar">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white">
-        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45
-                 9-12V5l-9-4zm-1 14l-3-3 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 6z"/>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
       </svg>
     </div>
     <div>
-      <p class="header-subtitle">Panel de Control · MateEduPro</p>
+      <p class="header-subtitle">MateEduPro · Gestión</p>
       <p class="header-name">Hola, Administrador José Fernández</p>
     </div>
   </div>
   <button class="btn-cerrar-header" onclick="cerrarSesion()">Salir</button>
 </div>
 
-<!-- ===== TABS ===== -->
 <div class="tabs-bar">
-  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">👥 Usuarios</button>
-  <button class="tab-btn" onclick="cambiarTab('estructura', this)">🏫 Estructura</button>
-  <button class="tab-btn" onclick="cambiarTab('seguridad', this)">🔒 Seguridad</button>
+  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">Usuarios</button>
+  <button class="tab-btn" onclick="cambiarTab('seguridad', this)">Seguridad</button>
 </div>
 
-<!-- ===== CONTENIDO ===== -->
 <div class="contenedor">
-
-  <!-- TAB USUARIOS -->
   <div class="tab-panel activo" id="tab-usuarios">
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-valor" id="statEst">0</div>
         <div class="stat-label">Alumnos</div>
       </div>
-      <div class="stat-card" style="border-top-color:`#43a047`">
+      <div class="stat-card" style="border-left-color: #4db6ac;">
         <div class="stat-valor" id="statProf">0</div>
-        <div class="stat-label">Profesores</div>
+        <div class="stat-label">Docentes</div>
       </div>
-    </div>
-
-    <div style="margin-bottom:16px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn-primary" onclick="abrirModal('modalEstudiante')">+ Estudiante</button>
-      <button class="btn-primary" style="background:`#43a047`" onclick="abrirModal('modalProfesor')">+ Profesor</button>
     </div>
 
     <div class="tabla-wrapper">
       <table>
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Cédula</th>
+            <th>Usuario</th>
             <th>Rol</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tablaUsuariosBody"></tbody>
+        <tbody id="tablaUsuariosBody">
+          </tbody>
       </table>
     </div>
   </div>
 
-  <!-- TAB ESTRUCTURA -->
-  <div class="tab-panel" id="tab-estructura">
-    <h3>Gestión Escolar</h3>
-    <p>Añade años y secciones que aparecerán en los formularios.</p>
-  </div>
-
-  <!-- TAB SEGURIDAD -->
   <div class="tab-panel" id="tab-seguridad">
-    <h3>🔒 Seguridad</h3>
-    <p>Monitoreo de actividad y control de accesos del sistema.</p>
-  </div>
-
-</div>
-
-<!-- ===== MODAL: CREAR ESTUDIANTE ===== -->
-<div class="modal-overlay" id="modalEstudiante">
-  <div class="modal-caja">
-    <div class="modal-header">
-      <h3>➕ Crear Estudiante</h3>
-      <button onclick="cerrarModal('modalEstudiante')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label>Nombres</label><input type="text" id="nombresEst" placeholder="Nombres completos"></div>
-      <div class="form-group"><label>Apellidos</label><input type="text" id="apellidosEst" placeholder="Apellidos completos"></div>
-      <div class="form-group"><label>Cédula</label><input type="text" id="cedulaEst" placeholder="Número de cédula"></div>
-      <div class="form-group"><label>Correo</label><input type="email" id="emailEst" placeholder="correo@ejemplo.com"></div>
-      <div class="form-group"><label>Contraseña</label><input type="password" id="passEst" placeholder="Mínimo 6 caracteres"></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div class="form-group">
-          <label>Año</label>
-          <select id="anioEst">
-            <option value="1">1° Año</option>
-            <option value="2">2° Año</option>
-            <option value="3">3° Año</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Sección</label>
-          <select id="seccionEst">
-            <option value="A">A</option>
-            <option value="B">B</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn-primary"
-              style="width:100%; padding:14px; font-size:1rem; margin-top:6px;"
-              onclick="crearEstudiante()">
-        Guardar Estudiante
-      </button>
+    <div class="stat-card" style="text-align: left; border-left-color: #ffa000;">
+      <h3 style="margin-top:0; color: #00838f;">🔐 Recuperación de Cuentas</h3>
+      <p style="font-size: 0.85rem; color: #546e7a;">
+        Si un estudiante olvida su contraseña, usa el botón <b>"🔑 Reset"</b> en la lista de usuarios. El sistema le enviará un correo automático para que cree una nueva clave de forma segura.
+      </p>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toastMsg"></div>
 
-<!-- ===== SCRIPT PRINCIPAL ===== -->
 <script type="module">
 import { auth, db } from "./firebase.js";
-import {
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail
+import { 
+  onAuthStateChanged, 
+  signOut, 
+  sendPasswordResetEmail 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  onSnapshot,
-  deleteDoc
+import { 
+  collection, 
+  onSnapshot, 
+  doc, 
+  deleteDoc, 
+  getDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── TOAST ──────────────────────────────────────
-function mostrarToast(msg) {
-  const t = document.getElementById('toastMsg');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-// ── TABS / MODALES ──────────────────────────────
-window.cambiarTab = (name, btn) => {
+// Funciones Globales para los botones
+window.cambiarTab = (id, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-  document.getElementById('tab-' + name).classList.add('activo');
+  document.getElementById('tab-'+id).classList.add('activo');
   btn.classList.add('activo');
 };
-window.abrirModal  = (id) => document.getElementById(id).classList.add('abierto');
-window.cerrarModal = (id) => document.getElementById(id).classList.remove('abierto');
 
-// ── PROTECCIÓN DE RUTA ──────────────────────────
+function mostrarToast(msg) {
+  const t = document.getElementById('toastMsg');
+  t.innerText = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+// PROTECCIÓN Y CARGA DE DATOS
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
-
-  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-  if (!userSnap.exists() || userSnap.data().rol !== "admin") {
-    alert("Acceso denegado. No tienes permisos de administrador.");
-    await signOut(auth);
-    window.location.href = "login.html";
+  
+  // Validar si eres admin (José Fernández)
+  const snap = await getDoc(doc(db, "usuarios", user.uid));
+  if(!snap.exists() || snap.data().rol !== "admin") {
+    alert("No tienes permiso para estar aquí.");
+    signOut(auth);
     return;
   }
 
-  // Cargar usuarios en tiempo real (solo si el admin está verificado)
-  onSnapshot(collection(db, "usuarios"), (snap) => {
-    const body = document.getElementById("tablaUsuariosBody");
-    let est = 0, prof = 0;
-    body.innerHTML = "";
-    snap.forEach(d => {
-      const u = d.data();
-      if (u.rol === 'estudiante') est++;
-      else if (u.rol === 'profesor') prof++;
-      const badgeClass = u.rol || 'estudiante';
-      body.innerHTML += `
+  // Escuchar usuarios en tiempo real
+  onSnapshot(collection(db, "usuarios"), (snapshot) => {
+    const tabla = document.getElementById("tablaUsuariosBody");
+    let cEst = 0, cProf = 0;
+    tabla.innerHTML = "";
+
+    snapshot.forEach(docSnap => {
+      const u = docSnap.data();
+      const id = docSnap.id;
+      if(u.rol === "estudiante") cEst++;
+      if(u.rol === "profesor") cProf++;
+
+      tabla.innerHTML += `
         <tr>
-          <td>${u.nombres || '-'} ${u.apellidos || ''}</td>
-          <td>${u.cedula || '-'}</td>
-          <td><span class="badge-rol ${badgeClass}">${u.rol || '-'}</span></td>
+          <td>
+            <div style="font-weight:700;">${u.nombres || 'Sin Nombre'}</div>
+            <div style="font-size:0.7rem; color:#90a4ae;">${u.email}</div>
+          </td>
+          <td><span class="badge-rol ${u.rol}">${u.rol}</span></td>
           <td>
             <div class="acciones-celda">
-              <button class="btn-reset"   onclick="resetClave('${u.email || ''}')">🔑 Reset</button>
-              <button class="btn-danger"  onclick="borrarU('${d.id}')">🗑️ Eliminar</button>
+              <button class="btn-reset" onclick="resetPassword('${u.email}')">🔑 Reset</button>
+              <button class="btn-danger" onclick="eliminarUsuario('${id}')">🗑️</button>
             </div>
           </td>
-        </tr>`;
+        </tr>
+      `;
     });
-    document.getElementById("statEst").innerText  = est;
-    document.getElementById("statProf").innerText = prof;
+    document.getElementById("statEst").innerText = cEst;
+    document.getElementById("statProf").innerText = cProf;
   });
 });
 
-// ── RESET DE CONTRASEÑA ─────────────────────────
-// Envía un enlace de restablecimiento al correo del usuario.
-// El usuario hace clic en el enlace y elige su nueva contraseña.
-window.resetClave = async (email) => {
-  if (!email) {
-    mostrarToast("⚠️ Este usuario no tiene correo registrado.");
-    return;
-  }
-  if (!confirm(`¿Enviar enlace de restablecimiento a:\n${email}?`)) return;
-  try {
-    await sendPasswordResetEmail(auth, email);
-    mostrarToast(`✅ Enlace enviado a ${email}`);
-  } catch (err) {
-    mostrarToast("❌ Error: " + err.message);
+// FUNCIÓN DE RESETEO (SEGURA)
+window.resetPassword = (email) => {
+  if(confirm("¿Enviar correo de recuperación a " + email + "?")) {
+    sendPasswordResetEmail(auth, email)
+      .then(() => mostrarToast("✅ Correo enviado con éxito"))
+      .catch(err => mostrarToast("❌ Error: " + err.message));
   }
 };
 
-// ── CREAR ESTUDIANTE ────────────────────────────
-window.crearEstudiante = async () => {
-  const n  = document.getElementById("nombresEst").value.trim();
-  const a  = document.getElementById("apellidosEst").value.trim();
-  const c  = document.getElementById("cedulaEst").value.trim();
-  const e  = document.getElementById("emailEst").value.trim();
-  const p  = document.getElementById("passEst").value;
-  const an = document.getElementById("anioEst").value;
-  const s  = document.getElementById("seccionEst").value;
-
-  if (!n || !a || !c || !e || !p) {
-    mostrarToast("⚠️ Completa todos los campos.");
-    return;
-  }
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, e, p);
-    await setDoc(doc(db, "usuarios", cred.user.uid), {
-      nombres: n, apellidos: a, cedula: c,
-      email: e, anio: an, seccion: s, rol: "estudiante"
-    });
-    mostrarToast("✅ Estudiante creado correctamente.");
-    cerrarModal('modalEstudiante');
-  } catch (err) { mostrarToast("❌ " + err.message); }
-};
-
-// ── ELIMINAR USUARIO ────────────────────────────
-window.borrarU = async (id) => {
-  if (confirm("¿Eliminar este usuario permanentemente?")) {
+window.eliminarUsuario = async (id) => {
+  if(confirm("¿Estás seguro de eliminar este usuario?")) {
     await deleteDoc(doc(db, "usuarios", id));
-    mostrarToast("🗑️ Usuario eliminado.");
+    mostrarToast("🗑️ Usuario eliminado");
   }
 };
 
-// ── CERRAR SESIÓN ───────────────────────────────
-window.cerrarSesion = () =>
-  signOut(auth).then(() => { window.location.href = "login.html"; });
+window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
+
 </script>
 </body>
 </html>
