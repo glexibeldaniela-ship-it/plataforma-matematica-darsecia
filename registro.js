@@ -5,13 +5,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ──────────────────────────────────────────────────────────────
-// ⚙️ CONFIGURACIÓN DE EMAILJS
+// ⚙️ CONFIGURACIÓN DE EMAILJS (Verificada con tus imágenes)
 // ──────────────────────────────────────────────────────────────
-const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY";
-const EMAILJS_SERVICE_ID  = "service_43ampij";
-const EMAILJS_TEMPLATE_ID = "template_ifbez2i";
+const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY"; // Sacado de tu imagen 1000273375.jpg
+const EMAILJS_SERVICE_ID  = "service_43ampij";   // ID de tu servicio de Gmail
+const EMAILJS_TEMPLATE_ID = "template_ifbez2i";  // Sacado de tu imagen 1000273374.jpg
 
-// 🔧 FIX: Inicialización segura para evitar errores de carga
+// 🔧 FIX: Inicialización segura
 function getEmailJS() {
   if (typeof emailjs === "undefined") {
     throw new Error("La librería EmailJS no está disponible. Verifica tu conexión.");
@@ -20,7 +20,7 @@ function getEmailJS() {
   return emailjs;
 }
 
-// 🔧 FIX: Extraer mensaje real del error (adiós al "undefined")
+// 🔧 FIX: Extraer mensaje real del error
 function mensajeDeError(err) {
   if (!err) return "Error desconocido";
   return err.message || err.text || JSON.stringify(err);
@@ -56,15 +56,13 @@ window.enviarCodigoVerificacion = async function () {
     const ejs = getEmailJS(); 
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     const ahora = new Date();
-    const expira = new Date(ahora.getTime() + 10 * 60 * 1000); // Expira en 10 min
+    const expira = new Date(ahora.getTime() + 10 * 60 * 1000);
 
-    // Limpiar códigos viejos del mismo correo para no llenar la base de datos
     const colRef = collection(db, "codigos_verificacion");
     const q = query(colRef, where("email", "==", email));
     const snap = await getDocs(q);
     for (const d of snap.docs) await deleteDoc(d.ref);
 
-    // Guardar nuevo código en Firestore
     await addDoc(collection(db, "codigos_verificacion"), {
       email,
       codigo,
@@ -73,7 +71,7 @@ window.enviarCodigoVerificacion = async function () {
       usado: false
     });
 
-    // Enviar por EmailJS con tus variables
+    // Envío de datos a las "casitas" que ordenamos antes
     await ejs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: email,
       to_name: nombres || "Estudiante",
@@ -126,7 +124,6 @@ window.validarCodigo = async function () {
       return;
     }
 
-    // ÉXITO EN LA VERIFICACIÓN
     codigoValidado = true;
     await deleteDoc(snap.docs[0].ref);
 
@@ -147,7 +144,7 @@ window.validarCodigo = async function () {
 function iniciarCuentaRegresiva(seg) {
   segundosRestantes = seg;
   const row = document.getElementById("reenviarRow");
-  if (!row) return; // 🔧 FIX: Guardia para evitar errores si el elemento no existe
+  if (!row) return;
 
   if (countdownTimer) clearInterval(countdownTimer);
 
@@ -162,7 +159,6 @@ function iniciarCuentaRegresiva(seg) {
   }, 1000);
 }
 
-// 📋 FORMULARIO DE REGISTRO FINAL
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formRegistro");
   if (form) {
