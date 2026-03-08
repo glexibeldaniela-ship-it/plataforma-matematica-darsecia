@@ -19,7 +19,7 @@
       animation: aparecer 0.7s ease;
     }
 
-    `@keyframes` aparecer {
+    @keyframes aparecer {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
@@ -34,28 +34,37 @@
       gap: 5px;
       margin-bottom: 10px;
     }
+
+    /* CORRECCIÓN: Botón Enviar Código (Turquesa Verdoso) */
     .btn-enviar-codigo {
-      background: `#00796b`;
+      background: #00838f; /* Antes tenía comillas invertidas */
       color: white;
       border: none;
-      border-radius: 5px;
-      padding: 5px 10px;
-      font-size: 0.8rem;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
+    
+    .btn-enviar-codigo:active {
+      background: #006064;
+    }
+
     .estado-codigo {
       font-size: 0.8rem;
       margin-bottom: 10px;
       text-align: center;
     }
 
-    .estado-codigo.ok     { color: `#2e7d32`; font-weight: bold; }
-    .estado-codigo.error  { color: `#c62828`; font-weight: bold; }
-    .estado-codigo.espera { color: `#e65100`; }
+    .estado-codigo.ok     { color: #2e7d32; font-weight: bold; }
+    .estado-codigo.error  { color: #c62828; font-weight: bold; }
+    .estado-codigo.espera { color: #e65100; }
 
     .badge-validado {
       display: none;
-      color: `#2e7d32`;
+      color: #2e7d32;
       font-weight: bold;
       text-align: center;
       margin-bottom: 10px;
@@ -85,14 +94,15 @@
              disabled maxlength="6">
 
       <button type="button" id="btnVerificar" class="btn-turquesa"
-              style="background:`#ff9800`; margin-bottom:10px;" disabled
+              style="background: #ff9800; margin-bottom:10px; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold;" 
+              disabled
               onclick="validarCodigo()">Verificar Código</button>
 
       <div id="reenviarRow"   style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
       <div id="estadoCodigo"  class="estado-codigo"></div>
       <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
 
-      <hr style="border:0; border-top:1px dashed `#ccc`; margin-bottom:15px;">
+      <hr style="border:0; border-top:1px dashed #ccc; margin-bottom:15px;">
 
       <input type="password" id="password" placeholder="Contraseña" required>
 
@@ -116,7 +126,9 @@
         <option value="3">Lapso 3</option>
       </select>
 
-      <button type="submit" id="btnRegistro" class="btn-turquesa" disabled>
+      <button type="submit" id="btnRegistro" class="btn-turquesa" 
+              style="background: #00838f; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%;"
+              disabled>
         Crear Cuenta
       </button>
     </form>
