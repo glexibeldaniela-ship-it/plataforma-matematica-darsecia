@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="estilos.css">
 
 <style>
-/* Estilo Profesional Sugerido */
+/* Estilo Profesional MateEduPro */
 body {
   margin: 0; padding: 15px;
   background: #f0f4f8;
@@ -28,32 +28,29 @@ body {
 }
 
 /* Inputs Modernos */
-.campo-grupo { margin-bottom: 15px; }
-label { display: block; font-weight: bold; color: #00796b; margin-bottom: 5px; font-size: 0.9rem; }
+.campo-grupo { margin-bottom: 18px; }
+label { display: block; font-weight: bold; color: #00796b; margin-bottom: 6px; font-size: 0.95rem; }
+
 input, select, textarea {
   width: 100%; padding: 12px;
-  border-radius: 10px; border: 1px solid #ddd;
+  border-radius: 10px; border: 1px solid #ccd6dd;
   box-sizing: border-box; font-size: 16px;
-  font-family: inherit;
+  font-family: inherit; transition: 0.3s;
 }
 
-/* Estilo específico para el área de instrucciones */
-textarea {
-  resize: vertical;
-  min-height: 80px;
+input:focus, textarea:focus {
+  border-color: #00bcd4;
+  outline: none;
+  box-shadow: 0 0 8px rgba(0,188,212,0.2);
 }
+
+textarea { resize: vertical; min-height: 90px; }
 
 /* Tarjeta de Pregunta */
 .pregunta-card {
   background: #f9f9f9; padding: 15px;
   border-radius: 12px; border-left: 5px solid #00bcd4;
   margin-bottom: 20px; position: relative;
-}
-
-.btn-eliminar {
-  background: #ff5252; color: white; border: none;
-  padding: 5px 10px; border-radius: 8px;
-  position: absolute; top: 10px; right: 10px; cursor: pointer;
 }
 
 .btn-accion {
@@ -75,21 +72,21 @@ textarea {
 <body>
 
 <div class="header">
-  <h2 style="margin:0;">📝 Nuevo Examen</h2>
-  <small>Configuración para la U.E.E. Cecilia Núñez Sucre</small>
+  <h2 style="margin:0;">📝 Configuración de Evaluación</h2>
+  <small>U.E.E. Cecilia Núñez Sucre - Panel del Docente</small>
 </div>
 
 <div class="contenedor">
 
   <div class="campo-grupo">
-    <label>Título del Examen</label>
-    <input type="text" id="titulo" placeholder="Ej: Polinomios Parte 1">
+    <label>📌 Título del Examen</label>
+    <input type="text" id="titulo" placeholder="Ej: Repaso de Números Enteros - 1er Lapso">
   </div>
 
   <div class="campo-grupo">
-    <label>Instrucciones del Examen</label>
-    <textarea id="descripcion" placeholder="Ej: Lee cuidadosamente cada pregunta. Esta evaluación contiene preguntas de Verdadero y Falso..."></textarea>
-    <small style="color: #666;">Aparecerá al alumno antes de empezar.</small>
+    <label>📋 Instrucciones para el Alumno</label>
+    <textarea id="descripcion" placeholder="Ej: Lee con atención. Responde las preguntas de verdadero y falso analizando cada propiedad matemática..."></textarea>
+    <small style="color: #666;">Este texto guiará a los estudiantes antes de empezar.</small>
   </div>
 
   <div style="display: flex; gap: 10px;">
@@ -103,7 +100,7 @@ textarea {
     </div>
     <div class="campo-grupo" style="flex:1;">
       <label>Sección</label>
-      <input type="text" id="seccion" placeholder="A, B, C...">
+      <input type="text" id="seccion" placeholder="Ej: A">
     </div>
   </div>
 
@@ -117,25 +114,25 @@ textarea {
       </select>
     </div>
     <div class="campo-grupo" style="flex:1;">
-      <label>Duración (Min)</label>
+      <label>Duración (Minutos)</label>
       <input type="number" id="duracion" placeholder="Ej: 45">
     </div>
   </div>
 
   <div class="campo-grupo">
-    <label>Link de Repaso (Google Drive)</label>
-    <input type="text" id="repaso" placeholder="https://drive.google.com/...">
-    <small style="color: #666;">El alumno deberá verlo por 2 minutos obligatorios.</small>
+    <label>🔗 Link de Material de Repaso (Google Drive)</label>
+    <input type="text" id="repaso" placeholder="Pega aquí el enlace de tu guía en PDF">
+    <small style="color: #666;">El sistema obligará a verlo por 2 minutos antes del examen.</small>
   </div>
 
   <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
-  <h3 style="color: #00796b;">Preguntas</h3>
+  <h3 style="color: #00796b;">Preguntas del Examen</h3>
   <div id="contenedorPreguntas"></div>
 
   <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Pregunta</button>
-  <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar</button>
-  <button class="btn-accion btn-volver" onclick="location.href='panel-profesor.html'">⬅️ Cancelar</button>
+  <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
+  <button class="btn-accion btn-volver" onclick="history.back()">⬅️ Volver al Panel</button>
 
 </div>
 
