@@ -104,7 +104,7 @@ async function login() {
     const datos = docSnap.data();
     const rol = datos.rol;
 
-    await setDoc(doc(db, "logs", crypto.randomUUID()), {
+    await setDoc(doc(db, "logs", Date.now().toString()), {
       uid: user.uid,
       email: user.email,
       rol: rol,
