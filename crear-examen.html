@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="estilos.css">
 
 <style>
-/* Estilo Profesional Sugerido por el Conejito */
+/* Estilo Profesional Sugerido */
 body {
   margin: 0; padding: 15px;
   background: #f0f4f8;
@@ -30,10 +30,17 @@ body {
 /* Inputs Modernos */
 .campo-grupo { margin-bottom: 15px; }
 label { display: block; font-weight: bold; color: #00796b; margin-bottom: 5px; font-size: 0.9rem; }
-input, select {
+input, select, textarea {
   width: 100%; padding: 12px;
   border-radius: 10px; border: 1px solid #ddd;
-  box-sizing: border-box; font-size: 16px; /* Evita zoom en iPhone */
+  box-sizing: border-box; font-size: 16px;
+  font-family: inherit;
+}
+
+/* Estilo específico para el área de instrucciones */
+textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 /* Tarjeta de Pregunta */
@@ -77,6 +84,12 @@ input, select {
   <div class="campo-grupo">
     <label>Título del Examen</label>
     <input type="text" id="titulo" placeholder="Ej: Polinomios Parte 1">
+  </div>
+
+  <div class="campo-grupo">
+    <label>Instrucciones del Examen</label>
+    <textarea id="descripcion" placeholder="Ej: Lee cuidadosamente cada pregunta. Esta evaluación contiene preguntas de Verdadero y Falso..."></textarea>
+    <small style="color: #666;">Aparecerá al alumno antes de empezar.</small>
   </div>
 
   <div style="display: flex; gap: 10px;">
