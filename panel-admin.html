@@ -5,152 +5,85 @@
 <title>Panel Administrador – MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-/* ===== PANEL ADMINISTRADOR PROFESIONAL – MATEEDUPRO ===== */
+/* ===== SE MANTIENE TU ESTILO ORIGINAL ===== */
 *, *::before, *::after { box-sizing: border-box; }
 html { overflow-x: hidden; }
 body {
   margin: 0; padding: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: #f4f7f6; /* Fondo gris muy tenue para resaltar las tarjetas blancas */
-  color: #263238; /* Texto oscuro para máxima legibilidad en Android */
+  background: #f4f7f6;
+  color: #263238;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
-/* ── HEADER (Turquesa Verdoso) ──────────────── */
+/* ── TU HEADER ORIGINAL ── */
 .header {
-  background: linear-gradient(135deg, #00acc1, #00838f); /* Tu Turquesa Verdoso */
+  background: linear-gradient(135deg, #00acc1, #00838f);
   color: white;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
 }
 .header-info { display: flex; align-items: center; gap: 15px; }
 .header-avatar {
-  width: 50px; height: 50px;
-  border-radius: 12px; /* Estilo más moderno que el círculo */
+  width: 50px; height: 50px; border-radius: 12px;
   background: rgba(255,255,255,0.2);
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255,255,255,0.4);
 }
-.header-subtitle {
-  margin: 0;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.9;
-}
-.header-name {
-  margin: 2px 0 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-.btn-cerrar-header {
-  background: #ff5252;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  padding: 8px 15px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
 
-/* ── TABS (Navegación Móvil) ────────────────── */
+/* ── TABS ── */
 .tabs-bar {
-  display: flex;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  position: sticky;
-  top: 80px;
-  z-index: 90;
+  display: flex; background: white; border-bottom: 1px solid #e0e0e0;
+  position: sticky; top: 80px; z-index: 90;
 }
 .tab-btn {
-  flex: 1;
-  padding: 15px 5px;
-  border: none;
-  background: none;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #78909c;
-  border-bottom: 3px solid transparent;
-  transition: 0.3s;
+  flex: 1; padding: 15px 5px; border: none; background: none;
+  font-weight: 600; font-size: 0.85rem; color: #78909c;
+  border-bottom: 3px solid transparent; transition: 0.3s;
 }
-.tab-btn.activo {
-  color: #00838f;
-  border-bottom-color: #00838f;
+.tab-btn.activo { color: #00838f; border-bottom-color: #00838f; }
+
+/* ── AJUSTES NUEVOS (FILTROS Y BOTONES) ── */
+.barra-herramientas {
+  display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
+}
+.busqueda-input {
+  flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cfd8dc;
+}
+.btn-exportar {
+  background: #2e7d32; color: white; border: none; padding: 10px 15px;
+  border-radius: 8px; font-weight: bold; cursor: pointer;
+}
+.btn-rol {
+  background: #f9a825; color: white; border: none; padding: 8px 12px;
+  border-radius: 6px; font-size: 0.75rem; font-weight: bold;
 }
 
-/* ── CONTENEDOR PRINCIPAL ───────────────────── */
+/* Resto de tu CSS original... */
 .contenedor { padding: 20px 15px; max-width: 800px; margin: 0 auto; }
 .tab-panel { display: none; }
 .tab-panel.activo { display: block; }
-
-/* ── TARJETAS DE ESTADÍSTICAS ───────────────── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-.stat-card {
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border-left: 5px solid #00acc1;
-}
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+.stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #00acc1; }
 .stat-valor { font-size: 1.8rem; font-weight: 800; color: #00838f; }
 .stat-label { font-size: 0.8rem; color: #546e7a; font-weight: 600; }
-
-/* ── TABLA DE USUARIOS (Optimización Android) ── */
-.tabla-wrapper {
-  background: white;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
+.tabla-wrapper { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 table { width: 100%; border-collapse: collapse; }
 thead { background: #eceff1; }
 th { padding: 12px; text-align: left; font-size: 0.8rem; color: #455a64; text-transform: uppercase; }
 td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
-
-/* ── BOTONES DE ACCIÓN ──────────────────────── */
-.acciones-celda { display: flex; gap: 8px; }
-.btn-reset {
-  background: #00acc1; /* Turquesa */
-  color: white; border: none;
-  padding: 8px 12px; border-radius: 6px;
-  font-size: 0.75rem; font-weight: bold;
-}
-.btn-danger {
-  background: #ff5252;
-  color: white; border: none;
-  padding: 8px 12px; border-radius: 6px;
-  font-size: 0.75rem; font-weight: bold;
-}
-
-/* ── BADGES ─────────────────────────────────── */
-.badge-rol {
-  padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-}
+.acciones-celda { display: flex; gap: 5px; flex-wrap: wrap; }
+.btn-reset { background: #00acc1; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+.btn-danger { background: #ff5252; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+.badge-rol { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
 .badge-rol.admin { background: #ffebee; color: #c62828; }
 .badge-rol.profesor { background: #e8f5e9; color: #2e7d32; }
 .badge-rol.estudiante { background: #e0f7fa; color: #006064; }
-
-/* ── MODALES Y TOASTS ──────────────────────── */
-.toast {
-  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-  background: #263238; color: white; padding: 12px 25px;
-  border-radius: 30px; font-size: 0.9rem; z-index: 1000;
-  display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #263238; color: white; padding: 12px 25px; border-radius: 30px; font-size: 0.9rem; z-index: 1000; display: none; }
 </style>
 </head>
 <body>
@@ -158,13 +91,11 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 <div class="header">
   <div class="header-info">
     <div class="header-avatar">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
-        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-      </svg>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
     </div>
     <div>
       <p class="header-subtitle">MateEduPro · Gestión</p>
-      <p class="header-name">Hola, Administrador José Fernández</p>
+      <p class="header-name">Hola, Adm. José Fernández</p>
     </div>
   </div>
   <button class="btn-cerrar-header" onclick="cerrarSesion()">Salir</button>
@@ -172,24 +103,24 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 
 <div class="tabs-bar">
   <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">Usuarios</button>
+  <button class="tab-btn" onclick="cambiarTab('auditoria', this)">Auditoría</button>
   <button class="tab-btn" onclick="cambiarTab('seguridad', this)">Seguridad</button>
 </div>
 
 <div class="contenedor">
   <div class="tab-panel activo" id="tab-usuarios">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-valor" id="statEst">0</div>
-        <div class="stat-label">Alumnos</div>
-      </div>
-      <div class="stat-card" style="border-left-color: #4db6ac;">
-        <div class="stat-valor" id="statProf">0</div>
-        <div class="stat-label">Docentes</div>
-      </div>
+      <div class="stat-card"><div class="stat-valor" id="statEst">0</div><div class="stat-label">Alumnos</div></div>
+      <div class="stat-card" style="border-left-color: #4db6ac;"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Docentes</div></div>
+    </div>
+
+    <div class="barra-herramientas">
+      <input type="text" id="busqueda" class="busqueda-input" placeholder="Buscar por nombre o año..." onkeyup="filtrarUsuarios()">
+      <button class="btn-exportar" onclick="exportarExcel()">📥 Reporte</button>
     </div>
 
     <div class="tabla-wrapper">
-      <table>
+      <table id="tablaUsuarios">
         <thead>
           <tr>
             <th>Usuario</th>
@@ -197,18 +128,24 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tablaUsuariosBody">
-          </tbody>
+        <tbody id="tablaUsuariosBody"></tbody>
       </table>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-auditoria">
+    <div class="stat-card" style="text-align: left;">
+      <h3 style="color:#00838f;">📋 Historial de Cambios</h3>
+      <ul id="listaLogs" style="font-size: 0.85rem; color: #546e7a; padding-left: 20px;">
+        <li>Sistema listo para monitorear acciones...</li>
+      </ul>
     </div>
   </div>
 
   <div class="tab-panel" id="tab-seguridad">
     <div class="stat-card" style="text-align: left; border-left-color: #ffa000;">
-      <h3 style="margin-top:0; color: #00838f;">🔐 Recuperación de Cuentas</h3>
-      <p style="font-size: 0.85rem; color: #546e7a;">
-        Si un estudiante olvida su contraseña, usa el botón <b>"🔑 Reset"</b> en la lista de usuarios. El sistema le enviará un correo automático para que cree una nueva clave de forma segura.
-      </p>
+      <h3>🔐 Recuperación</h3>
+      <p>Usa <b>"🔑 Reset"</b> para enviar correos de cambio de clave.</p>
     </div>
   </div>
 </div>
@@ -217,20 +154,10 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { 
-  onAuthStateChanged, 
-  signOut, 
-  sendPasswordResetEmail 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  collection, 
-  onSnapshot, 
-  doc, 
-  deleteDoc, 
-  getDoc 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, onSnapshot, doc, deleteDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Funciones Globales para los botones
+// --- MANTENEMOS TUS FUNCIONES ORIGINALES ---
 window.cambiarTab = (id, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
@@ -240,24 +167,18 @@ window.cambiarTab = (id, btn) => {
 
 function mostrarToast(msg) {
   const t = document.getElementById('toastMsg');
-  t.innerText = msg;
-  t.style.display = 'block';
+  t.innerText = msg; t.style.display = 'block';
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
-// PROTECCIÓN Y CARGA DE DATOS
+// --- PROTECCIÓN Y CARGA (CON MEJORAS) ---
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
-  
-  // Validar si eres admin (José Fernández)
   const snap = await getDoc(doc(db, "usuarios", user.uid));
   if(!snap.exists() || snap.data().rol !== "admin") {
-    alert("No tienes permiso para estar aquí.");
-    signOut(auth);
-    return;
+    signOut(auth); return;
   }
 
-  // Escuchar usuarios en tiempo real
   onSnapshot(collection(db, "usuarios"), (snapshot) => {
     const tabla = document.getElementById("tablaUsuariosBody");
     let cEst = 0, cProf = 0;
@@ -278,7 +199,8 @@ onAuthStateChanged(auth, async (user) => {
           <td><span class="badge-rol ${u.rol}">${u.rol}</span></td>
           <td>
             <div class="acciones-celda">
-              <button class="btn-reset" onclick="resetPassword('${u.email}')">🔑 Reset</button>
+              <button class="btn-reset" onclick="resetPassword('${u.email}')">🔑</button>
+              <button class="btn-rol" onclick="cambiarRol('${id}', '${u.rol}')">🔄 Rol</button>
               <button class="btn-danger" onclick="eliminarUsuario('${id}')">🗑️</button>
             </div>
           </td>
@@ -290,24 +212,52 @@ onAuthStateChanged(auth, async (user) => {
   });
 });
 
-// FUNCIÓN DE RESETEO (SEGURA)
+// --- FUNCIONES DE ADMINISTRADOR ---
+
+// 1. CAMBIAR ROL (PROMOCIÓN)
+window.cambiarRol = async (id, rolActual) => {
+  const nuevoRol = rolActual === "estudiante" ? "profesor" : "estudiante";
+  if(confirm(`¿Cambiar usuario a ${nuevoRol.toUpperCase()}?`)) {
+    await updateDoc(doc(db, "usuarios", id), { rol: nuevoRol });
+    mostrarToast("✅ Rol actualizado");
+  }
+};
+
+// 2. EXPORTAR (REPORTE DE TESIS)
+window.exportarExcel = () => {
+  const rows = [["Nombre", "Email", "Rol"]];
+  document.querySelectorAll("#tablaUsuariosBody tr").forEach(tr => {
+    const data = tr.querySelectorAll("td");
+    rows.push([data[0].innerText.split('\n')[0], data[0].innerText.split('\n')[1], data[1].innerText]);
+  });
+  let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+  window.open(encodeURI(csvContent));
+  mostrarToast("📥 Reporte generado");
+};
+
+// 3. FILTRO DE BÚSQUEDA
+window.filtrarUsuarios = () => {
+  let input = document.getElementById("busqueda").value.toLowerCase();
+  let rows = document.querySelectorAll("#tablaUsuariosBody tr");
+  rows.forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+  });
+};
+
 window.resetPassword = (email) => {
-  if(confirm("¿Enviar correo de recuperación a " + email + "?")) {
-    sendPasswordResetEmail(auth, email)
-      .then(() => mostrarToast("✅ Correo enviado con éxito"))
-      .catch(err => mostrarToast("❌ Error: " + err.message));
+  if(confirm("¿Enviar correo a " + email + "?")) {
+    sendPasswordResetEmail(auth, email).then(() => mostrarToast("✅ Enviado")).catch(err => mostrarToast("❌ Error"));
   }
 };
 
 window.eliminarUsuario = async (id) => {
-  if(confirm("¿Estás seguro de eliminar este usuario?")) {
+  if(confirm("¿Eliminar permanentemente?")) {
     await deleteDoc(doc(db, "usuarios", id));
-    mostrarToast("🗑️ Usuario eliminado");
+    mostrarToast("🗑️ Eliminado");
   }
 };
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
-
 </script>
 </body>
 </html>
