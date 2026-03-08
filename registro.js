@@ -9,7 +9,7 @@ import {
 // ──────────────────────────────────────────────────────────────
 const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY";
 const EMAILJS_SERVICE_ID  = "service_43ampij";
-const EMAILJS_TEMPLATE_ID = "template_ifbez2i";
+const EMAILJS_TEMPLATE_ID = "template_lfbez2i";
 
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
