@@ -13,10 +13,15 @@
     html, body {
       height: 100%;
       overflow-x: hidden;
+      margin: 0;
+      padding: 0;
     }
 
+    /* Ajuste para que el contenedor no sea tan gigante */
     .contenedor-registro {
       animation: aparecer 0.7s ease;
+      padding: 15px !important; /* Menos espacio interno */
+      margin-top: 10px;
     }
 
     @keyframes aparecer {
@@ -24,9 +29,13 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* Reducción de altura de inputs y select para ahorrar espacio */
     .contenedor-registro input,
     .contenedor-registro select {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      padding: 10px !important; /* Más delgados */
+      height: 45px;
+      box-sizing: border-box;
     }
 
     .fila-verificacion {
@@ -35,21 +44,16 @@
       margin-bottom: 10px;
     }
 
-    /* CORRECCIÓN: Botón Enviar Código (Turquesa Verdoso) */
     .btn-enviar-codigo {
-      background: #00838f; /* Antes tenía comillas invertidas */
+      background: #00838f;
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 0 12px;
       font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    
-    .btn-enviar-codigo:active {
-      background: #006064;
+      height: 45px; /* Alineado con el input */
     }
 
     .estado-codigo {
@@ -69,70 +73,114 @@
       text-align: center;
       margin-bottom: 10px;
     }
+
+    /* Lógica de Pasos (Ocultar/Mostrar) */
+    .paso-formulario {
+      display: none;
+    }
+    .paso-activo {
+      display: block;
+    }
+
+    .btn-navegacion {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 5px;
+    }
   </style>
 </head>
 
 <body class="pantalla-registro">
 
   <div class="contenedor-registro">
-    <h2>Registro de Estudiante</h2>
-    <div class="emoji-mate">📏✏️</div>
+    <h2 style="margin-top: 0; margin-bottom: 5px; font-size: 1.5rem;">Registro de Estudiante</h2>
+    <div class="emoji-mate" style="margin-bottom: 10px;">📏✏️</div>
 
     <form id="formRegistro">
-      <input type="text"     id="cedula"          placeholder="Cédula"                required>
-      <input type="text"     id="nombres"          placeholder="Nombres completos"     required>
-      <input type="text"     id="apellidos"        placeholder="Apellidos completos"   required>
-      <input type="date"     id="fechaNacimiento"                                       required>
-
-      <div class="fila-verificacion">
-        <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
-        <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo"
-                onclick="enviarCodigoVerificacion()">Enviar Código</button>
+      
+      <div id="divPaso1" class="paso-formulario paso-activo">
+        <input type="text" id="cedula" placeholder="Cédula" required>
+        <input type="text" id="nombres" placeholder="Nombres completos" required>
+        <input type="text" id="apellidos" placeholder="Apellidos completos" required>
+        <label style="font-size: 0.8rem; display: block; margin-bottom: 4px;">Fecha de Nacimiento:</label>
+        <input type="date" id="fechaNacimiento" required>
+        
+        <button type="button" class="btn-navegacion" style="background: #00838f; color: white;" onclick="cambiarPaso(2)">Siguiente</button>
       </div>
 
-      <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos"
-             disabled maxlength="6">
+      <div id="divPaso2" class="paso-formulario">
+        <div class="fila-verificacion">
+          <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
+          <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">Enviar Código</button>
+        </div>
 
-      <button type="button" id="btnVerificar" class="btn-turquesa"
-              style="background: #ff9800; margin-bottom:10px; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold;" 
-              disabled
-              onclick="validarCodigo()">Verificar Código</button>
+        <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" disabled maxlength="6">
 
-      <div id="reenviarRow"   style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
-      <div id="estadoCodigo"  class="estado-codigo"></div>
-      <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
+        <button type="button" id="btnVerificar" 
+                style="background: #ff9800; margin-bottom:10px; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%;" 
+                disabled onclick="validarCodigo()">Verificar Código</button>
 
-      <hr style="border:0; border-top:1px dashed #ccc; margin-bottom:15px;">
+        <div id="reenviarRow" style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
+        <div id="estadoCodigo" class="estado-codigo"></div>
+        <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
+        
+        <input type="password" id="password" placeholder="Contraseña" required>
 
-      <input type="password" id="password" placeholder="Contraseña" required>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-navegacion" style="background: #ccc;" onclick="cambiarPaso(1)">Atrás</button>
+          <button type="button" id="btnSiguientePaso3" class="btn-navegacion" style="background: #00838f; color: white;" onclick="cambiarPaso(3)">Siguiente</button>
+        </div>
+      </div>
 
-      <select id="anio" required>
-        <option value="">Seleccione Año</option>
-        <option value="1">1° Año</option>
-        <option value="2">2° Año</option>
-        <option value="3">3° Año</option>
-      </select>
+      <div id="divPaso3" class="paso-formulario">
+        <select id="anio" required>
+          <option value="">Seleccione Año</option>
+          <option value="1">1° Año</option>
+          <option value="2">2° Año</option>
+          <option value="3">3° Año</option>
+        </select>
 
-      <select id="seccion" required>
-        <option value="">Seleccione Sección</option>
-        <option value="A">A</option>
-        <option value="B">B</option>
-      </select>
+        <select id="seccion" required>
+          <option value="">Seleccione Sección</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+        </select>
 
-      <select id="lapso" required>
-        <option value="">Seleccione Lapso</option>
-        <option value="1">Lapso 1</option>
-        <option value="2">Lapso 2</option>
-        <option value="3">Lapso 3</option>
-      </select>
+        <select id="lapso" required>
+          <option value="">Seleccione Lapso</option>
+          <option value="1">Lapso 1</option>
+          <option value="2">Lapso 2</option>
+          <option value="3">Lapso 3</option>
+        </select>
 
-      <button type="submit" id="btnRegistro" class="btn-turquesa" 
-              style="background: #00838f; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%;"
-              disabled>
-        Crear Cuenta
-      </button>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn-navegacion" style="background: #ccc;" onclick="cambiarPaso(2)">Atrás</button>
+          <button type="submit" id="btnRegistro" 
+                  style="background: #00838f; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%;"
+                  disabled>
+            Crear Cuenta
+          </button>
+        </div>
+      </div>
+
     </form>
   </div>
+
+  <script>
+    // Función simple para navegar entre pasos
+    function cambiarPaso(paso) {
+        // Ocultar todos
+        document.querySelectorAll('.paso-formulario').forEach(div => {
+            div.classList.remove('paso-activo');
+        });
+        // Mostrar el seleccionado
+        document.getElementById('divPaso' + paso).classList.add('paso-activo');
+    }
+  </script>
 
   <script type="module" src="./registro.js"></script>
 </body>
