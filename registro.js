@@ -199,4 +199,5 @@ async function registrar() {
     // ✅ CAMBIO: muestra el error real
     alert("Error: " + (error.message || error.text || JSON.stringify(error)));
   }
+
       }
