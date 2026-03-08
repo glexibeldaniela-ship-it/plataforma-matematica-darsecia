@@ -62,8 +62,12 @@ body {
   background: #f9a825; color: white; border: none; padding: 8px 12px;
   border-radius: 6px; font-size: 0.75rem; font-weight: bold;
 }
+/* BOTÓN EDITAR NOMBRE */
+.btn-editar {
+  background: #00bcd4; color: white; border: none; padding: 8px 12px;
+  border-radius: 6px; font-size: 0.75rem; font-weight: bold;
+}
 
-/* Resto de tu CSS original... */
 .contenedor { padding: 20px 15px; max-width: 800px; margin: 0 auto; }
 .tab-panel { display: none; }
 .tab-panel.activo { display: block; }
@@ -171,7 +175,7 @@ function mostrarToast(msg) {
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
-// --- PROTECCIÓN Y CARGA (CON MEJORAS) ---
+// --- PROTECCIÓN Y CARGA ---
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
   const snap = await getDoc(doc(db, "usuarios", user.uid));
@@ -190,15 +194,17 @@ onAuthStateChanged(auth, async (user) => {
       if(u.rol === "estudiante") cEst++;
       if(u.rol === "profesor") cProf++;
 
+      // Se añadió el botón ✏️ para editar nombres
       tabla.innerHTML += `
         <tr>
           <td>
-            <div style="font-weight:700;">${u.nombres || 'Sin Nombre'}</div>
+            <div style="font-weight:700;">${u.nombres || 'Sin Nombre'} ${u.apellidos || ''}</div>
             <div style="font-size:0.7rem; color:#90a4ae;">${u.email}</div>
           </td>
           <td><span class="badge-rol ${u.rol}">${u.rol}</span></td>
           <td>
             <div class="acciones-celda">
+              <button class="btn-editar" onclick="editarNombre('${id}', '${u.nombres || ''}', '${u.apellidos || ''}')">✏️</button>
               <button class="btn-reset" onclick="resetPassword('${u.email}')">🔑</button>
               <button class="btn-rol" onclick="cambiarRol('${id}', '${u.rol}')">🔄 Rol</button>
               <button class="btn-danger" onclick="eliminarUsuario('${id}')">🗑️</button>
@@ -214,7 +220,24 @@ onAuthStateChanged(auth, async (user) => {
 
 // --- FUNCIONES DE ADMINISTRADOR ---
 
-// 1. CAMBIAR ROL (PROMOCIÓN)
+// NUEVA FUNCIÓN: EDITAR NOMBRE
+window.editarNombre = async (id, nombreAct, apellidoAct) => {
+  const nuevoNom = prompt("Editar Nombres:", nombreAct);
+  const nuevoApe = prompt("Editar Apellidos:", apellidoAct);
+  
+  if (nuevoNom !== null && nuevoApe !== null) {
+    try {
+      await updateDoc(doc(db, "usuarios", id), {
+        nombres: nuevoNom,
+        apellidos: nuevoApe
+      });
+      mostrarToast("✅ Nombre actualizado");
+    } catch (e) {
+      mostrarToast("❌ Error al actualizar");
+    }
+  }
+};
+
 window.cambiarRol = async (id, rolActual) => {
   const nuevoRol = rolActual === "estudiante" ? "profesor" : "estudiante";
   if(confirm(`¿Cambiar usuario a ${nuevoRol.toUpperCase()}?`)) {
@@ -223,7 +246,6 @@ window.cambiarRol = async (id, rolActual) => {
   }
 };
 
-// 2. EXPORTAR (REPORTE DE TESIS)
 window.exportarExcel = () => {
   const rows = [["Nombre", "Email", "Rol"]];
   document.querySelectorAll("#tablaUsuariosBody tr").forEach(tr => {
@@ -235,7 +257,6 @@ window.exportarExcel = () => {
   mostrarToast("📥 Reporte generado");
 };
 
-// 3. FILTRO DE BÚSQUEDA
 window.filtrarUsuarios = () => {
   let input = document.getElementById("busqueda").value.toLowerCase();
   let rows = document.querySelectorAll("#tablaUsuariosBody tr");
