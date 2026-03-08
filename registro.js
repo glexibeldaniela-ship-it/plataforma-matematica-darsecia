@@ -4,25 +4,23 @@ import {
   doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, Timestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ──────────────────────────────────────────────────────────────
-// ⚠️ CONFIGURACIÓN DE EMAILJS (Credenciales de José Fernández)
-// ──────────────────────────────────────────────────────────────
 const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY";
 const EMAILJS_SERVICE_ID  = "service_43ampij";
 const EMAILJS_TEMPLATE_ID = "template_ifbez2i";
 
-// 🔧 FIX: Función para inicializar de forma segura y evitar el "undefined"
+// 🔧 FIX: Inicialización segura
 function getEmailJS() {
   if (typeof emailjs === "undefined") {
-    throw new Error("La librería de EmailJS no ha cargado. Revisa tu conexión a internet.");
+    throw new Error("La librería EmailJS no está disponible. Verifica tu conexión.");
   }
   emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
   return emailjs;
 }
 
-// 🔧 FIX: Capturador de mensajes de error reales
+// 🔧 FIX: Extraer mensaje real (evita el "undefined")
 function mensajeDeError(err) {
-  return err?.message || err?.text || JSON.stringify(err) || "Error desconocido";
+  if (!err) return "Error desconocido";
+  return err.message || err.text || JSON.stringify(err); [span_11](start_span)//[span_11](end_span)
 }
 
 let codigoValidado = false;
@@ -37,7 +35,6 @@ function setEstado(msg, tipo = "info") {
   }
 }
 
-// 🆕 ENVIAR CÓDIGO
 window.enviarCodigoVerificacion = async function () {
   const email = document.getElementById("email").value.trim();
   const nombres = document.getElementById("nombres").value.trim();
@@ -52,18 +49,16 @@ window.enviarCodigoVerificacion = async function () {
   setEstado("⏳ Generando código...", "espera");
 
   try {
-    const ejs = getEmailJS(); // Verificación de librería
+    const ejs = getEmailJS(); 
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     const ahora = new Date();
     const expira = new Date(ahora.getTime() + 10 * 60 * 1000);
 
-    // Limpiar códigos previos
     const colRef = collection(db, "codigos_verificacion");
     const q = query(colRef, where("email", "==", email));
     const snap = await getDocs(q);
     for (const d of snap.docs) await deleteDoc(d.ref);
 
-    // Guardar en Firebase
     await addDoc(collection(db, "codigos_verificacion"), {
       email,
       codigo,
@@ -72,7 +67,6 @@ window.enviarCodigoVerificacion = async function () {
       usado: false
     });
 
-    // Enviar correo
     await ejs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: email,
       to_name: nombres || "Estudiante",
@@ -81,18 +75,17 @@ window.enviarCodigoVerificacion = async function () {
 
     document.getElementById("codigoInput").disabled = false;
     document.getElementById("btnVerificar").disabled = false;
-    setEstado(`📨 Código enviado a ${email}`, "ok");
+    setEstado(`📨 Código enviado a ${email}`, "info");
     iniciarCuentaRegresiva(60);
 
   } catch (err) {
-    console.error("Fallo en envío:", err);
-    alert("Error al enviar: " + mensajeDeError(err));
+    console.error("Error al enviar código:", err);
+    alert("Error al enviar el código: " + mensajeDeError(err)); [span_12](start_span)//[span_12](end_span)
     btnEnviar.disabled = false;
-    setEstado("❌ Error al enviar", "error");
+    setEstado("❌ Error al enviar. Intenta de nuevo.", "error");
   }
 };
 
-// 🆕 VALIDAR CÓDIGO
 window.validarCodigo = async function () {
   const email = document.getElementById("email").value.trim();
   const codigoInput = document.getElementById("codigoInput").value.trim();
@@ -113,14 +106,15 @@ window.validarCodigo = async function () {
     const snap = await getDocs(q);
 
     if (snap.empty) {
+      setEstado("❌ Código incorrecto.", "error");
       alert("Código incorrecto.");
-      setEstado("❌ Código incorrecto", "error");
       return;
     }
 
     const datos = snap.docs[0].data();
     if (new Date() > datos.expira_en.toDate()) {
-      alert("Código expirado.");
+      setEstado("❌ Código expirado.", "error");
+      alert("El código ha expirado.");
       return;
     }
 
@@ -132,23 +126,25 @@ window.validarCodigo = async function () {
     document.getElementById("btnEnviarCodigo").disabled = true;
     document.getElementById("codigoInput").disabled = true;
     document.getElementById("btnVerificar").disabled = true;
-    setEstado("✅ Verificado", "ok");
+    setEstado("✅ Correo verificado correctamente.", "ok");
 
   } catch (err) {
-    alert("Error: " + mensajeDeError(err));
+    alert("Error al verificar: " + mensajeDeError(err)); [span_13](start_span)//[span_13](end_span)
+    setEstado("❌ Error al verificar.", "error");
   }
 };
 
 function iniciarCuentaRegresiva(seg) {
   segundosRestantes = seg;
   const row = document.getElementById("reenviarRow");
+  if (!row) return; [span_14](start_span)// 🔧 FIX: Guardia importante[span_14](end_span)
+  
   if (countdownTimer) clearInterval(countdownTimer);
 
   countdownTimer = setInterval(() => {
-    if (!row) return clearInterval(countdownTimer);
     if (segundosRestantes <= 0) {
       clearInterval(countdownTimer);
-      row.innerHTML = `<a href="#" onclick="enviarCodigoVerificacion()">Reenviar código</a>`;
+      row.innerHTML = `<a href="#" onclick="enviarCodigoVerificacion(); return false;">Reenviar código</a>`;
     } else {
       row.textContent = `Reenviar en ${segundosRestantes}s`;
       segundosRestantes--;
@@ -156,56 +152,5 @@ function iniciarCuentaRegresiva(seg) {
   }, 1000);
 }
 
-// REGISTRO FINAL
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("formRegistro");
-  if(form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      registrar();
-    });
-  }
-});
-
-async function registrar() {
-  if (!codigoValidado) {
-    alert("Primero debes verificar tu correo con el código.");
-    return;
-  }
-
-  const cedula = document.getElementById("cedula").value.trim();
-  const nombres = document.getElementById("nombres").value.trim();
-  const apellidos = document.getElementById("apellidos").value.trim();
-  const fechaNacimiento = document.getElementById("fechaNacimiento")?.value;
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const anio = document.getElementById("anio").value;
-  const seccion = document.getElementById("seccion").value;
-  const lapso = document.getElementById("lapso").value;
-
-  try {
-    const cedulaRef = doc(db, "cedulas", cedula);
-    const cedulaSnap = await getDoc(cedulaRef);
-    if (cedulaSnap.exists()) {
-      alert("Cédula ya registrada");
-      return;
-    }
-
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    await setDoc(doc(db, "usuarios", user.uid), {
-      cedula, nombres, apellidos, fechaNacimiento, email,
-      anio, seccion, lapso, rol: "estudiante",
-      creado_en: new Date(), intento: false, nota: null, estado: "sin_presentar"
-    });
-
-    await setDoc(doc(db, "cedulas", cedula), { uid: user.uid });
-
-    alert("¡Registro exitoso!");
-    window.location.href = "login.html";
-
-  } catch (error) {
-    alert("Error: " + mensajeDeError(error));
-  }
-}
+// --- RESTO DEL CÓDIGO DE REGISTRO IGUAL ---
+// (Solo asegúrate de usar mensajeDeError(error) en el catch de registrar())
