@@ -2,67 +2,80 @@
 <html lang="es">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plataforma Matemática</title>
 
-<title>Plataforma Matemática</title>
+    <!-- Esto es lo nuevo para que sea App -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00796b">
 
-<link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="estilos.css">
 
-<style>
+    <style>
+        /* mejora para apk */
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
 
-/* mejora para apk */
-html, body{
-height:100%;
-overflow-x:hidden;
-margin:0;
-padding:0;
-}
+        /* animación suave del contenedor */
+        .contenedor-bienvenida {
+            animation: aparecer 0.8s ease;
+        }
 
-/* animación suave del contenedor */
-.contenedor-bienvenida{
-animation: aparecer 0.8s ease;
-}
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-@keyframes aparecer{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-</style>
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 
 </head>
 
 <body class="pantalla-inicio">
 
-<div class="contenedor-bienvenida">
+    <div class="contenedor-bienvenida">
 
-<div class="emoji-mate">📏✏️</div>
+        <div class="emoji-mate">📏✏️</div>
 
-<h1>Bienvenido a Plataforma Matemática</h1>
+        <h1>Bienvenido a Plataforma Matemática</h1>
 
-<p>Si eres estudiante nuevo, regístrate. Si ya tienes cuenta, inicia sesión.</p>
+        <p>Si eres estudiante nuevo, regístrate. Si ya tienes cuenta, inicia sesión.</p>
 
-<div class="botones-inicio">
+        <div class="botones-inicio">
 
-<a href="login.html">
-<button class="btn-turquesa">Iniciar Sesión</button>
-</a>
+            <a href="login.html">
+                <button class="btn-turquesa">Iniciar Sesión</button>
+            </a>
 
-<a href="registro.html">
-<button class="btn-turquesa">Registrarse</button>
-</a>
+            <a href="registro.html">
+                <button class="btn-turquesa">Registrarse</button>
+            </a>
 
-</div>
+        </div>
 
-</div>
+    </div>
+
+    <!-- Script nuevo para habilitar la instalación -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js');
+            });
+        }
+    </script>
 
 </body>
+
 </html>
