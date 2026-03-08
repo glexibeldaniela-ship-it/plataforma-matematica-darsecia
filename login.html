@@ -119,7 +119,7 @@ html, body { height: 100%; overflow-x: hidden; }
 <script type="module">
 import { auth, db } from "./firebase.js";
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const btnLogin = document.getElementById('btnLogin');
 
@@ -127,69 +127,77 @@ btnLogin.addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const pass = document.getElementById('password').value;
 
+  if(!email || !pass) {
+    alert("Por favor rellena todos los campos");
+    return;
+  }
+
+  btnLogin.innerText = "Cargando...";
+  btnLogin.disabled = true;
+
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     const user = userCredential.user;
 
-    // Marcamos al usuario como ONLINE en Firestore
-    await updateDoc(doc(db, "usuarios", user.uid), {
-      online: true
-    });
+    // 1. Marcar Online
+    await updateDoc(doc(db, "usuarios", user.uid), { online: true });
 
-    // El archivo auth.js se encargará del redireccionamiento (Panel Estudiante/Profesor/Admin)
-    console.log("Usuario online:", user.email);
+    // 2. Obtener el rol para saber a dónde mandarlo
+    const docSnap = await getDoc(doc(db, "usuarios", user.uid));
     
+    if (docSnap.exists()) {
+      const rol = docSnap.data().rol;
+      // 3. Redirección manual (Asegúrate que estos nombres de archivo sean correctos)
+      if (rol === "admin") {
+        window.location.href = "admin.html";
+      } else if (rol === "profesor") {
+        window.location.href = "profesor.html";
+      } else {
+        window.location.href = "estudiante.html";
+      }
+    }
+
   } catch (error) {
     alert("Error al entrar: " + error.message);
+    btnLogin.innerText = "Entrar";
+    btnLogin.disabled = false;
   }
 });
 </script>
 
 <script type="module">
 import { auth } from "./firebase.js";
-import { sendPasswordResetEmail } from
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// Mostrar / ocultar el formulario de recuperación
 window.toggleRecuperar = () => {
   const sec = document.getElementById('recuperarSeccion');
   sec.classList.toggle('visible');
   document.getElementById('msgRecuperar').textContent = '';
 };
 
-// Enviar enlace de recuperación vía Firebase Auth
 window.enviarRecuperacion = async () => {
   const email = document.getElementById('emailRecuperar').value.trim();
   const msg   = document.getElementById('msgRecuperar');
-
   if (!email) {
     msg.style.color  = '#c62828';
     msg.textContent  = '⚠️ Ingresa tu correo primero.';
     return;
   }
-
   const btn = document.querySelector('.btn-recuperar');
-  btn.disabled    = true;
+  btn.disabled = true;
   btn.textContent = 'Enviando...';
-
   try {
     await sendPasswordResetEmail(auth, email);
     msg.style.color  = '#2e7d32';
-    msg.textContent  = '✅ Enlace enviado. Revisa tu bandeja de entrada.';
-    document.getElementById('emailRecuperar').value = '';
+    msg.textContent  = '✅ Enlace enviado. Revisa tu correo.';
   } catch (err) {
     msg.style.color = '#c62828';
-    if (err.code === 'auth/user-not-found') {
-      msg.textContent = '❌ No existe una cuenta con ese correo.';
-    } else {
-      msg.textContent = '❌ ' + err.message;
-    }
+    msg.textContent = '❌ Error: ' + err.message;
   } finally {
-    btn.disabled    = false;
+    btn.disabled = false;
     btn.textContent = 'Enviar enlace de recuperación';
   }
 };
 </script>
-
 </body>
 </html>
