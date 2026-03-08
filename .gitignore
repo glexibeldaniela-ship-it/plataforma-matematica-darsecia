@@ -1,0 +1,10 @@
+# Firebase Admin SDK - NUNCA subir al repositorio público
+serviceAccountKey.json
+
+# Dependencias de Node.js
+node_modules/
+
+# Variables de entorno
+.env
+.env.local
+.env.production
