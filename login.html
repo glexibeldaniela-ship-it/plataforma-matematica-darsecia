@@ -7,111 +7,51 @@
 <link rel="stylesheet" href="estilos.css">
 <style>
 html, body { height: 100%; overflow-x: hidden; }
-
 .contenedor-login { animation: aparecer 0.7s ease; }
-
 @keyframes aparecer {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 .contenedor-login input { margin-bottom: 10px; }
-
-/* ENLACE OLVIDÉ CONTRASEÑA */
 .link-olvide {
-  display: block;
-  text-align: center;
-  margin-top: 14px;
-  font-size: 0.82rem;
-  color: #00796b;
-  cursor: pointer;
-  text-decoration: underline;
-  font-weight: 600;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  display: block; text-align: center; margin-top: 14px;
+  font-size: 0.82rem; color: #00796b; cursor: pointer;
+  text-decoration: underline; font-weight: 600;
 }
-
-/* SECCIÓN DE RECUPERACIÓN */
 .recuperar-seccion {
-  display: none;
-  margin-top: 14px;
-  background: #e0f7fa;
-  border-radius: 12px;
-  padding: 14px 16px;
-  border: 1px solid #b2ebf2;
+  display: none; margin-top: 14px; background: #e0f7fa;
+  border-radius: 12px; padding: 14px 16px; border: 1px solid #b2ebf2;
   animation: aparecer 0.3s ease;
 }
 .recuperar-seccion.visible { display: block; }
-
-.recuperar-seccion p {
-  font-size: 0.78rem;
-  color: #004d40;
-  margin: 0 0 10px;
-  text-align: center;
-  line-height: 1.4;
-}
+.recuperar-seccion p { font-size: 0.78rem; color: #004d40; margin: 0 0 10px; text-align: center; }
 .recuperar-seccion input {
-  width: 100%;
-  padding: 11px;
-  border: 1.5px solid #b2ebf2;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-  outline: none;
-  transition: 0.2s;
-}
-.recuperar-seccion input:focus {
-  border-color: #00bcd4;
-  box-shadow: 0 0 0 3px rgba(0,188,212,0.15);
+  width: 100%; padding: 11px; border: 1.5px solid #b2ebf2;
+  border-radius: 10px; font-size: 0.88rem; margin-bottom: 10px; outline: none;
 }
 .btn-turquesa, .btn-recuperar {
-  width: 100%;
-  background: #00796b;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
-  font-weight: bold;
-  font-size: 0.88rem;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: 0.2s;
+  width: 100%; background: #00796b; color: white; border: none;
+  border-radius: 10px; padding: 12px; font-weight: bold; font-size: 0.88rem; cursor: pointer;
 }
-.btn-turquesa:active, .btn-recuperar:active { background: #005a4e; }
-
-.msg-recuperar {
-  font-size: 0.78rem;
-  text-align: center;
-  margin-top: 9px;
-  font-weight: 600;
-  min-height: 18px;
-}
+.msg-recuperar { font-size: 0.78rem; text-align: center; margin-top: 9px; font-weight: 600; min-height: 18px; }
 </style>
 </head>
 
 <body class="pantalla-login">
 
 <div class="contenedor-login">
-
   <h2>📚 Iniciar Sesión</h2>
-
   <input type="email"    id="email"    placeholder="Correo">
   <input type="password" id="password" placeholder="Contraseña">
-
   <button id="btnLogin" class="btn-turquesa">Entrar</button>
-
   <span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
 
   <div class="recuperar-seccion" id="recuperarSeccion">
-    <p>Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+    <p>Ingresa tu correo para restablecer tu contraseña.</p>
     <input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
-    <button class="btn-recuperar" onclick="enviarRecuperacion()">
-      Enviar enlace de recuperación
-    </button>
+    <button class="btn-recuperar" onclick="enviarRecuperacion()">Enviar enlace</button>
     <p class="msg-recuperar" id="msgRecuperar"></p>
   </div>
-
 </div>
 
 <script type="module" src="firebase.js"></script>
@@ -124,41 +64,50 @@ import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12
 const btnLogin = document.getElementById('btnLogin');
 
 btnLogin.addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const pass = document.getElementById('password').value;
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value.trim();
 
   if(!email || !pass) {
     alert("Por favor rellena todos los campos");
     return;
   }
 
-  btnLogin.innerText = "Cargando...";
+  btnLogin.innerText = "Verificando...";
   btnLogin.disabled = true;
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     const user = userCredential.user;
 
-    // 1. Marcar Online
-    await updateDoc(doc(db, "usuarios", user.uid), { online: true });
+    // 1. Intentar marcar Online (si falla, igual intentamos redirigir)
+    try {
+      await updateDoc(doc(db, "usuarios", user.uid), { online: true });
+    } catch(e) { console.log("Error status online:", e); }
 
-    // 2. Obtener el rol para saber a dónde mandarlo
+    // 2. Obtener el rol de Firestore
     const docSnap = await getDoc(doc(db, "usuarios", user.uid));
     
     if (docSnap.exists()) {
-      const rol = docSnap.data().rol;
-      // 3. Redirección manual (Asegúrate que estos nombres de archivo sean correctos)
+      const uData = docSnap.data();
+      const rol = uData.rol ? uData.rol.toLowerCase() : "estudiante";
+
+      // 3. REDIRECCIÓN CRÍTICA - Revisa que tus archivos se llamen exactamente así:
       if (rol === "admin") {
-        window.location.href = "admin.html";
+        window.location.replace("admin.html");
       } else if (rol === "profesor") {
-        window.location.href = "profesor.html";
+        window.location.replace("profesor.html");
       } else {
-        window.location.href = "estudiante.html";
+        window.location.replace("estudiante.html");
       }
+    } else {
+      alert("No se encontró perfil de usuario. Contacta al administrador.");
+      btnLogin.innerText = "Entrar";
+      btnLogin.disabled = false;
     }
 
   } catch (error) {
-    alert("Error al entrar: " + error.message);
+    console.error(error);
+    alert("Error: " + error.message);
     btnLogin.innerText = "Entrar";
     btnLogin.disabled = false;
   }
@@ -177,26 +126,13 @@ window.toggleRecuperar = () => {
 
 window.enviarRecuperacion = async () => {
   const email = document.getElementById('emailRecuperar').value.trim();
-  const msg   = document.getElementById('msgRecuperar');
-  if (!email) {
-    msg.style.color  = '#c62828';
-    msg.textContent  = '⚠️ Ingresa tu correo primero.';
-    return;
-  }
-  const btn = document.querySelector('.btn-recuperar');
-  btn.disabled = true;
-  btn.textContent = 'Enviando...';
+  const msg = document.getElementById('msgRecuperar');
+  if (!email) { msg.textContent = '⚠️ Ingresa tu correo.'; return; }
   try {
     await sendPasswordResetEmail(auth, email);
-    msg.style.color  = '#2e7d32';
-    msg.textContent  = '✅ Enlace enviado. Revisa tu correo.';
-  } catch (err) {
-    msg.style.color = '#c62828';
-    msg.textContent = '❌ Error: ' + err.message;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Enviar enlace de recuperación';
-  }
+    msg.style.color = '#2e7d32';
+    msg.textContent = '✅ Enlace enviado.';
+  } catch (err) { msg.textContent = '❌ Error al enviar.'; }
 };
 </script>
 </body>
