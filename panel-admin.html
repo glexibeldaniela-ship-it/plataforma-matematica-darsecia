@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <title>Panel Administrador – Centro de Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 /* ===== ESTILOS DEL CONEJITO (Mantenidos y Optimizados) ===== */
 *, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; min-height: 100vh; }
+body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: `#f0f4f8`; min-height: 100vh; overflow-x: hidden; }
 
-.header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
+.header { background: linear-gradient(135deg, `#00bcd4`, `#00796b`); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
 .header-info { display: flex; align-items: center; gap: 14px; }
 .header-avatar { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.5); }
 .header-title { margin: 0; font-size: 1.1rem; font-weight: 700; }
 .header-subtitle { margin: 2px 0 0; font-size: 0.78rem; opacity: 0.85; }
 
 .tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 78px; z-index: 90; }
-.tab-btn { flex: 1; min-width: 120px; background: none; border: none; border-bottom: 3px solid transparent; padding: 14px; font-weight: 600; color: #777; cursor: pointer; transition: 0.2s; }
-.tab-btn.activo { color: #00796b; border-bottom-color: #00bcd4; background: #f0fdfd; }
+.tab-btn { flex: 1; min-width: 120px; background: none; border: none; border-bottom: 3px solid transparent; padding: 14px; font-weight: 600; color: `#777`; cursor: pointer; transition: 0.2s; }
+.tab-btn.activo { color: `#00796b`; border-bottom-color: `#00bcd4`; background: `#f0fdfd`; }
 
 .contenedor { padding: 20px; max-width: 960px; margin: 0 auto; }
 .tab-panel { display: none; }
@@ -25,28 +25,28 @@ body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, 
 
 /* STATS CARDS */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.stat-card { background: white; border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 3px 14px rgba(0,0,0,0.07); border-top: 4px solid #00bcd4; }
-.stat-valor { font-size: 2rem; font-weight: 800; color: #00796b; }
-.stat-label { font-size: 0.72rem; color: #888; text-transform: uppercase; }
+.stat-card { background: white; border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 3px 14px rgba(0,0,0,0.07); border-top: 4px solid `#00bcd4`; }
+.stat-valor { font-size: 2rem; font-weight: 800; color: `#00796b`; }
+.stat-label { font-size: 0.72rem; color: `#888`; text-transform: uppercase; }
 
 /* TABLAS Y FORMULARIOS */
 .tabla-wrapper { width: 100%; overflow-x: auto; border-radius: 14px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); background: white; }
 table { width: 100%; border-collapse: collapse; }
-thead { background: #00796b; color: white; }
-th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px solid #eee; }
+thead { background: `#00796b`; color: white; }
+th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px solid `#eee`; }
 
 /* MODALES */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; padding: 15px; }
 .modal-overlay.abierto { display: flex; }
 .modal-caja { background: white; border-radius: 18px; width: 100%; max-width: 500px; overflow: hidden; }
-.modal-header { background: #00796b; color: white; padding: 15px; display: flex; justify-content: space-between; }
+.modal-header { background: `#00796b`; color: white; padding: 15px; display: flex; justify-content: space-between; }
 .modal-body { padding: 20px; }
 
 .form-group { margin-bottom: 12px; }
 .form-group label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; }
-.form-group input, .form-group select { width: 100%; padding: 10px; border: 1.5px solid #b2ebf2; border-radius: 8px; }
+.form-group input, .form-group select { width: 100%; padding: 10px; border: 1.5px solid `#b2ebf2`; border-radius: 8px; }
 
-.btn-primary { background: #00bcd4; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.btn-primary { background: `#00bcd4`; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
 .btn-cerrar { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; border-radius: 20px; padding: 5px 15px; cursor: pointer; }
 </style>
 </head>
@@ -57,7 +57,7 @@ th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px
     <div class="header-avatar">🛡️</div>
     <div>
       <p class="header-title">Panel Administrador</p>
-      <p class="header-subtitle">Bienvenido, José Agustín</p>
+      <p class="header-subtitle" id="nombreAdmin">Verificando...</p>
     </div>
   </div>
   <button class="btn-cerrar" onclick="cerrarSesion()">Salir</button>
@@ -73,11 +73,11 @@ th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px
   <div class="tab-panel activo" id="tab-usuarios">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-valor" id="statEst">0</div><div class="stat-label">Alumnos</div></div>
-      <div class="stat-card" style="border-top-color:#43a047"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Profesores</div></div>
+      <div class="stat-card" style="border-top-color:`#43a047`"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Profesores</div></div>
     </div>
     <div style="margin-bottom:20px; display:flex; gap:10px;">
       <button class="btn-primary" onclick="abrirModal('modalEstudiante')">+ Estudiante</button>
-      <button class="btn-primary" style="background:#43a047" onclick="abrirModal('modalProfesor')">+ Profesor</button>
+      <button class="btn-primary" style="background:`#43a047`" onclick="abrirModal('modalProfesor')">+ Profesor</button>
     </div>
     <div class="tabla-wrapper">
       <table>
@@ -90,7 +90,7 @@ th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px
   <div class="tab-panel" id="tab-estructura">
     <h3>Gestión Escolar</h3>
     <p>Añade años y secciones que aparecerán en los formularios.</p>
-    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modalEstudiante">
@@ -113,8 +113,49 @@ th, td { padding: 12px; text-align: left; font-size: 0.82rem; border-bottom: 1px
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, doc, setDoc, onSnapshot, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔐 PROTECCIÓN DE RUTA — Verifica que el usuario sea admin antes de mostrar el panel
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Verificar que tenga rol de admin en Firestore
+  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+  if (!userSnap.exists() || userSnap.data().rol !== "admin") {
+    alert("Acceso denegado. No tienes permisos de administrador.");
+    await signOut(auth);
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Mostrar nombre del admin en el header
+  const datos = userSnap.data();
+  document.getElementById("nombreAdmin").textContent =
+    "Bienvenido, " + (datos.nombres || user.email);
+
+  // Cargar datos en tiempo real (solo si es admin verificado)
+  onSnapshot(collection(db, "usuarios"), (snap) => {
+    const body = document.getElementById("tablaUsuariosBody");
+    let est = 0, prof = 0;
+    body.innerHTML = "";
+    snap.forEach(d => {
+      const u = d.data();
+      if (u.rol === 'estudiante') est++; else if (u.rol === 'profesor') prof++;
+      body.innerHTML += `<tr>
+        <td>${u.nombres || '-'}</td>
+        <td>${u.cedula || '-'}</td>
+        <td>${u.rol || '-'}</td>
+        <td><button onclick="borrarU('${d.id}')">Eliminar</button></td>
+      </tr>`;
+    });
+    document.getElementById("statEst").innerText = est;
+    document.getElementById("statProf").innerText = prof;
+  });
+});
 
 window.cambiarTab = (name, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
@@ -128,40 +169,30 @@ window.cerrarModal = (id) => document.getElementById(id).classList.remove('abier
 
 // CREAR ESTUDIANTE
 window.crearEstudiante = async () => {
-  const n = document.getElementById("nombresEst").value;
-  const a = document.getElementById("apellidosEst").value;
-  const c = document.getElementById("cedulaEst").value;
-  const e = document.getElementById("emailEst").value;
-  const p = document.getElementById("passEst").value;
+  const n  = document.getElementById("nombresEst").value;
+  const a  = document.getElementById("apellidosEst").value;
+  const c  = document.getElementById("cedulaEst").value;
+  const e  = document.getElementById("emailEst").value;
+  const p  = document.getElementById("passEst").value;
   const an = document.getElementById("anioEst").value;
-  const s = document.getElementById("seccionEst").value;
+  const s  = document.getElementById("seccionEst").value;
 
   try {
     const cred = await createUserWithEmailAndPassword(auth, e, p);
     await setDoc(doc(db, "usuarios", cred.user.uid), {
-      nombres: n, apellidos: a, cedula: c, email: e, anio: an, seccion: s, rol: "estudiante"
+      nombres: n, apellidos: a, cedula: c, email: e,
+      anio: an, seccion: s, rol: "estudiante"
     });
     alert("Estudiante Creado");
     cerrarModal('modalEstudiante');
-  } catch(err) { alert(err.message); }
+  } catch (err) { alert(err.message); }
 };
 
-// CARGAR DATOS EN TIEMPO REAL
-onSnapshot(collection(db, "usuarios"), (snap) => {
-  const body = document.getElementById("tablaUsuariosBody");
-  let est = 0, prof = 0;
-  body.innerHTML = "";
-  snap.forEach(d => {
-    const u = d.data();
-    if(u.rol === 'estudiante') est++; else if(u.rol === 'profesor') prof++;
-    body.innerHTML += `<tr><td>${u.nombres}</td><td>${u.cedula}</td><td>${u.rol}</td><td><button onclick="borrarU('${d.id}')">Eliminar</button></td></tr>`;
-  });
-  document.getElementById("statEst").innerText = est;
-  document.getElementById("statProf").innerText = prof;
-});
+window.borrarU = async (id) => {
+  if (confirm("¿Eliminar usuario?")) await deleteDoc(doc(db, "usuarios", id));
+};
 
-window.borrarU = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "usuarios", id)); };
-window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
+window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
 </script>
 </body>
 </html>
