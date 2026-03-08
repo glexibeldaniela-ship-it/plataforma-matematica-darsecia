@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBe0p3dhiPwwGobUdvMVUi14JD5S8X9Wvg",
   authDomain: "plataforma-matematica-darsecia.firebaseapp.com",
   projectId: "plataforma-matematica-darsecia",
-  storageBucket: "plataforma-matematica-darsecia.firebasestorage.app",
+  storageBucket: "plataforma-matematica-darsecia.appspot.com",
   messagingSenderId: "864021303329",
   appId: "1:864021303329:web:b3c61e6631edb1ff34d360"
 };
@@ -20,5 +20,5 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ✅ DIAGNÓSTICO Y CORRECTIVO: Exportación compatible con registro.js
+// 📤 EXPORTAR PARA USAR EN OTROS ARCHIVOS
 export { auth, db };
