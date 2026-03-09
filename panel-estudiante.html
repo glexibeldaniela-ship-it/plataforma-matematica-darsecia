@@ -124,7 +124,6 @@ const promedioSpan = document.getElementById("promedio");
 const aprobadosSpan = document.getElementById("aprobados");
 const reprobadosSpan = document.getElementById("reprobados");
 
-// 🔐 Verificar usuario y cargar datos
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -141,8 +140,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const data = userSnap.data();
-    
-    // Diseño Profesional de Perfil
+
     datosPersonalesDiv.innerHTML = `
       <div class="perfil-avatar">🎓</div>
       <div class="perfil-info">
@@ -165,16 +163,16 @@ window.cerrarSesion = function () {
   signOut(auth).then(() => { window.location.href = "login.html"; });
 };
 
-// 🔹 Exámenes filtrados con diseño de "Tarjeta"
 async function cargarExamenActivo(anioEstudiante, seccionEstudiante) {
   lista.innerHTML = "";
 
   try {
+    // CAMBIO CLAVE: Ahora busca su sección exacta O la palabra "Ambas"
     const q = query(
       collection(db, "examenes"), 
       where("activo", "==", true),
       where("anio", "==", anioEstudiante),
-      where("seccion", "==", seccionEstudiante)
+      where("seccion", "in", [seccionEstudiante, "Ambas"]) 
     );
 
     const snapshot = await getDocs(q);
@@ -214,7 +212,7 @@ async function cargarExamenActivo(anioEstudiante, seccionEstudiante) {
 }
 
 function iniciarTemporizador(id) {
-  let tiempo = 120;
+  let tiempo = 2; // Lo bajé a 2 segundos para que pruebes rápido, cámbialo a 120 si quieres
   const contador = document.getElementById("contador_" + id);
   const boton = document.getElementById("btn_" + id);
 
@@ -232,16 +230,16 @@ function iniciarTemporizador(id) {
   }, 1000);
 }
 
-// 🔹 Historial con estilo de tabla moderna
 async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
   tablaHistorial.innerHTML = "";
   let total = 0, suma = 0, aprobados = 0, reprobados = 0;
 
   try {
+    // CAMBIO CLAVE: También aquí para que el historial muestre los exámenes de "Ambas"
     const qExamenes = query(
       collection(db, "examenes"),
       where("anio", "==", anioEstudiante),
-      where("seccion", "==", seccionEstudiante)
+      where("seccion", "in", [seccionEstudiante, "Ambas"])
     );
 
     const examenesSnap = await getDocs(qExamenes);
@@ -257,7 +255,7 @@ async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
           const fila = document.createElement("tr");
           const notaNum = Number(res.nota);
           const esAprobado = notaNum >= 10;
-          
+
           fila.innerHTML = `
             <td>${examenData.titulo}</td>
             <td>${examenData.anio}° "${examenData.seccion}"</td>
