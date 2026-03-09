@@ -101,14 +101,14 @@
     <div class="emoji-mate" style="margin-bottom: 10px;">📏✏️</div>
 
     <form id="formRegistro">
-      
+
       <div id="divPaso1" class="paso-formulario paso-activo">
         <input type="text" id="cedula" placeholder="Cédula" required>
         <input type="text" id="nombres" placeholder="Nombres completos" required>
         <input type="text" id="apellidos" placeholder="Apellidos completos" required>
         <label style="font-size: 0.8rem; display: block; margin-bottom: 4px;">Fecha de Nacimiento:</label>
         <input type="date" id="fechaNacimiento" required>
-        
+
         <button type="button" class="btn-navegacion" style="background: #00838f; color: white;" onclick="cambiarPaso(2)">Siguiente</button>
       </div>
 
@@ -118,16 +118,16 @@
           <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">Enviar Código</button>
         </div>
 
-        <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" disabled maxlength="6">
+        <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" maxlength="6">
 
         <button type="button" id="btnVerificar" 
                 style="background: #ff9800; margin-bottom:10px; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%;" 
-                disabled onclick="validarCodigo()">Verificar Código</button>
+                onclick="validarCodigo()">Verificar Código</button>
 
         <div id="reenviarRow" style="font-size:0.8rem; text-align:center; margin-bottom:10px;"></div>
         <div id="estadoCodigo" class="estado-codigo"></div>
         <div id="badgeValidado" class="badge-validado">✅ Correo Verificado</div>
-        
+
         <input type="password" id="password" placeholder="Contraseña" required>
 
         <div style="display: flex; gap: 10px;">
@@ -160,8 +160,7 @@
         <div style="display: flex; gap: 10px; margin-top: 10px;">
           <button type="button" class="btn-navegacion" style="background: #ccc;" onclick="cambiarPaso(2)">Atrás</button>
           <button type="submit" id="btnRegistro" 
-                  style="background: #00838f; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%;"
-                  disabled>
+                  style="background: #00838f; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%;">
             Crear Cuenta
           </button>
         </div>
@@ -171,13 +170,10 @@
   </div>
 
   <script>
-    // Función simple para navegar entre pasos
     function cambiarPaso(paso) {
-        // Ocultar todos
         document.querySelectorAll('.paso-formulario').forEach(div => {
             div.classList.remove('paso-activo');
         });
-        // Mostrar el seleccionado
         document.getElementById('divPaso' + paso).classList.add('paso-activo');
     }
   </script>
