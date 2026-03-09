@@ -4,60 +4,48 @@
 <meta charset="UTF-8">
 <title>Resultado del Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <style>
   :root {
     --primary: #00796b;
     --primary-dark: #004d40;
-    --secondary: #00796b;
+    --secondary: #00bcd4;
     --success: #2e7d32;
     --danger: #c62828;
     --background: #f0f4f8;
   }
-
   body {
     margin: 0; padding: 0;
     font-family: 'Segoe UI', system-ui, sans-serif;
     background: var(--background);
     display: flex; flex-direction: column; align-items: center; min-height: 100vh;
   }
-
   .header {
     width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white; padding: 40px 0; text-align: center;
     border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
   }
-
   .contenedorResultado { width: 95%; max-width: 500px; margin-top: -30px; margin-bottom: 40px; }
-
   .card {
     background: white; border-radius: 20px; padding: 30px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
   }
-
   .nota-valor { font-size: 3.5rem; font-weight: 800; margin: 0; }
-  
   .status-badge {
     display: inline-block; padding: 8px 20px; border-radius: 50px;
     font-weight: bold; font-size: 0.9rem; margin-top: 10px;
   }
-
   .aprobado { color: var(--success); background: #e8f5e9; border: 1px solid var(--success); }
   .reprobado { color: var(--danger); background: #ffebee; border: 1px solid var(--danger); }
-
   .detalles-lista {
     text-align: left; margin: 25px 0; padding: 20px;
     background: #f9f9f9; border-radius: 15px;
   }
-
   .detalle-item {
     display: flex; justify-content: space-between;
     margin-bottom: 10px; font-size: 0.95rem;
     border-bottom: 1px dashed #ddd; padding-bottom: 5px;
   }
-
   .btn-pdf {
     background: #00bcd4; color: white; border: none;
     border-radius: 12px; padding: 15px; font-weight: bold;
@@ -65,11 +53,9 @@
     box-shadow: 0 4px 15px rgba(0,188,212,0.3);
     display: flex; align-items: center; justify-content: center; gap: 10px;
   }
-
   .btn-volver { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: 600; }
 </style>
 </head>
-
 <body>
 
 <div class="header">
@@ -82,7 +68,7 @@
   </div>
   <br>
   <button id="btnPDF" class="btn-pdf" style="display:none;">
-    📥 Descargar Acta Oficial PDF
+    📥 Descargar Acta y Examen PDF
   </button>
   <center><a href="panel-estudiante.html" class="btn-volver">⬅ Volver al Panel Estudiante</a></center>
 </div>
@@ -100,11 +86,14 @@ const btnPDF = document.getElementById("btnPDF");
 let datosResultado = null;
 let examenData = null;
 
-// FUNCIÓN CLAVE PARA ARREGLAR ACENTOS EN EL PDF
-function fixTxt(t) {
-  if (!t) return "N/P";
-  // Normaliza y asegura que los caracteres especiales se mantengan legibles
-  return t.toString().normalize("NFC");
+// FUNCIÓN DE LIMPIEZA PROFUNDA PARA EVITAR CÓDIGOS RAROS EN PDF
+function fixPDF(t) {
+  if (t === null || t === undefined) return "N/P";
+  // Elimina caracteres que causan conflictos y normaliza
+  return t.toString().normalize("NFC").replace(/[^\x00-\x7F]/g, function(c) {
+    const map = {'á':'a','é':'e','í':'i','ó':'o','ú':'u','Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','ñ':'n','Ñ':'N'};
+    return map[c] || c;
+  });
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -140,7 +129,7 @@ onAuthStateChanged(auth, async (user) => {
       <div class="detalles-lista">
         <div class="detalle-item"><span>Estudiante:</span> <span>${datosResultado.nombre}</span></div>
         <div class="detalle-item"><span>Cédula:</span> <span>${datosResultado.cedula || "N/P"}</span></div>
-        <div class="detalle-item"><span>Año/Sección:</span> <span>${datosResultado.grado || "1"}° "${datosResultado.seccion || "A"}"</span></div>
+        <div class="detalle-item"><span>Grado/Sección:</span> <span>${datosResultado.grado}° "${datosResultado.seccion}"</span></div>
       </div>
     `;
     btnPDF.style.display = "flex";
@@ -154,63 +143,69 @@ btnPDF.addEventListener("click", () => {
   if(!datosResultado || !examenData) return;
 
   const { jsPDF } = window.jspdf;
-  // Usamos 'p' (portrait), 'mm' y 'a4'
   const doc = new jsPDF('p', 'mm', 'a4');
 
-  // Forzamos el uso de una fuente estándar que soporte latín
+  // --- MEMBRETE COMPLETO ---
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  
-  // Encabezado corregido
-  doc.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
-  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 20, { align: "center" });
-  doc.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 25, { align: "center" });
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("LA SIERRITA - MUNICIPIO MARA - ESTADO ZULIA", 105, 30, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACION", 105, 17, { align: "center" });
+  doc.text("MUNICIPIO MARA - ESTADO ZULIA - PARROQUIA LA SIERRITA", 105, 22, { align: "center" });
+  doc.text("UNIDAD EDUCATIVA ESTADAL CECILIA NUNEZ SUCRE", 105, 27, { align: "center" });
 
-  doc.setLineWidth(0.5);
-  doc.line(20, 35, 190, 35);
+  doc.setLineWidth(0.4);
+  doc.line(20, 32, 190, 32);
 
+  // Título del Acta
   doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text("ACTA DE EVALUACIÓN DIGITAL", 105, 45, { align: "center" });
+  doc.text("ACTA DE EVALUACION Y RESPUESTAS", 105, 42, { align: "center" });
 
+  // Datos del Alumno
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  
-  let y = 60;
-  const x = 25;
+  let y = 55;
+  doc.text(`ESTUDIANTE: ${fixPDF(datosResultado.nombre).toUpperCase()}`, 25, y); y += 7;
+  doc.text(`CEDULA: ${fixPDF(datosResultado.cedula)}`, 25, y); y += 7;
+  doc.text(`EVALUACION: ${fixPDF(examenData.titulo).toUpperCase()}`, 25, y); y += 7;
+  doc.text(`GRADO Y SECCION: ${datosResultado.grado} - ${datosResultado.seccion}`, 25, y); y += 10;
 
-  // Usamos la función fixTxt para asegurar que el texto sea procesado bien
-  doc.text(`Por medio de la presente se hace constar el resultado del estudiante:`, x, y);
-  y += 12;
   doc.setFont("helvetica", "bold");
-  doc.text(`ESTUDIANTE: ${fixTxt(datosResultado.nombre).toUpperCase()}`, x, y); y += 8;
-  doc.text(`CÉDULA: ${fixTxt(datosResultado.cedula)}`, x, y); y += 8;
-  doc.text(`EXAMEN: ${fixTxt(examenData.titulo).toUpperCase()}`, x, y); y += 8;
-  doc.text(`AÑO Y SECCIÓN: ${datosResultado.grado}° "${datosResultado.seccion}"`, x, y); y += 15;
+  doc.text(`CALIFICACION FINAL: ${datosResultado.nota} / 20 pts.`, 25, y); 
+  y += 15;
 
-  doc.setFontSize(13);
-  doc.text(`CALIFICACIÓN: ${datosResultado.nota} / 20 pts.`, x, y); y += 20;
-
-  const hoy = new Date().toLocaleDateString();
+  // --- DETALLE DE PREGUNTAS Y RESPUESTAS ---
+  doc.setFontSize(12);
+  doc.text("DETALLE DEL EXAMEN:", 25, y);
+  y += 8;
   doc.setFontSize(10);
-  doc.setFont("helvetica", "italic");
-  doc.text(`Documento emitido de forma digital el día: ${hoy}`, x, y);
+  doc.setFont("helvetica", "normal");
 
-  // Firma del Docente (Tus datos)
+  if (datosResultado.respuestas_detalle && datosResultado.respuestas_detalle.length > 0) {
+    datosResultado.respuestas_detalle.forEach((res, index) => {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.text(`${index + 1}. Pregunta: ${fixPDF(res.enunciado)}`, 25, y); y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.text(`Su respuesta: ${fixPDF(res.respuesta_estudiante)}`, 30, y);
+      y += 8;
+    });
+  } else {
+    doc.text("Detalle de respuestas no disponible en este registro.", 25, y);
+    y += 10;
+  }
+
+  // --- PIE DE PAGINA Y FIRMA ---
+  if (y > 230) { doc.addPage(); y = 50; } else { y = 230; }
+  
   doc.setFont("helvetica", "bold");
-  doc.line(70, 120, 140, 120);
-  doc.text("JOSÉ FERNÁNDEZ", 105, 125, { align: "center" });
+  doc.line(65, y, 145, y);
+  doc.text("JOSE FERNANDEZ", 105, y + 5, { align: "center" });
   doc.setFontSize(9);
-  doc.text("C.I. 28.123.219", 105, 130, { align: "center" });
-  doc.text("Docente Evaluador", 105, 135, { align: "center" });
+  doc.text("C.I. 28.123.219", 105, y + 10, { align: "center" });
+  doc.text("PROFESOR DE MATEMATICAS", 105, y + 15, { align: "center" });
 
-  doc.save(`Resultado_${datosResultado.nombre.replace(/ /g, "_")}.pdf`);
+  doc.save(`Examen_${datosResultado.nombre.replace(/ /g, "_")}.pdf`);
 });
 </script>
-
 </body>
 </html>
