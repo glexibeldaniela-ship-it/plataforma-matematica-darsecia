@@ -4,118 +4,45 @@
 <meta charset="UTF-8">
 <title>Panel Estudiante - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 <link rel="stylesheet" href="estilos.css">
-
-<!-- FIX `#4` y `#5`: Librería jsPDF para generar PDFs del estudiante -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
 <style>
-.contenedor {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-.seccion-titulo {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: `#00796b`;
-  margin: 25px 0 15px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 2px solid `#00bcd4`;
-  padding-bottom: 5px;
-}
-.header {
-  background: linear-gradient(135deg, `#00bcd4`, `#00796b`);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.header h2 { margin: 0; font-size: 1.2rem; }
-.mensaje-vacio {
-  text-align: center;
-  padding: 20px;
-  background: `#fff`;
-  border-radius: 12px;
-  color: `#777`;
-  border: 1px dashed `#ccc`;
-}
-/* Botón de descarga PDF inline en la tabla */
-.btn-pdf-examen {
-  background: `#00796b`;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-}
-.btn-pdf-examen:hover { background: `#004d40`; }
+    body { font-family: sans-serif; background: #f4f7f6; }
+    .header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; }
+    .contenedor { padding: 20px; max-width: 800px; margin: 0 auto; }
+    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; }
+    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+    th { background: #00796b; color: white; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .btn-pdf-examen { background: #00796b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 </style>
 </head>
 <body>
-
 <div class="header">
   <h2>MateEduPro 🎓</h2>
-  <button onclick="cerrarSesion()">Salir</button>
+  <button onclick="cerrarSesion()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px;">Salir</button>
 </div>
 
 <div class="contenedor">
-
-  <div id="datosPersonales" class="perfil-card">
-    <p>Cargando perfil...</p>
-  </div>
-
+  <div id="datosPersonales" class="perfil-card"><p>Cargando perfil...</p></div>
+  
   <div class="seccion-titulo">📋 Exámenes Disponibles</div>
-  <div id="listaExamenes" class="lista-examenes"></div>
-
+  <div id="listaExamenes"></div>
+  
   <div class="seccion-titulo">📊 Tu Historial</div>
-  <div class="tabla-wrapper">
-    <table id="tablaHistorial">
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th>Año/Sec</th>
-          <th>Lapso</th>
-          <th>Nota</th>
-          <th>Estado</th>
-          <th>📥 PDF</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="resumen" id="estadisticasPersonales" style="display:none;">
-    <div style="display: flex; justify-content: space-around; width: 100%; text-align: center;">
-      <div>
-        <small>Total</small><br>
-        <strong id="totalEx" style="font-size: 1.2rem; color: `#00796b`;">0</strong>
-      </div>
-      <div>
-        <small>Promedio</small><br>
-        <strong id="promedio" style="font-size: 1.2rem; color: `#00bcd4`;">0</strong>
-      </div>
-      <div>
-        <small>Aprobados</small><br>
-        <strong id="aprobados" style="font-size: 1.2rem; color: `#2e7d32`;">0</strong>
-      </div>
-      <div>
-        <small>Reprobados</small><br>
-        <strong id="reprobados" style="font-size: 1.2rem; color: `#c62828`;">0</strong>
-      </div>
-    </div>
-  </div>
-
+  <table>
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Nota</th>
+        <th>PDF</th>
+      </tr>
+    </thead>
+    <tbody id="bodyHistorial"></tbody>
+  </table>
 </div>
 
 <script type="module">
@@ -123,343 +50,65 @@ import { auth, db } from "./firebase.js";
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const lista = document.getElementById("listaExamenes");
-const tablaHistorial = document.querySelector("#tablaHistorial tbody");
-const datosPersonalesDiv = document.getElementById("datosPersonales");
-const estadisticasDiv = document.getElementById("estadisticasPersonales");
-
-const totalEx = document.getElementById("totalEx");
-const promedioSpan = document.getElementById("promedio");
-const aprobadosSpan = document.getElementById("aprobados");
-const reprobadosSpan = document.getElementById("reprobados");
-
-// Variable para almacenar datos del usuario activo en el módulo
 let datosUsuario = null;
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  try {
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      datosPersonalesDiv.innerHTML = "<p>Error: usuario no encontrado.</p>";
-      return;
-    }
-
-    const data = userSnap.data();
-    datosUsuario = data; // Guardar globalmente para el PDF
-
-    datosPersonalesDiv.innerHTML = `
-      <div class="perfil-avatar">🎓</div>
-      <div class="perfil-info">
-        <div style="font-weight: bold; font-size: 1.1rem;">${data.nombres} ${data.apellidos}</div>
-        <div style="margin-top: 5px;">
-          <span class="badge">🪪 ${data.cedula}</span>
-          <span class="badge">📚 ${data.anio}° Año "${data.seccion}"</span>
-        </div>
-      </div>
-    `;
-
-    cargarExamenActivo(data.anio, data.seccion);
-    cargarHistorial(user.uid, data.anio, data.seccion);
-  } catch (error) {
-    console.error("Error inicial:", error);
+  if (!user) { window.location.href = "login.html"; return; }
+  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+  if (userSnap.exists()) {
+    datosUsuario = userSnap.data();
+    document.getElementById("datosPersonales").innerHTML = `<b>${datosUsuario.nombres}</b><br>CI: ${datosUsuario.cedula} | ${datosUsuario.anio}° Año "${datosUsuario.seccion}"`;
+    cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
+    cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
   }
 });
 
-window.cerrarSesion = function () {
-  signOut(auth).then(() => { window.location.href = "login.html"; });
-};
+async function cargarExamenes(anio, sec) {
+  const lista = document.getElementById("listaExamenes");
+  const q = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio), where("seccion", "in", [sec, "Ambas"]));
+  const snap = await getDocs(q);
+  lista.innerHTML = snap.empty ? "No hay exámenes activos." : "";
+  snap.forEach(d => {
+    const ex = d.data();
+    lista.innerHTML += `<div class="examen-card"><strong>${ex.titulo}</strong><br><button onclick="window.location.href='presentar-examen.html?id=${d.id}'" style="margin-top:10px; background:#00796b; color:white; border:none; padding:8px; border-radius:5px;">Iniciar</button></div>`;
+  });
+}
 
-// ─────────────────────────────────────────────
-// CARGA DE EXÁMENES ACTIVOS
-// ─────────────────────────────────────────────
-async function cargarExamenActivo(anioEstudiante, seccionEstudiante) {
-  lista.innerHTML = "";
-  try {
-    const q = query(
-      collection(db, "examenes"), 
-      where("activo", "==", true),
-      where("anio", "==", anioEstudiante),
-      where("seccion", "in", [seccionEstudiante, "Ambas"]) 
-    );
-
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      lista.innerHTML = "<div class='mensaje-vacio'>No hay exámenes activos para tu año y sección.</div>";
-      return;
-    }
-
-    snapshot.forEach(docu => {
-      const examen = docu.data();
-      const card = document.createElement("div");
-      card.className = "examen-card";
-      card.innerHTML = `
-        <div class="examen-card-header">
-          <strong>📝 ${examen.titulo}</strong>
-        </div>
-        <div class="examen-card-body">
-          <div style="margin-bottom: 10px;">
-            <span class="meta-item">⏱ ${examen.duracion || "0"} min</span>
-            <span class="meta-item">📅 Lapso ${examen.lapso || "1"}</span>
-          </div>
-          <p style="font-size: 0.9rem; color: `#666`;">Debes revisar el material antes de iniciar.</p>
-          <a href="${examen.repaso_link || "#"}" target="_blank" style="color: `#00bcd4`; font-weight: bold; text-decoration: none; display: block; margin-bottom: 15px;">📘 Ver Material de Repaso</a>
-          <div id="contador_${docu.id}" style="color: `#ff9800`; font-weight: bold; margin-bottom: 10px; font-size: 0.85rem;">⏳ Preparando examen...</div>
-          <button id="btn_${docu.id}" class="btn-iniciar" disabled>🚀 Iniciar Examen</button>
-        </div>
-      `;
-      lista.appendChild(card);
-      iniciarTemporizador(docu.id);
+async function cargarHistorial(uid, anio, sec) {
+  const body = document.getElementById("bodyHistorial");
+  const qEx = query(collection(db, "examenes"), where("anio", "==", anio), where("seccion", "in", [sec, "Ambas"]));
+  const snapEx = await getDocs(qEx);
+  
+  for (const docEx of snapEx.docs) {
+    const resSnap = await getDocs(collection(db, `examenes/${docEx.id}/resultados`));
+    resSnap.forEach(resDoc => {
+      const res = resDoc.data();
+      if (res.estudiante_id === uid) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${docEx.data().titulo}</td><td><b>${res.nota}</b></td><td><button class="btn-pdf-examen" onclick="descargarExamenPDF('${docEx.id}', '${docEx.data().titulo}', ${res.nota})">📥</button></td>`;
+        body.appendChild(tr);
+      }
     });
-  } catch (error) {
-    console.error("Error cargando exámenes:", error);
-    lista.innerHTML = "<p>Error de conexión. Intenta recargar.</p>";
   }
 }
 
-function iniciarTemporizador(id) {
-  let tiempo = 2;
-  const contador = document.getElementById("contador_" + id);
-  const boton = document.getElementById("btn_" + id);
-
-  const intervalo = setInterval(() => {
-    tiempo--;
-    if (contador) contador.textContent = "⏳ Podrás iniciar en " + tiempo + " segundos";
-    if (tiempo <= 0) {
-      clearInterval(intervalo);
-      if (contador) contador.textContent = "✅ ¡Listo para comenzar!";
-      if (boton) {
-        boton.disabled = false;
-        boton.onclick = () => { window.location.href = "presentar-examen.html?id=" + id; };
-      }
-    }
-  }, 1000);
-}
-
-// ─────────────────────────────────────────────
-// HISTORIAL DEL ESTUDIANTE
-// ─────────────────────────────────────────────
-async function cargarHistorial(uid, anioEstudiante, seccionEstudiante) {
-  tablaHistorial.innerHTML = "";
-  let total = 0, suma = 0, aprobados = 0, reprobados = 0;
-
-  try {
-    const qExamenes = query(
-      collection(db, "examenes"),
-      where("anio", "==", anioEstudiante),
-      where("seccion", "in", [seccionEstudiante, "Ambas"])
-    );
-
-    const examenesSnap = await getDocs(qExamenes);
-
-    for (const examenDoc of examenesSnap.docs) {
-      const examenId = examenDoc.id;
-      const examenData = examenDoc.data();
-
-      const resultadosSnap = await getDocs(collection(db, `examenes/${examenId}/resultados`));
-      resultadosSnap.forEach(resDoc => {
-        const res = resDoc.data();
-        if (res.estudiante_id === uid) {
-          const fila = document.createElement("tr");
-          const notaNum = Number(res.nota);
-          const esAprobado = notaNum >= 10;
-
-          fila.innerHTML = `
-            <td>${examenData.titulo}</td>
-            <td>${examenData.anio}° "${examenData.seccion}"</td>
-            <td>${examenData.lapso || "-"}</td>
-            <td style="font-weight: bold; color: ${esAprobado ? '#2e7d32' : '#c62828'}">${res.nota || "-"}</td>
-            <td style="font-size: 0.8rem;">${res.estado || "Finalizado"}</td>
-            <td>
-              <button class="btn-pdf-examen" onclick="descargarExamenPDF('${examenId}', '${(examenData.titulo || "Examen").replace(/'/g, "\\'")}', ${notaNum})">
-                📥 PDF
-              </button>
-            </td>
-          `;
-          tablaHistorial.appendChild(fila);
-
-          if (res.nota != null && !isNaN(notaNum)) {
-            total++; suma += notaNum;
-            if (esAprobado) aprobados++; else reprobados++;
-          }
-        }
-      });
-    }
-
-    if (total > 0) {
-      totalEx.textContent = total;
-      promedioSpan.textContent = (suma / total).toFixed(2);
-      aprobadosSpan.textContent = aprobados;
-      reprobadosSpan.textContent = reprobados;
-      estadisticasDiv.style.display = "block";
-    }
-  } catch (error) {
-    console.error("Error cargando historial:", error);
-  }
-}
-
-// ─────────────────────────────────────────────
-// FIX APK: Descarga compatible con WebView Android
-// ─────────────────────────────────────────────
-function triggerDownload(docPDF, fileName) {
-  try {
-    docPDF.save(fileName);
-  } catch (e) {
-    try {
-      const dataUri = docPDF.output('datauristring');
-      const nuevaVentana = window.open('', '_blank');
-      if (nuevaVentana) {
-        nuevaVentana.document.write(
-          `<iframe src="${dataUri}" style="width:100%;height:100vh;border:none;"></iframe>`
-        );
-      } else {
-        window.location.href = dataUri;
-      }
-    } catch (e2) {
-      alert("No se pudo descargar el PDF. Intenta desde un navegador.");
-    }
-  }
-}
-
-// ─────────────────────────────────────────────
-// FIX `#4` y `#5`: Generación de PDF del Examen para el Estudiante
-// Incluye los ejercicios tal como se presentaron, con respuestas correctas y nota obtenida
-// ─────────────────────────────────────────────
-window.descargarExamenPDF = async (examenId, examenTitulo, notaObtenida) => {
-  if (!datosUsuario) {
-    alert("Error: no se pudo obtener los datos del usuario.");
-    return;
-  }
-
-  try {
-    // 1. Obtener datos del examen
-    const examenSnap = await getDoc(doc(db, "examenes", examenId));
-    const examenData = examenSnap.exists() ? examenSnap.data() : {};
-
-    // 2. Obtener las preguntas del examen
-    const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
-    const preguntas = [];
-    preguntasSnap.forEach(d => preguntas.push({ id: d.id, ...d.data() }));
-
-    const { jsPDF } = window.jspdf;
-    const docPDF = new jsPDF();
-    let cursorY = 15;
-
-    // ── Encabezado institucional ──────────────────
-    docPDF.setFont("times", "bold");
-    docPDF.setFontSize(10);
-    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, cursorY, { align: "center" });
-    cursorY += 6;
-    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, cursorY, { align: "center" });
-    cursorY += 6;
-    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, cursorY, { align: "center" });
-    cursorY += 8;
-    docPDF.line(20, cursorY, 190, cursorY);
-    cursorY += 10;
-
-    // ── Título del examen ─────────────────────────
-    docPDF.setFontSize(13);
-    docPDF.text(examenTitulo.toUpperCase(), 105, cursorY, { align: "center" });
-    cursorY += 8;
-
-    // ── Datos del estudiante ──────────────────────
-    docPDF.setFont("helvetica", "normal");
-    docPDF.setFontSize(11);
-    docPDF.text(`Estudiante: ${datosUsuario.nombres} ${datosUsuario.apellidos}`, 20, cursorY);
-    cursorY += 7;
-    docPDF.text(`Cédula: ${datosUsuario.cedula || "S/C"}   |   ${datosUsuario.anio}° Año - Sección ${datosUsuario.seccion}   |   Lapso: ${examenData.lapso || "-"}`, 20, cursorY);
-    cursorY += 7;
-
-    const esAprobado = notaObtenida >= 10;
-    docPDF.setFont("helvetica", "bold");
-    docPDF.setTextColor(esAprobado ? 46 : 198, esAprobado ? 125 : 40, esAprobado ? 50 : 40);
-    docPDF.text(`CALIFICACIÓN OBTENIDA: ${notaObtenida} / 20 pts.  (${esAprobado ? "APROBADO" : "REPROBADO"})`, 20, cursorY);
-    docPDF.setTextColor(0, 0, 0); // Restablecer color negro
-    cursorY += 5;
-    docPDF.line(20, cursorY, 190, cursorY);
-    cursorY += 10;
-
-    // ── Ejercicios del examen ─────────────────────
-    docPDF.setFont("helvetica", "bold");
-    docPDF.setFontSize(12);
-    docPDF.text("EJERCICIOS EVALUADOS:", 20, cursorY);
-    cursorY += 8;
-
-    if (preguntas.length === 0) {
-      docPDF.setFont("helvetica", "italic");
-      docPDF.setFontSize(10);
-      docPDF.text("(No se encontraron preguntas registradas para este examen.)", 20, cursorY);
-    } else {
-      preguntas.forEach((preg, index) => {
-        // Salto de página si queda poco espacio
-        if (cursorY > 260) {
-          docPDF.addPage();
-          cursorY = 20;
-        }
-
-        docPDF.setFont("helvetica", "bold");
-        docPDF.setFontSize(10);
-        const enunciado = `${index + 1}. ${preg.enunciado || ""}`;
-        // Dividir enunciados largos en múltiples líneas
-        const lineasEnunciado = docPDF.splitTextToSize(enunciado, 165);
-        docPDF.text(lineasEnunciado, 20, cursorY);
-        cursorY += lineasEnunciado.length * 6;
-
-        // Mostrar opciones si es selección múltiple
-        if (preg.tipo === "opcion_multiple" && Array.isArray(preg.opciones)) {
-          docPDF.setFont("helvetica", "normal");
-          preg.opciones.forEach(op => {
-            if (cursorY > 270) { docPDF.addPage(); cursorY = 20; }
-            const marcador = op.correcta ? "✓" : "○";
-            docPDF.setTextColor(op.correcta ? 46 : 80, op.correcta ? 125 : 80, op.correcta ? 50 : 80);
-            docPDF.text(`   ${marcador} ${op.texto}`, 22, cursorY);
-            docPDF.setTextColor(0, 0, 0);
-            cursorY += 6;
-          });
-        }
-
-        // Mostrar respuesta correcta para tipos abiertos
-        if (["numerica", "completar", "verdadero_falso"].includes(preg.tipo) && preg.respuestaCorrecta !== undefined) {
-          if (cursorY > 270) { docPDF.addPage(); cursorY = 20; }
-          docPDF.setFont("helvetica", "italic");
-          docPDF.setTextColor(46, 125, 50);
-          docPDF.text(`   Respuesta correcta: ${preg.respuestaCorrecta}`, 22, cursorY);
-          docPDF.setTextColor(0, 0, 0);
-          cursorY += 6;
-        }
-
-        cursorY += 4; // Espacio entre preguntas
-      });
-    }
-
-    // ── Firma al final ────────────────────────────
-    if (cursorY > 250) { docPDF.addPage(); cursorY = 20; }
-    cursorY = Math.max(cursorY + 15, 250);
-    docPDF.setFont("helvetica", "normal");
-    docPDF.setFontSize(10);
-    docPDF.line(70, cursorY, 140, cursorY);
-    cursorY += 6;
-    docPDF.text("PROF. JOSÉ FERNÁNDEZ", 105, cursorY, { align: "center" });
-    cursorY += 5;
-    docPDF.text("Docente Evaluador", 105, cursorY, { align: "center" });
-
-    const safeNombre = `${datosUsuario.nombres}_${datosUsuario.apellidos}`.replace(/[^a-zA-Z0-9]/g, '_');
-    const safeTitulo = examenTitulo.replace(/[^a-zA-Z0-9]/g, '_');
-    triggerDownload(docPDF, `Examen_${safeTitulo}_${safeNombre}.pdf`);
-
-  } catch (error) {
-    console.error("Error generando PDF del examen:", error);
-    alert("Error al generar el PDF. Intenta nuevamente.");
-  }
+window.descargarExamenPDF = async (exId, titulo, nota) => {
+  const pregSnap = await getDocs(collection(db, "examenes", exId, "preguntas"));
+  const { jsPDF } = window.jspdf;
+  const docPDF = new jsPDF();
+  docPDF.text("REPORTE DE EXAMEN - MATEEDUPRO", 105, 20, { align: "center" });
+  docPDF.text(`Estudiante: ${datosUsuario.nombres}`, 20, 40);
+  docPDF.text(`Examen: ${titulo} | Nota: ${nota}/20`, 20, 50);
+  
+  let y = 70;
+  pregSnap.forEach((p, i) => {
+    docPDF.text(`${i+1}. ${p.data().enunciado}`, 20, y);
+    y += 10;
+  });
+  docPDF.save(`Examen_${titulo}.pdf`);
 };
-</script>
 
+window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
+</script>
 </body>
 </html>
