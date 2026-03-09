@@ -181,7 +181,7 @@ let tiempoRestante = 0;
 let intervaloTimer = null;
 let examenEnviado = false;
 let examenIniciado = false;
-let duracionTotal = 0;
+let duracionTotal = 180; // FIJO A 3 MINUTOS (180 SEGUNDOS)
 
 /* SEGURIDAD: Bloqueos de salida */
 window.addEventListener("beforeunload", (e) => {
@@ -195,9 +195,8 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-function iniciarTemporizador(minutos) {
+function iniciarTemporizador() {
   examenIniciado = true;
-  duracionTotal = minutos * 60;
   tiempoRestante = duracionTotal;
 
   intervaloTimer = setInterval(() => {
@@ -205,7 +204,7 @@ function iniciarTemporizador(minutos) {
     let seg = tiempoRestante % 60;
     temporizadorDiv.innerText = `⏱ Tiempo Restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
 
-    if (tiempoRestante <= 60) temporizadorDiv.style.background = "#d32f2f";
+    if (tiempoRestante <= 30) temporizadorDiv.style.background = "#d32f2f";
 
     tiempoRestante--;
 
@@ -235,20 +234,19 @@ async function cargarExamen() {
     return;
   }
 
-  // Renderizar Info y DESCRIPCIÓN
   infoDiv.innerHTML = `
     <h2 style="margin:0; color:#00796b;">${examen.titulo}</h2>
     <div style="margin-top:10px; font-size: 0.9rem; color:#666;">
       <span>📌 ${examen.anio}° Año - Sección ${examen.seccion}</span> | 
-      <span>⏱ ${examen.duracion} minutos</span>
+      <span>⏱ 3 minutos (Tiempo Limitado)</span>
     </div>
     <div class="instrucciones">
       <strong>Instrucciones:</strong><br>
-      ${examen.descripcion || "Lee atentamente cada pregunta antes de responder. Una vez enviado, no podrás modificar tus respuestas."}
+      ${examen.descripcion || "Lee atentamente cada pregunta antes de responder."}
     </div>
   `;
 
-  iniciarTemporizador(examen.duracion);
+  iniciarTemporizador();
 
   const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
   let numero = 1;
@@ -272,16 +270,16 @@ async function cargarExamen() {
         `;
       });
     } else if (pregunta.tipo === "numerica") {
-      contenidoInput = `<input type="number" name="preg_${pregunta.id}" placeholder="Escribe tu respuesta numérica aquí...">`;
+      contenidoInput = `<input type="number" name="preg_${pregunta.id}" placeholder="Respuesta numérica...">`;
     } else if (pregunta.tipo === "completar") {
-      contenidoInput = `<input type="text" name="preg_${pregunta.id}" placeholder="Escribe la palabra o frase faltante...">`;
+      contenidoInput = `<input type="text" name="preg_${pregunta.id}" placeholder="Escribe aquí...">`;
     } else if (pregunta.tipo === "verdadero_falso") {
       contenidoInput = `
         <label class="opcion-label"><input type="radio" name="preg_${pregunta.id}" value="verdadero"> Verdadero</label>
-        <label class="opcion-label"><input type="radio" name="preg_${pregunta.id}" value="falso"> Falso</label>
+        <label class="opcion-label"><input type="radio" name="preg_${pregunta.id}" value="falso"> Fals0</label>
       `;
     } else if (pregunta.tipo === "desarrollo") {
-        contenidoInput = `<textarea name="preg_${pregunta.id}" style="width:100%; height:100px; border-radius:10px; border:2px solid #eee; padding:10px;" placeholder="Escribe tu desarrollo aquí..."></textarea>`;
+        contenidoInput = `<textarea name="preg_${pregunta.id}" style="width:100%; height:100px; border-radius:10px; border:2px solid #eee; padding:10px;" placeholder="Tu desarrollo..."></textarea>`;
     }
 
     div.innerHTML = `
@@ -331,21 +329,22 @@ async function enviarExamen(forzado = false) {
   const nota = (total === 0) ? 0 : (correctas / total) * 20;
   const tiempoConsumido = duracionTotal - tiempoRestante;
 
-  // CORRECCIÓN FIRE-DATOS: Obtener datos específicos del perfil
+  // OBTENER DATOS COMPLETOS DEL PERFIL DEL USUARIO
   const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
-  const usuarioData = usuarioSnap.data() || {};
-  
-  // Capturamos Nombres, Apellidos, Año y Sección del perfil
-  const nombreEstudiante = `${usuarioData.nombres || ""} ${usuarioData.apellidos || ""}`.trim() || "Estudiante";
-  const gradoEstudiante = usuarioData.anio || "S/A";
-  const seccionEstudiante = usuarioData.seccion || "S/S";
+  const uD = usuarioSnap.data() || {};
+
+  // CAPTURAR DATOS PARA QUE APAREZCAN EN EL PANEL DEL PROFESOR
+  const nombreEst = `${uD.nombres || ""} ${uD.apellidos || ""}`.trim() || "Estudiante";
+  const ciEst = uD.cedula || "S/C";
+  const gradoEst = uD.anio || "S/A";
+  const seccionEst = uD.seccion || "S/S";
 
   await setDoc(resultadoRef, {
     estudiante_id: usuarioActual.uid,
-    nombre: nombreEstudiante,
-    grado: gradoEstudiante,
-    seccion: seccionEstudiante,
-    lapso: "1", // Por defecto o podrías traerlo del examen
+    nombre: nombreEst,
+    cedula: ciEst, // CAMPO CLAVE PARA TU PANEL
+    grado: gradoEst, // CAMPO CLAVE PARA TU PANEL
+    seccion: seccionEst, // CAMPO CLAVE PARA TU PANEL
     tiempo_segundos: tiempoConsumido,
     nota: parseFloat(nota.toFixed(2)),
     estado: nota >= 10 ? "Aprobado" : "Reprobado",
