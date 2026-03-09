@@ -120,27 +120,36 @@ window.enviarExamen = async (forzado = false) => {
   localStorage.removeItem(`tiempo_${examenId}_${usuarioActual.uid}`);
 
   let puntos = 0;
-  let detalleParaPDF = [];
+  let detalleParaPDF = []; // Lista para el reporte detallado
 
   preguntasData.forEach(p => {
-    const input = document.querySelector(`[name='preg_${p.id}']:checked`) || document.querySelector(`[name='preg_${p.id}']`);
-    let respEstudiante = input ? input.value.trim() : "Sin responder";
+    // Buscamos la respuesta según el tipo de input
+    const inputRadio = document.querySelector(`[name='preg_${p.id}']:checked`);
+    const inputText = document.querySelector(`input[type='text'][name='preg_${p.id}']`);
     
-    // Validar calificación
+    let respEstudiante = "Sin responder";
+    if (inputRadio) respEstudiante = inputRadio.value;
+    else if (inputText) respEstudiante = inputText.value.trim();
+
+    // LÓGICA DE CALIFICACIÓN
     let esCorrecta = false;
     if (p.tipo === "opcion_multiple") {
       const correcta = p.opciones.find(o => o.correcta);
       if (correcta && respEstudiante.toLowerCase() === correcta.texto.toLowerCase()) esCorrecta = true;
-    } else if (respEstudiante.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) {
-      esCorrecta = true;
+    } else if (p.tipo === "verdadero_falso") {
+      if (respEstudiante.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) esCorrecta = true;
+    } else {
+      // Para completación o texto
+      if (respEstudiante.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) esCorrecta = true;
     }
 
     if (esCorrecta) puntos++;
-    
-    // Guardar para el PDF
+
+    // GUARDAMOS EL DETALLE PARA QUE APAREZCA EN EL PDF
     detalleParaPDF.push({
       enunciado: p.enunciado,
-      respuesta_estudiante: respEstudiante
+      respuesta_estudiante: respEstudiante,
+      resultado: esCorrecta ? "Correcta" : "Incorrecta"
     });
   });
 
@@ -157,7 +166,7 @@ window.enviarExamen = async (forzado = false) => {
       grado: uData.anio,
       seccion: uData.seccion,
       nota: parseFloat(calificacion.toFixed(2)),
-      respuestas_detalle: detalleParaPDF, // CLAVE PARA EL REPORTE PDF
+      respuestas_detalle: detalleParaPDF, // AQUÍ SE GUARDA EL EXAMEN PASO A PASO
       fecha: serverTimestamp()
     });
 
