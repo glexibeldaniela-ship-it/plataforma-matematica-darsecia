@@ -9,11 +9,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 <style>
     body { font-family: sans-serif; background: #f4f7f6; }
-    .header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; }
+    .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; }
     .contenedor { padding: 20px; max-width: 800px; margin: 0 auto; }
     .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
     .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; }
-    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; }
+    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; display: flex; justify-content: space-between; align-items: center; }
     table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
     th { background: #00796b; color: white; padding: 10px; text-align: left; }
     td { padding: 10px; border-bottom: 1px solid #eee; }
@@ -22,7 +22,10 @@
 </head>
 <body>
 <div class="header">
-  <h2>MateEduPro 🎓</h2>
+  <div>
+    <h2 style="margin:0">MateEduPro 🎓</h2>
+    <small>Panel Estudiante</small>
+  </div>
   <button onclick="cerrarSesion()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px;">Salir</button>
 </div>
 
@@ -32,17 +35,19 @@
   <div class="seccion-titulo">📋 Exámenes Disponibles</div>
   <div id="listaExamenes"></div>
 
-  <div class="seccion-titulo">📊 Tu Historial</div>
-  <table>
-    <thead>
-      <tr>
-        <th>Título</th>
-        <th>Nota</th>
-        <th>PDF</th>
-      </tr>
-    </thead>
-    <tbody id="bodyHistorial"></tbody>
-  </table>
+  <div class="seccion-titulo">📊 Tu Historial de Notas</div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Evaluación</th>
+          <th>Nota</th>
+          <th>Reporte</th>
+        </tr>
+      </thead>
+      <tbody id="bodyHistorial"></tbody>
+    </table>
+  </div>
 </div>
 
 <script type="module">
@@ -54,55 +59,81 @@ let datosUsuario = null;
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
-  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-  if (userSnap.exists()) {
-    datosUsuario = userSnap.data();
-    document.getElementById("datosPersonales").innerHTML = `<b>${datosUsuario.nombres}</b><br>CI: ${datosUsuario.cedula} | ${datosUsuario.anio}° Año "${datosUsuario.seccion}"`;
-    cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
-    cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
+  try {
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+    if (userSnap.exists()) {
+      datosUsuario = userSnap.data();
+      document.getElementById("datosPersonales").innerHTML = "<b>" + datosUsuario.nombres + " " + datosUsuario.apellidos + "</b><br>C.I: " + (datosUsuario.cedula || "N/P") + " | " + datosUsuario.anio + "° Año Secc: " + datosUsuario.seccion;
+      cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
+      cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
+    }
+  } catch (error) {
+    console.error("Error al cargar perfil:", error);
   }
 });
 
 async function cargarExamenes(anio, sec) {
   const lista = document.getElementById("listaExamenes");
-  const q = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio), where("seccion", "in", [sec, "Ambas"]));
-  const snap = await getDocs(q);
-  lista.innerHTML = snap.empty ? "No hay exámenes activos." : "";
-  snap.forEach(d => {
-    const ex = d.data();
-    lista.innerHTML += `<div class="examen-card"><strong>${ex.titulo}</strong><br><button onclick="window.location.href='presentar-examen.html?id=${d.id}'" style="margin-top:10px; background:#00796b; color:white; border:none; padding:8px; border-radius:5px;">Iniciar</button></div>`;
-  });
+  try {
+    // CORRECCIÓN: Filtro optimizado para mostrar exámenes según año y sección
+    const q = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio));
+    const snap = await getDocs(q);
+    
+    lista.innerHTML = snap.empty ? "<p>No hay exámenes activos para tu grado.</p>" : "";
+    
+    snap.forEach(d => {
+      const ex = d.data();
+      // Validamos sección (específica o 'Ambas')
+      if (ex.seccion === sec || ex.seccion === "Ambas") {
+        lista.innerHTML += "<div class='examen-card'><div><strong>" + ex.titulo + "</strong><br><small>Duración: " + ex.duracion + " min</small></div><button onclick=\"window.location.href='presentar-examen.html?id=" + d.id + "'\" style='background:#00796b; color:white; border:none; padding:8px 15px; border-radius:5px;'>Iniciar</button></div>";
+      }
+    });
+  } catch (error) {
+    lista.innerHTML = "Error al cargar exámenes.";
+  }
 }
 
 async function cargarHistorial(uid, anio, sec) {
   const body = document.getElementById("bodyHistorial");
-  const qEx = query(collection(db, "examenes"), where("anio", "==", anio), where("seccion", "in", [sec, "Ambas"]));
-  const snapEx = await getDocs(qEx);
+  body.innerHTML = "<tr><td colspan='3'>Cargando historial...</td></tr>";
+  
+  try {
+    const qEx = query(collection(db, "examenes"), where("anio", "==", anio));
+    const snapEx = await getDocs(qEx);
+    body.innerHTML = "";
 
-  for (const docEx of snapEx.docs) {
-    const resSnap = await getDocs(collection(db, `examenes/${docEx.id}/resultados`));
-    resSnap.forEach(resDoc => {
-      const res = resDoc.data();
-      if (res.estudiante_id === uid) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${docEx.data().titulo}</td><td><b>${res.nota}</b></td><td><button class="btn-pdf-examen" id="btnPdf_${resDoc.id}">📥</button></td>`;
-        body.appendChild(tr);
-        document.getElementById(`btnPdf_${resDoc.id}`).onclick = () => descargarExamenPDF(docEx.id, docEx.data().titulo, res.nota);
-      }
-    });
+    for (const docEx of snapEx.docs) {
+        const exData = docEx.data();
+        if (exData.seccion === sec || exData.seccion === "Ambas") {
+            // CORRECCIÓN #2: Buscar resultados específicos de este estudiante
+            const resSnap = await getDocs(collection(db, "examenes", docEx.id, "resultados"));
+            resSnap.forEach(resDoc => {
+                const res = resDoc.data();
+                if (res.estudiante_id === uid || res.cedula === datosUsuario.cedula) {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = "<td>" + exData.titulo + "</td><td><b style='color:#00796b'>" + res.nota + "/20</b></td><td><button class='btn-pdf-examen' id='btnPdf_" + resDoc.id + "'>📥 PDF</button></td>";
+                    body.appendChild(tr);
+                    
+                    document.getElementById("btnPdf_" + resDoc.id).onclick = () => window.descargarExamenPDF(docEx.id, exData.titulo, res.nota);
+                }
+            });
+        }
+    }
+    if (body.innerHTML === "") body.innerHTML = "<tr><td colspan='3'>Aún no tienes exámenes realizados.</td></tr>";
+  } catch (error) {
+    body.innerHTML = "<tr><td colspan='3'>Error al cargar historial.</td></tr>";
   }
 }
 
-// FUNCIÓN DE DESCARGA MEJORADA: Única modificación para asegurar el .pdf automático
 function triggerDownload(docPDF, fileName) {
-    const nombreConExtension = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
+    const nombreFinal = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
     try {
-        docPDF.save(nombreConExtension);
+        docPDF.save(nombreFinal);
     } catch (e) {
         const dataUri = docPDF.output('datauristring');
         const link = document.createElement('a');
         link.href = dataUri;
-        link.download = nombreConExtension;
+        link.download = nombreFinal;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -110,20 +141,42 @@ function triggerDownload(docPDF, fileName) {
 }
 
 window.descargarExamenPDF = async (exId, titulo, nota) => {
-  const pregSnap = await getDocs(collection(db, "examenes", exId, "preguntas"));
-  const { jsPDF } = window.jspdf;
-  const docPDF = new jsPDF();
-  docPDF.text("REPORTE DE EXAMEN - MATEEDUPRO", 105, 20, { align: "center" });
-  docPDF.text(`Estudiante: ${datosUsuario.nombres}`, 20, 40);
-  docPDF.text(`Examen: ${titulo} | Nota: ${nota}/20`, 20, 50);
+  try {
+    const pregSnap = await getDocs(collection(db, "examenes", exId, "preguntas"));
+    const { jsPDF } = window.jspdf;
+    const docPDF = new jsPDF();
+    
+    // Encabezado del Acta
+    docPDF.setFontSize(14);
+    docPDF.text("MATEEDUPRO - REPORTE DE EVALUACIÓN", 105, 15, { align: "center" });
+    docPDF.setFontSize(10);
+    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 22, { align: "center" });
+    
+    docPDF.line(20, 25, 190, 25);
+    
+    docPDF.text("ESTUDIANTE: " + datosUsuario.nombres + " " + datosUsuario.apellidos, 20, 35);
+    docPDF.text("CÉDULA: " + (datosUsuario.cedula || "N/P"), 20, 42);
+    docPDF.text("EXAMEN: " + titulo, 20, 49);
+    docPDF.setFontSize(12);
+    docPDF.text("CALIFICACIÓN FINAL: " + nota + " / 20", 20, 58);
+    
+    docPDF.setFontSize(10);
+    docPDF.text("CONTENIDO EVALUADO:", 20, 70);
+    
+    let y = 80;
+    let cont = 1;
+    pregSnap.forEach((p) => {
+        if (y > 270) { docPDF.addPage(); y = 20; }
+        const datosPreg = p.data();
+        docPDF.text(cont + ". " + datosPreg.enunciado, 25, y);
+        y += 10;
+        cont++;
+    });
 
-  let y = 70;
-  pregSnap.forEach((p, i) => {
-    docPDF.text(`${i+1}. ${p.data().enunciado}`, 20, y);
-    y += 10;
-  });
-  
-  triggerDownload(docPDF, `Examen_${titulo}`);
+    triggerDownload(docPDF, "Resultado_" + titulo);
+  } catch (error) {
+    alert("No se pudo generar el PDF. Intente de nuevo.");
+  }
 };
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
