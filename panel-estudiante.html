@@ -28,10 +28,10 @@
 
 <div class="contenedor">
   <div id="datosPersonales" class="perfil-card"><p>Cargando perfil...</p></div>
-  
+
   <div class="seccion-titulo">📋 Exámenes Disponibles</div>
   <div id="listaExamenes"></div>
-  
+
   <div class="seccion-titulo">📊 Tu Historial</div>
   <table>
     <thead>
@@ -78,18 +78,35 @@ async function cargarHistorial(uid, anio, sec) {
   const body = document.getElementById("bodyHistorial");
   const qEx = query(collection(db, "examenes"), where("anio", "==", anio), where("seccion", "in", [sec, "Ambas"]));
   const snapEx = await getDocs(qEx);
-  
+
   for (const docEx of snapEx.docs) {
     const resSnap = await getDocs(collection(db, `examenes/${docEx.id}/resultados`));
     resSnap.forEach(resDoc => {
       const res = resDoc.data();
       if (res.estudiante_id === uid) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${docEx.data().titulo}</td><td><b>${res.nota}</b></td><td><button class="btn-pdf-examen" onclick="descargarExamenPDF('${docEx.id}', '${docEx.data().titulo}', ${res.nota})">📥</button></td>`;
+        tr.innerHTML = `<td>${docEx.data().titulo}</td><td><b>${res.nota}</b></td><td><button class="btn-pdf-examen" id="btnPdf_${resDoc.id}">📥</button></td>`;
         body.appendChild(tr);
+        document.getElementById(`btnPdf_${resDoc.id}`).onclick = () => descargarExamenPDF(docEx.id, docEx.data().titulo, res.nota);
       }
     });
   }
+}
+
+// FUNCIÓN DE DESCARGA MEJORADA: Única modificación para asegurar el .pdf automático
+function triggerDownload(docPDF, fileName) {
+    const nombreConExtension = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
+    try {
+        docPDF.save(nombreConExtension);
+    } catch (e) {
+        const dataUri = docPDF.output('datauristring');
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = nombreConExtension;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 }
 
 window.descargarExamenPDF = async (exId, titulo, nota) => {
@@ -99,13 +116,14 @@ window.descargarExamenPDF = async (exId, titulo, nota) => {
   docPDF.text("REPORTE DE EXAMEN - MATEEDUPRO", 105, 20, { align: "center" });
   docPDF.text(`Estudiante: ${datosUsuario.nombres}`, 20, 40);
   docPDF.text(`Examen: ${titulo} | Nota: ${nota}/20`, 20, 50);
-  
+
   let y = 70;
   pregSnap.forEach((p, i) => {
     docPDF.text(`${i+1}. ${p.data().enunciado}`, 20, y);
     y += 10;
   });
-  docPDF.save(`Examen_${titulo}.pdf`);
+  
+  triggerDownload(docPDF, `Examen_${titulo}`);
 };
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
