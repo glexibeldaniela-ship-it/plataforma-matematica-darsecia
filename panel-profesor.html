@@ -1,301 +1,510 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel Profesor – Centro de Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="stylesheet" href="estilos.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Panel Profesor – Centro de Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="estilos.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
-<style>
-/* TU DISEÑO FAVORITO (INTACTO) */
-body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
-.header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
-.tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 78px; z-index: 90; }
-.tab-btn { flex: 1; min-width: 100px; background: none; border: none; padding: 14px; font-size: 0.85rem; font-weight: 600; color: #777; cursor: pointer; }
-.tab-btn.activo { color: #00796b; border-bottom: 3px solid #00bcd4; background: #f0fdfd; }
-.contenedor { padding: 20px; max-width: 960px; margin: 0 auto; }
-.tab-panel { display: none; }
-.tab-panel.activo { display: block; }
-.examen-card { background: white; border-radius: 12px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e0f7fa; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
-.examen-card-header { background: #00796b; color: white; padding: 12px 15px; display: flex; justify-content: space-between; }
-.btn-accion { padding: 6px 12px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 5px; }
-.btn-activar { background: #4caf50; }
-.btn-desactivar { background: #ff9800; }
-.btn-eliminar { background: #d32f2f; margin-left: 5px; }
-.filtros-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 120px; }
-.status-online { color: #4caf50; font-weight: bold; font-size: 10px; display: flex; align-items: center; gap: 4px; }
-.status-online::before { content: '●'; font-size: 14px; }
-.tabla-scroll { width: 100%; overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-table { min-width: 600px; border-collapse: collapse; width: 100%; }
-th { background: #00796b; color: white; padding: 12px; text-align: left; }
-td { padding: 12px; border-bottom: 1px solid #eee; }
-.btn-descargar-lista { background: #00bcd4; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-</style>
+    <style>
+        /* DISEÑO ORIGINAL PRESERVADO */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f4f8; 
+            min-height: 100vh; 
+        }
+
+        .header { 
+            background: linear-gradient(135deg, #00796b, #004d40); 
+            color: white; 
+            padding: 16px 24px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+
+        .tabs-bar { 
+            display: flex; 
+            overflow-x: auto; 
+            background: white; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            position: sticky; 
+            top: 78px; 
+            z-index: 90; 
+        }
+
+        .tab-btn { 
+            flex: 1; 
+            min-width: 100px; 
+            background: none; 
+            border: none; 
+            padding: 14px; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            color: #777; 
+            cursor: pointer; 
+        }
+
+        .tab-btn.activo { 
+            color: #00796b; 
+            border-bottom: 3px solid #00bcd4; 
+            background: #f0fdfd; 
+        }
+
+        .contenedor { 
+            padding: 20px; 
+            max-width: 960px; 
+            margin: 0 auto; 
+        }
+
+        .tab-panel { 
+            display: none; 
+        }
+
+        .tab-panel.activo { 
+            display: block; 
+        }
+
+        .examen-card { 
+            background: white; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            overflow: hidden; 
+            border: 1px solid #e0f7fa; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
+        }
+
+        .examen-card-header { 
+            background: #00796b; 
+            color: white; 
+            padding: 12px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+
+        .btn-accion { 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            border: none; 
+            color: white; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: bold; 
+            margin-top: 5px; 
+        }
+
+        .btn-activar { background: #4caf50; }
+        .btn-desactivar { background: #ff9800; }
+        .btn-eliminar { background: #d32f2f; margin-left: 5px; }
+
+        .filtros-box { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap; 
+        }
+
+        select { 
+            padding: 8px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            flex: 1; 
+            min-width: 120px; 
+        }
+
+        .status-online { 
+            color: #4caf50; 
+            font-weight: bold; 
+            font-size: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+        }
+
+        .status-online::before { 
+            content: '●'; 
+            font-size: 14px; 
+        }
+
+        .tabla-scroll { 
+            width: 100%; 
+            overflow-x: auto; 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+
+        table { 
+            min-width: 600px; 
+            border-collapse: collapse; 
+            width: 100%; 
+        }
+
+        th { 
+            background: #00796b; 
+            color: white; 
+            padding: 12px; 
+            text-align: left; 
+        }
+
+        td { 
+            padding: 12px; 
+            border-bottom: 1px solid #eee; 
+        }
+
+        .btn-descargar-lista { 
+            background: #00bcd4; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+    </style>
 </head>
 <body>
 
 <div class="header">
-  <div><h2 style="margin:0">Centro de Control</h2><small>Prof. José Agustín Fernández</small></div>
-  <button onclick="cerrarSesion()" style="background:rgba(255,255,255,0.2); color:white; border:1px solid white; padding:5px 10px; border-radius:10px;">Salir</button>
+    <div>
+        <h2 style="margin:0">Centro de Control</h2>
+        <small>Prof. José Agustín Fernández</small>
+    </div>
+    <button onclick="cerrarSesion()" style="background:rgba(255,255,255,0.2); color:white; border:1px solid white; padding:5px 10px; border-radius:10px;">Salir</button>
 </div>
 
 <div class="tabs-bar">
-  <button class="tab-btn activo" onclick="cambiarTab('examenes', this)">📋 Exámenes</button>
-  <button class="tab-btn" onclick="cambiarTab('estudiantes', this)">👥 Estudiantes</button>
-  <button class="tab-btn" onclick="cambiarTab('resultados', this)">📊 Notas</button>
+    <button class="tab-btn activo" onclick="cambiarTab('examenes', this)">📋 Exámenes</button>
+    <button class="tab-btn" onclick="cambiarTab('estudiantes', this)">👥 Estudiantes</button>
+    <button class="tab-btn" onclick="cambiarTab('resultados', this)">📊 Notas</button>
 </div>
 
 <div class="contenedor">
-  <div class="tab-panel activo" id="tab-examenes">
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-      <h3 style="margin:0; color:#00796b">Mis Evaluaciones</h3>
-      <button onclick="window.location.href='crear-examen.html'" style="background:#ff9800; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">+ Nuevo</button>
-    </div>
-    <div id="listaExamenes"></div>
-  </div>
 
-  <div class="tab-panel" id="tab-estudiantes">
-    <h3 style="color:#00796b">Lista de Inscritos</h3>
-    <div class="filtros-box">
-      <select id="fAnio" onchange="cargarEstudiantes()"><option value="todos">Todos los Años</option><option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option></select>
-      <select id="fSec" onchange="cargarEstudiantes()"><option value="todas">Todas las Secciones</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-      <button class="btn-descargar-lista" onclick="descargarListaPDF()">📥 Descargar Lista PDF</button>
+    <div class="tab-panel activo" id="tab-examenes">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h3 style="margin:0; color:#00796b">Mis Evaluaciones</h3>
+            <button onclick="window.location.href='crear-examen.html'" style="background:#ff9800; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">+ Nuevo</button>
+        </div>
+        <div id="listaExamenes"></div>
     </div>
-    <div class="tabla-scroll">
-      <table>
-        <thead>
-          <tr><th>Nombre Completo</th><th>Año/Sec</th><th>Estado</th><th>Acción</th></tr>
-        </thead>
-        <tbody id="bodyEstudiantes"></tbody>
-      </table>
-    </div>
-  </div>
 
-  <div class="tab-panel" id="tab-resultados">
-    <h3 style="color:#00796b">Acta de Calificaciones</h3>
-    <div class="filtros-box">
-        <select id="filtroExamenNotas" onchange="cargarNotas()"><option value="">Seleccione un Examen...</option></select>
+    <div class="tab-panel" id="tab-estudiantes">
+        <h3 style="color:#00796b">Lista de Inscritos</h3>
+        <div class="filtros-box">
+            <select id="fAnio" onchange="cargarEstudiantes()">
+                <option value="todos">Todos los Años</option>
+                <option value="1">1ero</option>
+                <option value="2">2do</option>
+                <option value="3">3ero</option>
+            </select>
+            <select id="fSec" onchange="cargarEstudiantes()">
+                <option value="todas">Todas las Secciones</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+            <button class="btn-descargar-lista" onclick="descargarListaPDF()">📥 Descargar Lista PDF</button>
+        </div>
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Año/Sec</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyEstudiantes"></tbody>
+            </table>
+        </div>
     </div>
-    <div class="tabla-scroll">
-      <table id="tablaNotas">
-        <thead>
-          <tr>
-            <th>Estudiante</th>
-            <th>Cédula</th>
-            <th>Año/Sec</th>
-            <th>Nota</th>
-            <th>Acta</th>
-          </tr>
-        </thead>
-        <tbody id="bodyNotas"></tbody>
-      </table>
+
+    <div class="tab-panel" id="tab-resultados">
+        <h3 style="color:#00796b">Acta de Calificaciones</h3>
+        <div class="filtros-box">
+            <select id="filtroExamenNotas" onchange="cargarNotas()">
+                <option value="">Seleccione un Examen...</option>
+            </select>
+        </div>
+        <div class="tabla-scroll">
+            <table id="tablaNotas">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Cédula</th>
+                        <th>Año/Sec</th>
+                        <th>Nota</th>
+                        <th>Acta</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyNotas"></tbody>
+            </table>
+        </div>
     </div>
-  </div>
+
 </div>
 
 <script type="module">
-import { auth, db } from "./firebase.js";
-import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { auth, db } from "./firebase.js";
+    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Variable global para guardar los estudiantes filtrados actualmente
-let estudiantesActuales = [];
+    // Variables globales
+    let estudiantesActuales = [];
 
-onAuthStateChanged(auth, (user) => { 
-  if(!user) { window.location.href="login.html"; return; }
-  cargarExamenes();
-  llenarSelectExamenes();
-});
-
-window.cambiarTab = (name, btn) => {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-  document.getElementById('tab-' + name).classList.add('activo');
-  btn.classList.add('activo');
-  if(name === 'estudiantes') cargarEstudiantes();
-  if(name === 'resultados') cargarNotas();
-};
-
-async function cargarExamenes() {
-  const lista = document.getElementById("listaExamenes");
-  onSnapshot(collection(db, "examenes"), (snap) => {
-    lista.innerHTML = "";
-    snap.forEach(d => {
-      const ex = d.data();
-      lista.innerHTML += `
-        <div class="examen-card">
-          <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
-            <strong>${ex.titulo}</strong>
-            <span>${ex.activo ? 'Activo' : 'Inactivo'}</span>
-          </div>
-          <div style="padding:15px">
-            <small>${ex.anio}° Año - Sección ${ex.seccion}</small><br>
-            <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">${ex.activo ? 'Desactivar' : 'Activar'}</button>
-            <button class="btn-accion" style="background:#2196F3" onclick="window.location.href='editar-examen.html?id=${d.id}'">✏️ Editar</button>
-            <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">Eliminar</button>
-          </div>
-        </div>`;
-    });
-  });
-}
-
-window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); };
-window.borrarEx = async (id) => { if(confirm("¿Eliminar examen?")) { await deleteDoc(doc(db, "examenes", id)); } };
-
-window.eliminarEstudiante = async (id) => {
-  if(confirm("¿Estás seguro de que deseas eliminar a este estudiante de la base de datos?")) {
-    try {
-      await deleteDoc(doc(db, "usuarios", id));
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("No se pudo eliminar al estudiante.");
-    }
-  }
-};
-
-async function cargarEstudiantes() {
-  const anioSel = document.getElementById("fAnio").value;
-  const secSel = document.getElementById("fSec").value;
-  const body = document.getElementById("bodyEstudiantes");
-  onSnapshot(collection(db, "usuarios"), (snap) => {
-    body.innerHTML = "";
-    estudiantesActuales = []; // Reiniciar lista global
-    snap.forEach(d => {
-      const u = d.data();
-      if(u.rol === 'estudiante' || !u.rol) {
-        if((anioSel === 'todos' || String(u.anio) === anioSel) && (secSel === 'todas' || u.seccion === secSel)) {
-          estudiantesActuales.push(u); // Guardar para el PDF
-          body.innerHTML += `<tr><td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td><td>${u.anio || '?'}° ${u.seccion || '?'}</td><td>${u.online ? '<span class="status-online">Línea</span>':'Off'}</td><td><button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button></td></tr>`;
+    // Verificación de sesión
+    onAuthStateChanged(auth, (user) => { 
+        if(!user) { 
+            window.location.href="login.html"; 
+            return; 
         }
-      }
+        cargarExamenes();
+        llenarSelectExamenes();
     });
-  });
-}
 
-async function llenarSelectExamenes() {
-    const select = document.getElementById("filtroExamenNotas");
-    const snap = await getDocs(collection(db, "examenes"));
-    select.innerHTML = '<option value="">Seleccione un Examen...</option>';
-    snap.forEach(d => {
-        const op = document.createElement("option");
-        op.value = d.id;
-        op.textContent = d.data().titulo;
-        select.appendChild(op);
-    });
-}
+    // Control de Navegación (Tabs)
+    window.cambiarTab = (name, btn) => {
+        const paneles = document.querySelectorAll('.tab-panel');
+        const botones = document.querySelectorAll('.tab-btn');
+        
+        paneles.forEach(p => p.classList.remove('activo'));
+        botones.forEach(b => b.classList.remove('activo'));
+        
+        document.getElementById('tab-' + name).classList.add('activo');
+        btn.classList.add('activo');
+        
+        if(name === 'estudiantes') cargarEstudiantes();
+        if(name === 'resultados') cargarNotas();
+    };
 
-window.cargarNotas = async () => {
-  const exId = document.getElementById("filtroExamenNotas").value;
-  const body = document.getElementById("bodyNotas");
-  if(!exId) { body.innerHTML = ""; return; }
+    // Funciones de Exámenes
+    async function cargarExamenes() {
+        const lista = document.getElementById("listaExamenes");
+        onSnapshot(collection(db, "examenes"), (snap) => {
+            lista.innerHTML = "";
+            snap.forEach(d => {
+                const ex = d.data();
+                const card = `
+                    <div class="examen-card">
+                        <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
+                            <strong>${ex.titulo}</strong>
+                            <span>${ex.activo ? 'Activo' : 'Inactivo'}</span>
+                        </div>
+                        <div style="padding:15px">
+                            <small>${ex.anio}° Año - Sección ${ex.seccion}</small><br>
+                            <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">
+                                ${ex.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                            <button class="btn-accion" style="background:#2196F3" onclick="window.location.href='editar-examen.html?id=${d.id}'">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>`;
+                lista.innerHTML += card;
+            });
+        });
+    }
 
-  const exSnap = await getDoc(doc(db, "examenes", exId));
-  const exData = exSnap.data() || {};
+    window.toggleEx = async (id, st) => { 
+        await updateDoc(doc(db, "examenes", id), { activo: !st }); 
+    };
 
-  onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
-    body.innerHTML = "";
-    snap.forEach(d => {
-      const n = d.data();
-      const row = document.createElement("tr");
-      const ci = n.cedula || "---";
-      const grado = n.grado || n.anio || "?";
-      const seccion = n.seccion || "?";
-      const nombreEst = n.nombre || "Sin Nombre";
+    window.borrarEx = async (id) => { 
+        if(confirm("¿Eliminar examen?")) { 
+            await deleteDoc(doc(db, "examenes", id)); 
+        } 
+    };
 
-      row.innerHTML = `
-        <td><b>${nombreEst}</b></td>
-        <td>${ci}</td>
-        <td>${grado}° "${seccion}"</td>
-        <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
-        <td>
-          <button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer; font-size:16px;">📥</button>
-        </td>`;
-      body.appendChild(row);
+    // Funciones de Estudiantes
+    window.eliminarEstudiante = async (id) => {
+        if(confirm("¿Estás seguro de que deseas eliminar a este estudiante de la base de datos?")) {
+            try {
+                await deleteDoc(doc(db, "usuarios", id));
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+                alert("No se pudo eliminar al estudiante.");
+            }
+        }
+    };
 
-      document.getElementById(`btnPdf_${d.id}`).onclick = () => {
-          descargarActaProfesor(n, exData);
-      };
-    });
-    if(snap.empty) body.innerHTML = "<tr><td colspan='5' style='padding:20px; text-align:center;'>Sin resultados aún.</td></tr>";
-  });
-};
+    async function cargarEstudiantes() {
+        const anioSel = document.getElementById("fAnio").value;
+        const secSel = document.getElementById("fSec").value;
+        const body = document.getElementById("bodyEstudiantes");
+        
+        onSnapshot(collection(db, "usuarios"), (snap) => {
+            body.innerHTML = "";
+            estudiantesActuales = [];
+            
+            snap.forEach(d => {
+                const u = d.data();
+                if(u.rol === 'estudiante' || !u.rol) {
+                    const cumpleAnio = (anioSel === 'todos' || String(u.anio) === anioSel);
+                    const cumpleSec = (secSel === 'todas' || u.seccion === secSel);
+                    
+                    if(cumpleAnio && cumpleSec) {
+                        estudiantesActuales.push(u);
+                        const fila = `
+                            <tr>
+                                <td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td>
+                                <td>${u.anio || '?'}° ${u.seccion || '?'}</td>
+                                <td>${u.online ? '<span class="status-online">Línea</span>':'Off'}</td>
+                                <td>
+                                    <button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button>
+                                </td>
+                            </tr>`;
+                        body.innerHTML += fila;
+                    }
+                }
+            });
+        });
+    }
 
-function descargarActaProfesor(n, ex) {
-  const { jsPDF } = window.jspdf;
-  const docPDF = new jsPDF();
-  docPDF.setFont("times", "bold"); docPDF.setFontSize(11);
-  docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
-  docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
-  docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
-  docPDF.line(20, 37, 190, 37);
-  docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
-  docPDF.setFont("helvetica", "normal"); docPDF.setFontSize(12);
-  docPDF.text(`TÍTULO: ${ex.titulo ? ex.titulo.toUpperCase() : "EVALUACIÓN"}`, 25, 70);
-  docPDF.text(`ESTUDIANTE: ${n.nombre ? n.nombre.toUpperCase() : "ESTUDIANTE"}`, 25, 80);
-  docPDF.text(`CÉDULA: ${n.cedula || "N/A"}`, 25, 90);
-  docPDF.text(`GRADO: ${n.grado || n.anio || "?"}° - SECCIÓN: ${n.seccion || "?"}`, 25, 100);
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 115);
-  docPDF.line(65, 210, 145, 210);
-  docPDF.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
-  docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
-  docPDF.save(`Acta_${n.nombre}.pdf`);
-}
+    // Funciones de Notas y Reportes
+    async function llenarSelectExamenes() {
+        const select = document.getElementById("filtroExamenNotas");
+        const snap = await getDocs(collection(db, "examenes"));
+        select.innerHTML = '<option value="">Seleccione un Examen...</option>';
+        snap.forEach(d => {
+            const op = document.createElement("option");
+            op.value = d.id;
+            op.textContent = d.data().titulo;
+            select.appendChild(op);
+        });
+    }
 
-// NUEVA FUNCIÓN: DESCARGAR LISTA POR AÑO Y SECCIÓN
-window.descargarListaPDF = () => {
-  if (estudiantesActuales.length === 0) {
-    alert("No hay estudiantes en la lista actual para descargar.");
-    return;
-  }
+    window.cargarNotas = async () => {
+        const exId = document.getElementById("filtroExamenNotas").value;
+        const body = document.getElementById("bodyNotas");
+        if(!exId) { body.innerHTML = ""; return; }
 
-  const { jsPDF } = window.jspdf;
-  const docPDF = new jsPDF();
-  const anio = document.getElementById("fAnio").value;
-  const seccion = document.getElementById("fSec").value;
+        const exSnap = await getDoc(doc(db, "examenes", exId));
+        const exData = exSnap.data() || {};
 
-  // Membrete
-  docPDF.setFont("times", "bold"); docPDF.setFontSize(10);
-  docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
-  docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 20, { align: "center" });
-  docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 25, { align: "center" });
-  docPDF.line(20, 30, 190, 30);
+        onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
+            body.innerHTML = "";
+            snap.forEach(d => {
+                const n = d.data();
+                const row = document.createElement("tr");
 
-  docPDF.setFontSize(12);
-  docPDF.text(`LISTADO DE ESTUDIANTES: ${anio !== 'todos' ? anio + '° AÑO' : 'TODOS'} - SECCIÓN: ${seccion !== 'todas' ? seccion : 'TODAS'}`, 105, 40, { align: "center" });
+                row.innerHTML = `
+                    <td><b>${n.nombre || "Sin Nombre"}</b></td>
+                    <td>${n.cedula || "---"}</td>
+                    <td>${n.grado || n.anio || "?"}° "${n.seccion || "?"}"</td>
+                    <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
+                    <td>
+                        <button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer; font-size:16px;">📥</button>
+                    </td>`;
+                body.appendChild(row);
 
-  // Preparar datos de la tabla
-  const filas = estudiantesActuales.map((u, index) => [
-    index + 1,
-    `${u.nombres} ${u.apellidos}`.toUpperCase(),
-    u.cedula || "N/P",
-    `${u.anio || '?'}° "${u.seccion || '?'}"`
-  ]);
+                document.getElementById(`btnPdf_${d.id}`).onclick = () => {
+                    descargarActaProfesor(n, exData);
+                };
+            });
+            if(snap.empty) {
+                body.innerHTML = "<tr><td colspan='5' style='padding:20px; text-align:center;'>Sin resultados aún.</td></tr>";
+            }
+        });
+    };
 
-  // Generar tabla
-  docPDF.autoTable({
-    startY: 50,
-    head: [['N°', 'APELLIDOS Y NOMBRES', 'CÉDULA', 'AÑO/SEC']],
-    body: filas,
-    headStyles: { fillStyle: 'dark', fillColor: [0, 121, 107] },
-    theme: 'grid',
-    styles: { fontSize: 9 }
-  });
+    // GENERACIÓN DE PDF (CON CORRECCIÓN APK)
+    function descargarActaProfesor(n, ex) {
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+        
+        docPDF.setFont("times", "bold"); 
+        docPDF.setFontSize(11);
+        docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
+        docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
+        docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
+        docPDF.line(20, 37, 190, 37);
+        
+        docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
+        docPDF.setFont("helvetica", "normal"); 
+        docPDF.setFontSize(12);
+        
+        docPDF.text(`TÍTULO: ${ex.titulo ? ex.titulo.toUpperCase() : "EVALUACIÓN"}`, 25, 70);
+        docPDF.text(`ESTUDIANTE: ${n.nombre ? n.nombre.toUpperCase() : "ESTUDIANTE"}`, 25, 80);
+        docPDF.text(`CÉDULA: ${n.cedula || "N/A"}`, 25, 90);
+        docPDF.text(`GRADO: ${n.grado || n.anio || "?"}° - SECCIÓN: ${n.seccion || "?"}`, 25, 100);
+        
+        docPDF.setFont("helvetica", "bold");
+        docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 115);
+        
+        docPDF.line(65, 210, 145, 210);
+        docPDF.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
+        docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
+        
+        // CORRECCIÓN APK: Limpiar nombre para evitar errores de guardado
+        const safeName = (n.nombre || "Estudiante").trim().replace(/[^a-zA-Z0-9]/g, '_');
+        docPDF.save(`Acta_${safeName}.pdf`);
+    }
 
-  // Pie de página con firma
-  const finalY = docPDF.lastAutoTable.finalY + 20;
-  docPDF.line(75, finalY + 15, 135, finalY + 15);
-  docPDF.setFontSize(10);
-  docPDF.text("PROF. JOSÉ FERNÁNDEZ", 105, finalY + 20, { align: "center" });
-  docPDF.text("Control de Estudios / Docente", 105, finalY + 25, { align: "center" });
+    window.descargarListaPDF = () => {
+        if (estudiantesActuales.length === 0) { 
+            alert("No hay estudiantes para descargar."); 
+            return; 
+        }
 
-  docPDF.save(`Lista_${anio}_${seccion}.pdf`);
-};
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+        const anio = document.getElementById("fAnio").value;
+        const seccion = document.getElementById("fSec").value;
 
-window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
+        docPDF.setFont("times", "bold"); 
+        docPDF.setFontSize(10);
+        docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
+        docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 20, { align: "center" });
+        docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 25, { align: "center" });
+        docPDF.line(20, 30, 190, 30);
+
+        docPDF.setFontSize(12);
+        docPDF.text(`LISTADO DE ESTUDIANTES: ${anio}° AÑO - SECCIÓN: ${seccion}`, 105, 40, { align: "center" });
+
+        const filas = estudiantesActuales.map((u, index) => [
+            index + 1,
+            `${u.nombres} ${u.apellidos}`.toUpperCase(),
+            u.cedula || "N/P",
+            `${u.anio || '?'}° "${u.seccion || '?'}"`
+        ]);
+
+        docPDF.autoTable({
+            startY: 50,
+            head: [['N°', 'APELLIDOS Y NOMBRES', 'CÉDULA', 'AÑO/SEC']],
+            body: filas,
+            headStyles: { fillColor: [0, 121, 107] },
+            theme: 'grid',
+            styles: { fontSize: 9 }
+        });
+
+        const finalY = docPDF.lastAutoTable.finalY + 20;
+        docPDF.line(75, finalY + 15, 135, finalY + 15);
+        docPDF.text("PROF. JOSÉ FERNÁNDEZ", 105, finalY + 20, { align: "center" });
+
+        // CORRECCIÓN APK: Nombre de archivo seguro
+        const safeFile = `Lista_${anio}_${seccion}`.replace(/[^a-zA-Z0-9]/g, '_');
+        docPDF.save(`${safeFile}.pdf`);
+    };
+
+    window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
+
 </script>
 </body>
 </html>
