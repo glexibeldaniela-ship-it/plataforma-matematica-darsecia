@@ -27,7 +27,7 @@
     <h2 style="margin:0">MateEduPro 🎓</h2>
     <small>Panel Estudiante</small>
   </div>
-  <button onclick="cerrarSesion()" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold;">Salir</button>
+  <button onclick="window.cerrarSesion()" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold;">Salir</button>
 </div>
 
 <div class="contenedor">
@@ -66,29 +66,26 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (userSnap.exists()) {
       datosUsuario = userSnap.data();
-      // Mostramos los datos con formato limpio
       document.getElementById("datosPersonales").innerHTML = "<b>" + datosUsuario.nombres + " " + datosUsuario.apellidos + "</b><br>C.I: " + (datosUsuario.cedula || "N/P") + " | " + datosUsuario.anio + "° Año Secc: " + datosUsuario.seccion;
-      
-      cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
-      cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
+
+      window.cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
+      window.cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
     }
   } catch (error) {
     console.error("Error al cargar perfil:", error);
   }
 });
 
-async function cargarExamenes(anio, sec) {
+window.cargarExamenes = async (anio, sec) => {
   const lista = document.getElementById("listaExamenes");
   try {
-    // Filtramos por año y que estén activos
-    const q = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio));
-    const snap = await getDocs(q);
+    const qEx = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio));
+    const snap = await getDocs(qEx);
 
-    lista.innerHTML = snap.empty ? "<p style='text-align:center; color:#777; padding:20px;'>No hay exámenes activos para tu grado actualmente.</p>" : "";
+    lista.innerHTML = snap.empty ? "<p style='text-align:center; color:#777; padding:20px;'>No hay exámenes activos por ahora.</p>" : "";
 
     snap.forEach(d => {
       const ex = d.data();
-      // Validamos sección (específica o 'Ambas')
       if (ex.seccion === sec || ex.seccion === "Ambas") {
         let html = "<div class='examen-card'>";
         html += "<div><strong>" + ex.titulo + "</strong><br><small>Tiempo: " + ex.duracion + " minutos</small></div>";
@@ -98,11 +95,11 @@ async function cargarExamenes(anio, sec) {
       }
     });
   } catch (error) {
-    lista.innerHTML = "<p>Error al cargar la lista de exámenes.</p>";
+    lista.innerHTML = "<p>Error al cargar la lista.</p>";
   }
-}
+};
 
-async function cargarHistorial(uid, anio, sec) {
+window.cargarHistorial = async (uid, anio, sec) => {
   const body = document.getElementById("bodyHistorial");
   body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Buscando tus notas...</td></tr>";
 
@@ -112,13 +109,13 @@ async function cargarHistorial(uid, anio, sec) {
     let hayNotas = false;
     body.innerHTML = "";
 
+    // CORRECCIÓN: Optimizamos la búsqueda para evitar bucles pesados
     for (const docEx of snapEx.docs) {
         const exData = docEx.data();
         if (exData.seccion === sec || exData.seccion === "Ambas") {
             const resSnap = await getDocs(collection(db, "examenes", docEx.id, "resultados"));
             resSnap.forEach(resDoc => {
                 const res = resDoc.data();
-                // Verificamos que la nota sea de este alumno
                 if (res.estudiante_id === uid || res.cedula === datosUsuario.cedula) {
                     hayNotas = true;
                     const tr = document.createElement("tr");
@@ -130,26 +127,11 @@ async function cargarHistorial(uid, anio, sec) {
             });
         }
     }
-    if (!hayNotas) body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Aún no tienes evaluaciones registradas.</td></tr>";
+    if (!hayNotas) body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Aún no tienes notas registradas.</td></tr>";
   } catch (error) {
-    body.innerHTML = "<tr><td colspan='3'>Error al cargar el historial.</td></tr>";
+    body.innerHTML = "<tr><td colspan='3'>Error al cargar historial.</td></tr>";
   }
-}
-
-function triggerDownload(docPDF, fileName) {
-    const nombreFinal = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
-    try {
-        docPDF.save(nombreFinal);
-    } catch (e) {
-        const dataUri = docPDF.output('datauristring');
-        const link = document.createElement('a');
-        link.href = dataUri;
-        link.download = nombreFinal;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-}
+};
 
 window.descargarExamenPDF = async (exId, titulo, nota) => {
   try {
@@ -166,28 +148,28 @@ window.descargarExamenPDF = async (exId, titulo, nota) => {
     docPDF.text("ESTUDIANTE: " + datosUsuario.nombres + " " + datosUsuario.apellidos, 20, 35);
     docPDF.text("CÉDULA: " + (datosUsuario.cedula || "N/P"), 20, 42);
     docPDF.text("EVALUACIÓN: " + titulo, 20, 49);
-    
     docPDF.setFontSize(12);
     docPDF.setTextColor(0, 121, 107);
     docPDF.text("CALIFICACIÓN: " + nota + " / 20", 20, 58);
 
     docPDF.setFontSize(10);
     docPDF.setTextColor(0, 0, 0);
-    docPDF.text("TEMAS EVALUADOS:", 20, 70);
+    docPDF.text("CONTENIDO DEL EXAMEN:", 20, 70);
 
     let y = 80;
-    let cont = 1;
+    let contador = 1;
     pregSnap.forEach((p) => {
         if (y > 270) { docPDF.addPage(); y = 20; }
-        const datosPreg = p.data();
-        docPDF.text(cont + ". " + datosPreg.enunciado, 25, y);
+        const pData = p.data();
+        docPDF.text(contador + ". " + pData.enunciado, 25, y);
         y += 10;
-        cont++;
+        contador++;
     });
 
-    triggerDownload(docPDF, "Nota_" + titulo.replace(/\s/g, '_'));
+    const nomArchivo = "Nota_" + titulo.replace(/\s/g, '_') + ".pdf";
+    docPDF.save(nomArchivo);
   } catch (error) {
-    alert("Error al generar el reporte PDF.");
+    alert("No se pudo generar el PDF.");
   }
 };
 
