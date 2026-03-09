@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Presentar Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="stylesheet" href="estilos.css">
 <style>
   body { margin: 0; padding: 0; background: #f4f7f6; font-family: 'Segoe UI', sans-serif; color: #333; }
   .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -17,7 +16,7 @@
   .pregunta-card h4 { margin-top: 0; color: #00796b; font-size: 1.1rem; line-height: 1.4; }
   .opcion-label { display: block; background: #f9f9f9; padding: 12px 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
   input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-  input[type="text"], input[type="number"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
+  input[type="text"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
   #btnEnviar { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 18px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,188,212,0.3); }
 </style>
 </head>
@@ -29,9 +28,9 @@
 </div>
 
 <div class="contenedorExamen">
-  <div id="temporizador">⏳ Cargando tiempo...</div>
+  <div id="temporizador">⏳ Iniciando...</div>
   <div id="infoExamen" class="info-card">
-    <p style="text-align:center;">Cargando detalles del examen...</p>
+    <p style="text-align:center;">Cargando evaluación...</p>
   </div>
   <div id="preguntas"></div>
   <button id="btnEnviar">🚀 Finalizar y Enviar Examen</button>
@@ -44,7 +43,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 
 const params = new URLSearchParams(window.location.search);
 const examenId = params.get("id");
-
 const infoDiv = document.getElementById("infoExamen");
 const preguntasDiv = document.getElementById("preguntas");
 const btnEnviar = document.getElementById("btnEnviar");
@@ -52,73 +50,64 @@ const temporizadorDiv = document.getElementById("temporizador");
 
 let preguntasData = [];
 let usuarioActual = null;
-let tiempoRestante = 0;
 let intervaloTimer = null;
 let examenEnviado = false;
 
-/* BLOQUEO DE SALIDA (Anti-Trampa) */
-window.addEventListener("beforeunload", (e) => {
-  if (!examenEnviado) { e.preventDefault(); e.returnValue = ""; }
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden && !examenEnviado) {
-    alert("⚠ Has salido de la pantalla. El examen se enviará automáticamente por seguridad.");
-    window.enviarExamen(true);
-  }
-});
-
+// --- GESTIÓN DEL TIEMPO CON PERSISTENCIA ---
 window.iniciarTemporizador = (duracionMinutos) => {
-  tiempoRestante = duracionMinutos * 60;
+  const storageKey = `tiempo_${examenId}_${usuarioActual.uid}`;
+  let tiempoRestante = localStorage.getItem(storageKey);
+
+  if (!tiempoRestante) {
+    tiempoRestante = duracionMinutos * 60;
+    localStorage.setItem(storageKey, tiempoRestante);
+  }
+
   intervaloTimer = setInterval(() => {
+    tiempoRestante--;
+    localStorage.setItem(storageKey, tiempoRestante);
+
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
-    temporizadorDiv.innerText = "⏱ Tiempo Restante: " + min + ":" + (seg < 10 ? "0"+seg : seg);
-    
+    temporizadorDiv.innerText = `⏱ Tiempo Restante: ${min}:${seg < 10 ? '0'+seg : seg}`;
+
     if (tiempoRestante <= 30) temporizadorDiv.style.background = "#d32f2f";
+    
     if (tiempoRestante <= 0) {
       clearInterval(intervaloTimer);
       window.enviarExamen(true);
     }
-    tiempoRestante--;
   }, 1000);
 };
 
 async function cargarExamen() {
-  const examenRef = doc(db, "examenes", examenId);
-  const examenSnap = await getDoc(examenRef);
-  if (!examenSnap.exists()) { infoDiv.innerHTML = "<p>El examen no existe.</p>"; return; }
-
+  const examenSnap = await getDoc(doc(db, "examenes", examenId));
+  if (!examenSnap.exists()) return;
   const ex = examenSnap.data();
 
-  // CORRECCIÓN CLAVE: El tiempo ahora es el que tú pongas al crear el examen
-  const duracionReal = parseInt(ex.duracion) || 10; 
+  infoDiv.innerHTML = `<h2>${ex.titulo}</h2>
+    <p>📌 ${ex.anio}° Año - Secc: ${ex.seccion} | ⏱ ${ex.duracion} min</p>
+    <div class='instrucciones'><strong>Instrucciones:</strong><br>${ex.descripcion || "Responde con cuidado."}</div>`;
 
-  infoDiv.innerHTML = "<h2>" + ex.titulo + "</h2>" +
-    "<p>📌 " + ex.anio + "° Año - Secc: " + ex.seccion + " | ⏱ " + duracionReal + " min</p>" +
-    "<div class='instrucciones'><strong>Instrucciones:</strong><br>" + (ex.descripcion || "Responde con cuidado.") + "</div>";
-
-  window.iniciarTemporizador(duracionReal);
+  window.iniciarTemporizador(parseInt(ex.duracion) || 10);
 
   const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
   let cont = 1;
-  preguntasDiv.innerHTML = "";
   preguntasSnap.forEach(docu => {
     const p = docu.data(); p.id = docu.id;
     preguntasData.push(p);
-    let htmlP = "<div class='pregunta-card'><h4>Pregunta " + cont + "</h4><p>" + p.enunciado + "</p>";
+    let htmlP = `<div class='pregunta-card'><h4>Pregunta ${cont}</h4><p>${p.enunciado}</p>`;
 
     if (p.tipo === "opcion_multiple") {
       p.opciones.forEach(op => {
-        htmlP += "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='" + op.texto + "'> " + op.texto + "</label>";
+        htmlP += `<label class='opcion-label'><input type='radio' name='preg_${p.id}' value='${op.texto}'> ${op.texto}</label>`;
       });
     } else if (p.tipo === "verdadero_falso") {
-      htmlP += "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='verdadero'> Verdadero</label>" +
-               "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='falso'> Falso</label>";
+      htmlP += `<label class='opcion-label'><input type='radio' name='preg_${p.id}' value='verdadero'> Verdadero</label>
+                <label class='opcion-label'><input type='radio' name='preg_${p.id}' value='falso'> Falso</label>`;
     } else {
-      htmlP += "<input type='text' name='preg_" + p.id + "' placeholder='Escribe tu respuesta aquí...'>";
+      htmlP += `<input type='text' name='preg_${p.id}' placeholder='Escribe tu respuesta...'>`;
     }
-
     preguntasDiv.innerHTML += htmlP + "</div>";
     cont++;
   });
@@ -128,21 +117,31 @@ window.enviarExamen = async (forzado = false) => {
   if (examenEnviado) return;
   examenEnviado = true;
   clearInterval(intervaloTimer);
-  btnEnviar.disabled = true;
-  btnEnviar.innerText = "Enviando...";
+  localStorage.removeItem(`tiempo_${examenId}_${usuarioActual.uid}`);
 
   let puntos = 0;
-  preguntasData.forEach(p => {
-    const input = document.querySelector("[name='preg_" + p.id + "']:checked") || document.querySelector("[name='preg_" + p.id + "']");
-    if (!input) return;
-    let respuestaAlumno = input.value.trim().toLowerCase();
+  let detalleParaPDF = [];
 
+  preguntasData.forEach(p => {
+    const input = document.querySelector(`[name='preg_${p.id}']:checked`) || document.querySelector(`[name='preg_${p.id}']`);
+    let respEstudiante = input ? input.value.trim() : "Sin responder";
+    
+    // Validar calificación
+    let esCorrecta = false;
     if (p.tipo === "opcion_multiple") {
       const correcta = p.opciones.find(o => o.correcta);
-      if (correcta && respuestaAlumno === correcta.texto.toLowerCase()) puntos++;
-    } else if (respuestaAlumno === String(p.respuestaCorrecta).toLowerCase()) {
-      puntos++;
+      if (correcta && respEstudiante.toLowerCase() === correcta.texto.toLowerCase()) esCorrecta = true;
+    } else if (respEstudiante.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) {
+      esCorrecta = true;
     }
+
+    if (esCorrecta) puntos++;
+    
+    // Guardar para el PDF
+    detalleParaPDF.push({
+      enunciado: p.enunciado,
+      respuesta_estudiante: respEstudiante
+    });
   });
 
   const calificacion = (puntos / preguntasData.length) * 20;
@@ -153,32 +152,34 @@ window.enviarExamen = async (forzado = false) => {
 
     await setDoc(doc(db, "examenes", examenId, "resultados", usuarioActual.uid), {
       estudiante_id: usuarioActual.uid,
-      nombre: uData.nombres + " " + uData.apellidos,
+      nombre: `${uData.nombres} ${uData.apellidos}`,
       cedula: uData.cedula || "N/P",
       grado: uData.anio,
       seccion: uData.seccion,
       nota: parseFloat(calificacion.toFixed(2)),
-      fecha: serverTimestamp(),
-      finalizado_por: forzado ? "tiempo/sistema" : "estudiante"
+      respuestas_detalle: detalleParaPDF, // CLAVE PARA EL REPORTE PDF
+      fecha: serverTimestamp()
     });
 
-    alert("Examen finalizado. Tu nota: " + calificacion.toFixed(2) + " / 20");
-    window.location.href = "panel-estudiante.html";
+    alert(`Evaluación finalizada. Nota: ${calificacion.toFixed(2)}/20`);
+    window.location.href = `resultados.html?id=${examenId}`;
   } catch (err) {
-    console.error(err);
-    alert("Hubo un problema al guardar tu nota. Comunícate con el profesor.");
+    alert("Error al guardar. Notifica al profesor.");
   }
 };
-
-btnEnviar.onclick = () => { if(confirm("¿Estás seguro de finalizar el examen?")) window.enviarExamen(false); };
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
   usuarioActual = user;
-  const yaPresento = await getDoc(doc(db, "examenes", examenId, "resultados", user.uid));
-  if (yaPresento.exists()) { alert("Ya has presentado esta evaluación anteriormente."); window.location.href = "panel-estudiante.html"; return; }
+  const yaPresento = await getDoc(doc(doc(db, "examenes", examenId), "resultados", user.uid));
+  if (yaPresento.exists()) { window.location.href = "panel-estudiante.html"; return; }
   cargarExamen();
 });
+
+btnEnviar.onclick = () => { if(confirm("¿Enviar examen ahora?")) window.enviarExamen(false); };
+
+// Bloqueo de salida
+window.onbeforeunload = () => { if(!examenEnviado) return "¿Salir sin terminar?"; };
 </script>
 </body>
 </html>
