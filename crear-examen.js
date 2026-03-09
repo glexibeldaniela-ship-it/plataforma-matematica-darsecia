@@ -44,7 +44,10 @@ async function cargarExamenParaEditar(id) {
     const data = examenSnap.data();
     document.getElementById("titulo").value   = data.titulo      || "";
     document.getElementById("anio").value     = data.anio        || "";
-    document.getElementById("seccion").value  = data.seccion     || "";
+    
+    // Ajuste para el nuevo select de sección
+    document.getElementById("seccion").value  = data.seccion     || "A"; 
+    
     document.getElementById("lapso").value    = data.lapso       || "";
     document.getElementById("duracion").value = data.duracion    || "";
     document.getElementById("repaso").value   = data.repaso_link || "";
@@ -175,26 +178,30 @@ function crearFilaOpcion(lista, idLocal, texto, esCorrecta) {
   lista.appendChild(opcionDiv);
 }
 
+// 🚀 FUNCIÓN DE GUARDADO CORREGIDA
 async function guardarExamen() {
   const user = usuarioActual || auth.currentUser;
   if (!user) { 
-    alert("❌ Error: No se detectó sesión de usuario."); 
+    alert("❌ Error: No se detectó sesión de usuario. Intenta recargar la página."); 
     return; 
   }
 
   try {
     const titulo   = document.getElementById("titulo").value.trim();
     const anio     = document.getElementById("anio").value.trim();
-    // Captura el valor del Select (A, B o Ambas)
+    
+    // Captura el valor del nuevo SELECT (A, B o Ambas)
     const seccion  = document.getElementById("seccion").value;
+    
     const lapso    = document.getElementById("lapso").value.trim();
     const duracion = parseInt(document.getElementById("duracion").value);
     const repaso   = document.getElementById("repaso").value.trim();
 
-    if (!titulo || !anio || !seccion || !lapso || !duracion) { 
-      alert("⚠️ Por favor rellena todos los campos obligatorios."); 
-      return; 
-    }
+    if (!titulo)   { alert("Falta el título"); return; }
+    if (!anio)     { alert("Falta el año"); return; }
+    if (!seccion)  { alert("Falta la sección"); return; }
+    if (!lapso)    { alert("Falta el lapso"); return; }
+    if (!duracion) { alert("Falta la duración"); return; }
 
     const datosExamen = {
       titulo, anio, seccion, lapso, duracion,
@@ -225,7 +232,7 @@ async function guardarExamen() {
     for (const preguntaDiv of preguntas) {
       const tipo = preguntaDiv.querySelector(".tipoPregunta").value;
       const enunciado = preguntaDiv.querySelector(".enunciado").value;
-      if (!tipo || !enunciado) continue;
+      if (!tipo || !enunciado) continue; 
 
       let datosPregunta = { tipo, enunciado, puntos: 1 };
 
@@ -252,12 +259,12 @@ async function guardarExamen() {
       await addDoc(collection(db, "examenes", examenId, "preguntas"), datosPregunta);
     }
 
-    alert(examenIdEditando ? "✅ Examen actualizado" : "✅ Examen publicado");
+    alert(examenIdEditando ? "✅ Examen actualizado correctamente" : "✅ Examen creado correctamente");
     window.location.href = "panel-profesor.html";
 
   } catch (error) {
     console.error("Error al guardar:", error);
-    alert("❌ Error: " + error.message);
+    alert("❌ Error de Firebase al guardar: " + error.message);
   }
 }
 
