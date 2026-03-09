@@ -92,7 +92,7 @@
         <div class="tabla-scroll">
             <table>
                 <thead>
-                    <tr><th>Estudiante</th><th>Cédula</th><th>Año/Sec</th><th>Nota</th><th>Reporte</th></tr>
+                    <tr><th>Estudiante</th><th>Cédula</th><th>Año/Sec</th><th>Nota</th><th>Acción</th></tr>
                 </thead>
                 <tbody id="bodyNotas"></tbody>
             </table>
@@ -115,8 +115,6 @@
         cargarExamenes();
         llenarSelectExamenes();
     });
-
-    // --- FUNCIONES EXPUESTAS A WINDOW PARA QUE EL HTML LAS VEA ---
 
     window.cambiarTab = (name, btn) => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
@@ -200,9 +198,6 @@
         const body = document.getElementById("bodyNotas");
         if (!exId) { body.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Seleccione evaluación.</td></tr>"; return; }
 
-        const exSnap = await getDoc(doc(db, "examenes", exId));
-        const exInfo = exSnap.data() || {};
-
         if (unsubscribeNotas) unsubscribeNotas();
         unsubscribeNotas = onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
             body.innerHTML = "";
@@ -210,18 +205,27 @@
                 const res = d.data();
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td><b>${res.nombre}</b></td>
+                    <td><b>${res.nombre || "Sin Nombre"}</b></td>
                     <td>${res.cedula || "---"}</td>
-                    <td>${res.grado}° "${res.seccion}"</td>
+                    <td>${res.grado || "?"}° "${res.seccion || "?"}"</td>
                     <td style="font-weight:bold; color:#00796b;">${res.nota}/20</td>
-                    <td><button onclick="window.imprimirReporte('${d.id}', '${exId}')" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button></td>`;
+                    <td>
+                        <button onclick="window.imprimirReporte('${d.id}', '${exId}')" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
+                        <button onclick="window.eliminarResultado('${exId}', '${d.id}')" style="border:none; background:none; cursor:pointer; font-size:18px; margin-left:10px;">🗑️</button>
+                    </td>`;
                 body.appendChild(tr);
             });
         });
     };
 
+    window.eliminarResultado = async (exId, resId) => {
+        if (confirm("¿Borrar esta nota permanentemente?")) {
+            await deleteDoc(doc(db, "examenes", exId, "resultados", resId));
+        }
+    };
+
     window.imprimirReporte = (resultadoId, examenId) => {
-        window.location.href = `resultados.html?id=${examenId}`;
+        window.location.href = `resultados.html?id=${examenId}&estudiante=${resultadoId}`;
     };
 
     async function llenarSelectExamenes() {
@@ -238,10 +242,7 @@
         if (estudiantesActuales.length === 0) return alert("No hay datos para exportar.");
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
-        docPDF.setFontSize(14);
         docPDF.text("LISTADO DE ESTUDIANTES - MATEEDUPRO", 105, 20, { align: "center" });
-        docPDF.setFontSize(10);
-        docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 26, { align: "center" });
         const filas = estudiantesActuales.map((u, i) => [i+1, `${u.nombres} ${u.apellidos}`, u.cedula, `${u.anio}° "${u.seccion}"`]);
         docPDF.autoTable({ startY: 35, head: [['#', 'Nombre', 'Cédula', 'Año/Sec']], body: filas });
         docPDF.save("Lista_Estudiantes_MateEduPro.pdf");
