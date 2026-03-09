@@ -70,13 +70,19 @@
   .row { display: flex; gap: 10px; }
   .col { flex: 1; }
 
-  /* Estilo para las preguntas dinámicas */
   .pregunta-item {
     background: #f9fdfd;
     border: 1px solid #c8e6c9;
     padding: 15px;
     border-radius: 12px;
     margin-bottom: 15px;
+    position: relative;
+  }
+
+  .btn-eliminar-p {
+    background: #ff5252; color: white; border: none;
+    padding: 5px 10px; border-radius: 5px; cursor: pointer;
+    font-size: 0.8rem; margin-top: 10px;
   }
 
   @media(max-width: 600px) {
@@ -145,16 +151,17 @@
             <input type="number" id="duracion" value="45" min="1">
         </div>
         <div class="campo-grupo col" style="flex: 2;">
-            <label>Link de Repaso (Google Drive)</label>
-            <input type="text" id="repaso" placeholder="https://drive.google.com/...">
+            <label>Link de Repaso (Opcional)</label>
+            <input type="text" id="repaso" placeholder="Google Drive / YouTube">
         </div>
     </div>
   </div>
 
   <div class="seccion-card">
     <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
-    
-    <div id="contenedorPreguntas"></div>
+
+    <div id="contenedorPreguntas">
+      </div>
 
     <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
 
