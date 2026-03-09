@@ -46,7 +46,7 @@
 
   .campo-grupo { margin-bottom: 15px; }
   label { display: block; font-weight: bold; color: #444; margin-bottom: 5px; font-size: 0.9rem; }
-  
+
   input, select, textarea {
     width: 100%; padding: 12px;
     border-radius: 10px; border: 1px solid #ccd6dd;
@@ -87,7 +87,7 @@
 
   <div class="seccion-card">
     <div class="seccion-titulo">📍 Datos del Curso</div>
-    
+
     <div class="row">
       <div class="campo-grupo col">
         <label>Año</label>
@@ -97,10 +97,16 @@
           <option value="3">3er Año</option>
         </select>
       </div>
+
       <div class="campo-grupo col">
         <label>Sección</label>
-        <input type="text" id="seccion" placeholder="Ej: A">
+        <select id="seccion">
+          <option value="A">Sección A</option>
+          <option value="B">Sección B</option>
+          <option value="Ambas">Ambas (A y B)</option>
+        </select>
       </div>
+
       <div class="campo-grupo col">
         <label>Lapso</label>
         <select id="lapso">
@@ -114,7 +120,7 @@
 
   <div class="seccion-card">
     <div class="seccion-titulo">📄 Información del Examen</div>
-    
+
     <div class="campo-grupo">
       <label>Título del Examen</label>
       <input type="text" id="titulo" placeholder="Ej: Examen de Números Naturales">
@@ -140,11 +146,11 @@
   <div class="seccion-card">
     <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
     <div id="contenedorPreguntas"></div>
-    
+
     <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
-    
+
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-    
+
     <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
     <button class="btn-accion btn-volver" onclick="history.back()">⬅️ Volver al Panel</button>
   </div>
