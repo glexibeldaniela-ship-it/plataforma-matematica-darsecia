@@ -140,6 +140,18 @@ async function cargarExamenes() {
 window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); };
 window.borrarEx = async (id) => { if(confirm("¿Eliminar examen?")) { await deleteDoc(doc(db, "examenes", id)); } };
 
+// FUNCIÓN AÑADIDA PARA BORRAR ESTUDIANTES
+window.eliminarEstudiante = async (id) => {
+  if(confirm("¿Estás seguro de que deseas eliminar a este estudiante de la base de datos?")) {
+    try {
+      await deleteDoc(doc(db, "usuarios", id));
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("No se pudo eliminar al estudiante.");
+    }
+  }
+};
+
 async function cargarEstudiantes() {
   const anioSel = document.getElementById("fAnio").value;
   const secSel = document.getElementById("fSec").value;
@@ -169,7 +181,6 @@ async function llenarSelectExamenes() {
     });
 }
 
-// CARGAR NOTAS CON LOS CAMPOS CORRECTOS DE MATEEDUPRO
 window.cargarNotas = async () => {
   const exId = document.getElementById("filtroExamenNotas").value;
   const body = document.getElementById("bodyNotas");
@@ -183,8 +194,7 @@ window.cargarNotas = async () => {
     snap.forEach(d => {
       const n = d.data();
       const row = document.createElement("tr");
-      
-      // Corregimos los nombres de campos para que coincidan con presentar-examen.html
+
       const ci = n.cedula || "---";
       const grado = n.grado || n.anio || "?";
       const seccion = n.seccion || "?";
@@ -200,7 +210,6 @@ window.cargarNotas = async () => {
         </td>`;
       body.appendChild(row);
 
-      // Evento para descargar el PDF
       document.getElementById(`btnPdf_${d.id}`).onclick = () => {
           descargarActaProfesor(n, exData);
       };
@@ -212,31 +221,22 @@ window.cargarNotas = async () => {
 function descargarActaProfesor(n, ex) {
   const { jsPDF } = window.jspdf;
   const docPDF = new jsPDF();
-  
-  // Encabezado Institucional
   docPDF.setFont("times", "bold"); docPDF.setFontSize(11);
   docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
   docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
   docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
   docPDF.line(20, 37, 190, 37);
-  
   docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
-  
-  // Datos del Examen y Estudiante
   docPDF.setFont("helvetica", "normal"); docPDF.setFontSize(12);
   docPDF.text(`TÍTULO: ${ex.titulo ? ex.titulo.toUpperCase() : "EVALUACIÓN"}`, 25, 70);
   docPDF.text(`ESTUDIANTE: ${n.nombre ? n.nombre.toUpperCase() : "ESTUDIANTE"}`, 25, 80);
   docPDF.text(`CÉDULA: ${n.cedula || "N/A"}`, 25, 90);
   docPDF.text(`GRADO: ${n.grado || n.anio || "?"}° - SECCIÓN: ${n.seccion || "?"}`, 25, 100);
-  
   docPDF.setFont("helvetica", "bold");
   docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 115);
-  
-  // Firma
   docPDF.line(65, 210, 145, 210);
   docPDF.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
   docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
-  
   docPDF.save(`Acta_${n.nombre}.pdf`);
 }
 
