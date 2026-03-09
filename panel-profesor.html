@@ -5,7 +5,7 @@
     <title>Panel Profesor – Centro de Control</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="estilos.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
@@ -113,7 +113,7 @@
             flex-wrap: wrap; 
         }
 
-        select { 
+        select, .input-busqueda { 
             padding: 8px; 
             border-radius: 8px; 
             border: 1px solid #ccc; 
@@ -216,6 +216,9 @@
                 <option value="B">B</option>
                 <option value="C">C</option>
             </select>
+            
+            <input type="text" id="busquedaEstudiante" class="input-busqueda" placeholder="🔍 Buscar por nombre..." onkeyup="cargarEstudiantes()">
+            
             <button class="btn-descargar-lista" onclick="descargarListaPDF()">📥 Descargar Lista PDF</button>
         </div>
         <div class="tabla-scroll">
@@ -280,13 +283,13 @@
     window.cambiarTab = (name, btn) => {
         const paneles = document.querySelectorAll('.tab-panel');
         const botones = document.querySelectorAll('.tab-btn');
-        
+
         paneles.forEach(p => p.classList.remove('activo'));
         botones.forEach(b => b.classList.remove('activo'));
-        
+
         document.getElementById('tab-' + name).classList.add('activo');
         btn.classList.add('activo');
-        
+
         if(name === 'estudiantes') cargarEstudiantes();
         if(name === 'resultados') cargarNotas();
     };
@@ -332,34 +335,30 @@
         } 
     };
 
-    // Funciones de Estudiantes
-    window.eliminarEstudiante = async (id) => {
-        if(confirm("¿Estás seguro de que deseas eliminar a este estudiante de la base de datos?")) {
-            try {
-                await deleteDoc(doc(db, "usuarios", id));
-            } catch (error) {
-                console.error("Error al eliminar:", error);
-                alert("No se pudo eliminar al estudiante.");
-            }
-        }
-    };
-
+    // Funciones de Estudiantes (MEJORADA CON FILTRO DE BÚSQUEDA)
     async function cargarEstudiantes() {
         const anioSel = document.getElementById("fAnio").value;
         const secSel = document.getElementById("fSec").value;
+        const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
-        
+
         onSnapshot(collection(db, "usuarios"), (snap) => {
             body.innerHTML = "";
             estudiantesActuales = [];
-            
+
             snap.forEach(d => {
                 const u = d.data();
                 if(u.rol === 'estudiante' || !u.rol) {
-                    const cumpleAnio = (anioSel === 'todos' || String(u.anio) === anioSel);
-                    const cumpleSec = (secSel === 'todas' || u.seccion === secSel);
-                    
-                    if(cumpleAnio && cumpleSec) {
+                    // Normalización para evitar errores de coincidencia
+                    const anioU = String(u.anio || "");
+                    const secU = String(u.seccion || "").toUpperCase();
+                    const nombreComp = `${u.nombres} ${u.apellidos}`.toLowerCase();
+
+                    const cumpleAnio = (anioSel === 'todos' || anioU === anioSel);
+                    const cumpleSec = (secSel === 'todas' || secU === secSel.toUpperCase());
+                    const cumpleBusqueda = nombreComp.includes(busqueda);
+
+                    if(cumpleAnio && cumpleSec && cumpleBusqueda) {
                         estudiantesActuales.push(u);
                         const fila = `
                             <tr>
@@ -374,10 +373,13 @@
                     }
                 }
             });
+            if(estudiantesActuales.length === 0) {
+                body.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:15px;'>No se encontraron resultados.</td></tr>";
+            }
         });
     }
 
-    // Funciones de Notas y Reportes
+    // Funciones de Notas
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
         const snap = await getDocs(collection(db, "examenes"));
@@ -424,39 +426,39 @@
         });
     };
 
-    // GENERACIÓN DE PDF (CON CORRECCIÓN APK)
+    // GENERACIÓN DE PDF ACTA
     function descargarActaProfesor(n, ex) {
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
-        
+
         docPDF.setFont("times", "bold"); 
         docPDF.setFontSize(11);
         docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
         docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
         docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
         docPDF.line(20, 37, 190, 37);
-        
+
         docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
         docPDF.setFont("helvetica", "normal"); 
         docPDF.setFontSize(12);
-        
+
         docPDF.text(`TÍTULO: ${ex.titulo ? ex.titulo.toUpperCase() : "EVALUACIÓN"}`, 25, 70);
         docPDF.text(`ESTUDIANTE: ${n.nombre ? n.nombre.toUpperCase() : "ESTUDIANTE"}`, 25, 80);
         docPDF.text(`CÉDULA: ${n.cedula || "N/A"}`, 25, 90);
         docPDF.text(`GRADO: ${n.grado || n.anio || "?"}° - SECCIÓN: ${n.seccion || "?"}`, 25, 100);
-        
+
         docPDF.setFont("helvetica", "bold");
         docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 115);
-        
+
         docPDF.line(65, 210, 145, 210);
         docPDF.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
         docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
-        
-        // CORRECCIÓN APK: Limpiar nombre para evitar errores de guardado
+
         const safeName = (n.nombre || "Estudiante").trim().replace(/[^a-zA-Z0-9]/g, '_');
         docPDF.save(`Acta_${safeName}.pdf`);
     }
 
+    // GENERACIÓN DE PDF LISTADO (DESCARGA LO QUE VES EN PANTALLA)
     window.descargarListaPDF = () => {
         if (estudiantesActuales.length === 0) { 
             alert("No hay estudiantes para descargar."); 
@@ -476,7 +478,8 @@
         docPDF.line(20, 30, 190, 30);
 
         docPDF.setFontSize(12);
-        docPDF.text(`LISTADO DE ESTUDIANTES: ${anio}° AÑO - SECCIÓN: ${seccion}`, 105, 40, { align: "center" });
+        const textoFiltro = `${anio !== 'todos' ? anio + '° AÑO' : 'TODOS'} - SECCIÓN: ${seccion !== 'todas' ? seccion : 'TODAS'}`;
+        docPDF.text(`LISTADO DE ESTUDIANTES: ${textoFiltro}`, 105, 40, { align: "center" });
 
         const filas = estudiantesActuales.map((u, index) => [
             index + 1,
@@ -498,7 +501,6 @@
         docPDF.line(75, finalY + 15, 135, finalY + 15);
         docPDF.text("PROF. JOSÉ FERNÁNDEZ", 105, finalY + 20, { align: "center" });
 
-        // CORRECCIÓN APK: Nombre de archivo seguro
         const safeFile = `Lista_${anio}_${seccion}`.replace(/[^a-zA-Z0-9]/g, '_');
         docPDF.save(`${safeFile}.pdf`);
     };
