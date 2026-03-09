@@ -9,9 +9,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* TU DISEÑO FAVORITO (TOTALMENTE INTACTO) */
+/* TU DISEÑO FAVORITO (INTACTO) */
 body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
-.header { background: linear-gradient(135deg, #00bcd4, #00796b); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
+.header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
 .tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 78px; z-index: 90; }
 .tab-btn { flex: 1; min-width: 100px; background: none; border: none; padding: 14px; font-size: 0.85rem; font-weight: 600; color: #777; cursor: pointer; }
 .tab-btn.activo { color: #00796b; border-bottom: 3px solid #00bcd4; background: #f0fdfd; }
@@ -24,21 +24,14 @@ body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #
 .btn-activar { background: #4caf50; }
 .btn-desactivar { background: #ff9800; }
 .btn-eliminar { background: #d32f2f; margin-left: 5px; }
-.btn-pdf { background: #00796b; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin: 10px 0; cursor: pointer; font-weight: bold; }
 .filtros-box { display: flex; gap: 10px; margin-bottom: 15px; }
 select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; }
 .status-online { color: #4caf50; font-weight: bold; font-size: 10px; display: flex; align-items: center; gap: 4px; }
 .status-online::before { content: '●'; font-size: 14px; }
-
-/* AJUSTE PARA TABLA COMPLETA EN MÓVIL */
-.tabla-scroll {
-  width: 100%;
-  overflow-x: auto;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-table { min-width: 600px; border-collapse: collapse; }
+.tabla-scroll { width: 100%; overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+table { min-width: 600px; border-collapse: collapse; width: 100%; }
+th { background: #00796b; color: white; padding: 12px; text-align: left; }
+td { padding: 12px; border-bottom: 1px solid #eee; }
 </style>
 </head>
 <body>
@@ -70,9 +63,9 @@ table { min-width: 600px; border-collapse: collapse; }
       <select id="fSec" onchange="cargarEstudiantes()"><option value="todas">Todas las Secciones</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
     </div>
     <div class="tabla-scroll">
-      <table id="tablaEstudiantes" style="width:100%;">
-        <thead style="background:#00bcd4; color:white;">
-          <tr><th style="padding:10px">Nombre Completo</th><th style="padding:10px">Año/Sec</th><th style="padding:10px">Estado</th><th style="padding:10px">Acción</th></tr>
+      <table>
+        <thead>
+          <tr><th>Nombre Completo</th><th>Año/Sec</th><th>Estado</th><th>Acción</th></tr>
         </thead>
         <tbody id="bodyEstudiantes"></tbody>
       </table>
@@ -85,14 +78,14 @@ table { min-width: 600px; border-collapse: collapse; }
         <select id="filtroExamenNotas" onchange="cargarNotas()"><option value="">Seleccione un Examen...</option></select>
     </div>
     <div class="tabla-scroll">
-      <table id="tablaNotas" style="width:100%; font-size: 13px;">
-        <thead style="background:#00bcd4; color:white;">
+      <table id="tablaNotas">
+        <thead>
           <tr>
-            <th style="padding:10px">Estudiante</th>
-            <th style="padding:10px">Cédula</th>
-            <th style="padding:10px">Año/Sec</th>
-            <th style="padding:10px">Nota</th>
-            <th style="padding:10px">Acta</th>
+            <th>Estudiante</th>
+            <th>Cédula</th>
+            <th>Año/Sec</th>
+            <th>Nota</th>
+            <th>Acta</th>
           </tr>
         </thead>
         <tbody id="bodyNotas"></tbody>
@@ -107,7 +100,7 @@ import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 onAuthStateChanged(auth, (user) => { 
-  if(!user) window.location.href="login.html"; 
+  if(!user) { window.location.href="login.html"; return; }
   cargarExamenes();
   llenarSelectExamenes();
 });
@@ -157,7 +150,7 @@ async function cargarEstudiantes() {
       const u = d.data();
       if(u.rol === 'estudiante' || !u.rol) {
         if((anioSel === 'todos' || String(u.anio) === anioSel) && (secSel === 'todas' || u.seccion === secSel)) {
-          body.innerHTML += `<tr><td style="padding:10px; border-bottom:1px solid #eee;"><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td><td style="padding:10px; border-bottom:1px solid #eee;">${u.anio || '?'}° ${u.seccion || '?'}</td><td style="padding:10px; border-bottom:1px solid #eee;">${u.online ? '<span class="status-online">Línea</span>':'Off'}</td><td style="padding:10px; border-bottom:1px solid #eee;"><button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button></td></tr>`;
+          body.innerHTML += `<tr><td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td><td>${u.anio || '?'}° ${u.seccion || '?'}</td><td>${u.online ? '<span class="status-online">Línea</span>':'Off'}</td><td><button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button></td></tr>`;
         }
       }
     });
@@ -167,6 +160,7 @@ async function cargarEstudiantes() {
 async function llenarSelectExamenes() {
     const select = document.getElementById("filtroExamenNotas");
     const snap = await getDocs(collection(db, "examenes"));
+    select.innerHTML = '<option value="">Seleccione un Examen...</option>';
     snap.forEach(d => {
         const op = document.createElement("option");
         op.value = d.id;
@@ -175,60 +169,76 @@ async function llenarSelectExamenes() {
     });
 }
 
-// CARGAR NOTAS CORREGIDO PARA MOSTRAR CÉDULA, AÑO Y SECCIÓN
+// CARGAR NOTAS CON LOS CAMPOS CORRECTOS DE MATEEDUPRO
 window.cargarNotas = async () => {
   const exId = document.getElementById("filtroExamenNotas").value;
   const body = document.getElementById("bodyNotas");
-  if(!exId) return;
+  if(!exId) { body.innerHTML = ""; return; }
 
   const exSnap = await getDoc(doc(db, "examenes", exId));
-  const exData = exSnap.data();
+  const exData = exSnap.data() || {};
 
   onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
     body.innerHTML = "";
     snap.forEach(d => {
       const n = d.data();
       const row = document.createElement("tr");
-      // Mapeo de campos según tu captura de Firebase
+      
+      // Corregimos los nombres de campos para que coincidan con presentar-examen.html
       const ci = n.cedula || "---";
       const grado = n.grado || n.anio || "?";
       const seccion = n.seccion || "?";
-      
+      const nombreEst = n.nombre || "Sin Nombre";
+
       row.innerHTML = `
-        <td style="padding:10px; border-bottom:1px solid #eee;"><b>${n.nombre}</b></td>
-        <td style="padding:10px; border-bottom:1px solid #eee;">${ci}</td>
-        <td style="padding:10px; border-bottom:1px solid #eee;">${grado}° "${seccion}"</td>
-        <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold; color:#00796b;">${n.nota}/20</td>
-        <td style="padding:10px; border-bottom:1px solid #eee;">
-          <button onclick='descargarActaProfesor(${JSON.stringify(n)}, ${JSON.stringify(exData)})' style="border:none; background:none; cursor:pointer; font-size:16px;">📥</button>
+        <td><b>${nombreEst}</b></td>
+        <td>${ci}</td>
+        <td>${grado}° "${seccion}"</td>
+        <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
+        <td>
+          <button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer; font-size:16px;">📥</button>
         </td>`;
       body.appendChild(row);
+
+      // Evento para descargar el PDF
+      document.getElementById(`btnPdf_${d.id}`).onclick = () => {
+          descargarActaProfesor(n, exData);
+      };
     });
     if(snap.empty) body.innerHTML = "<tr><td colspan='5' style='padding:20px; text-align:center;'>Sin resultados aún.</td></tr>";
   });
 };
 
-window.descargarActaProfesor = (n, ex) => {
+function descargarActaProfesor(n, ex) {
   const { jsPDF } = window.jspdf;
   const docPDF = new jsPDF();
+  
+  // Encabezado Institucional
   docPDF.setFont("times", "bold"); docPDF.setFontSize(11);
   docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
   docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
   docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
   docPDF.line(20, 37, 190, 37);
+  
   docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
+  
+  // Datos del Examen y Estudiante
   docPDF.setFont("helvetica", "normal"); docPDF.setFontSize(12);
-  docPDF.text(`TÍTULO: ${ex.titulo.toUpperCase()}`, 25, 70);
-  docPDF.text(`ESTUDIANTE: ${n.nombre.toUpperCase()}`, 25, 80);
+  docPDF.text(`TÍTULO: ${ex.titulo ? ex.titulo.toUpperCase() : "EVALUACIÓN"}`, 25, 70);
+  docPDF.text(`ESTUDIANTE: ${n.nombre ? n.nombre.toUpperCase() : "ESTUDIANTE"}`, 25, 80);
   docPDF.text(`CÉDULA: ${n.cedula || "N/A"}`, 25, 90);
   docPDF.text(`GRADO: ${n.grado || n.anio || "?"}° - SECCIÓN: ${n.seccion || "?"}`, 25, 100);
+  
   docPDF.setFont("helvetica", "bold");
-  docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 110);
+  docPDF.text(`CALIFICACIÓN: ${n.nota} / 20 pts.`, 25, 115);
+  
+  // Firma
   docPDF.line(65, 210, 145, 210);
   docPDF.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
   docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
+  
   docPDF.save(`Acta_${n.nombre}.pdf`);
-};
+}
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
 </script>
