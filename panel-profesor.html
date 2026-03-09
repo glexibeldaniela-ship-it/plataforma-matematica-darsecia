@@ -93,7 +93,7 @@
     <div class="tab-panel" id="tab-resultados">
         <h3 style="color:#00796b">Acta de Calificaciones</h3>
         <div class="filtros-box">
-            <select id="filtroExamenNotas" onchange="cargarNotas()">
+            <select id="filtroExamenNotas" onchange="window.cargarNotas()">
                 <option value="">Seleccione una Evaluación...</option>
             </select>
         </div>
@@ -153,11 +153,11 @@
                         <div style="padding:15px">
                             <small style="color:#666;">Curso: ${ex.anio}° Año | Sección: ${ex.seccion}</small><br>
                             <div style="margin-top:10px;">
-                                <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">
+                                <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="window.toggleEx('${d.id}', ${ex.activo})">
                                     ${ex.activo ? '⏹ Desactivar' : '▶️ Activar'}
                                 </button>
                                 <button class="btn-accion" style="background:#2196F3" onclick="window.location.href='editar-examen.html?id=${d.id}'">✏️ Editar</button>
-                                <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">🗑️ Eliminar</button>
+                                <button class="btn-accion btn-eliminar" onclick="window.borrarEx('${d.id}')">🗑️ Eliminar</button>
                             </div>
                         </div>
                     </div>`;
@@ -174,6 +174,7 @@
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
 
+        // Detener el listener anterior si existe
         if (unsubscribeEstudiantes) unsubscribeEstudiantes();
 
         unsubscribeEstudiantes = onSnapshot(collection(db, "usuarios"), (snap) => {
@@ -192,12 +193,12 @@
                                 <td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td>
                                 <td>${u.anio || '?'}° "${u.seccion || '?'}"</td>
                                 <td>${u.online ? '<span class="status-online">En línea</span>' : '<span style="color:#999; font-size:11px;">Desconectado</span>'}</td>
-                                <td><button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button></td>
+                                <td><button class="btn-accion btn-eliminar" onclick="window.eliminarEstudiante('${d.id}')">🗑️</button></td>
                             </tr>`;
                     }
                 }
             });
-            if (estudiantesActuales.length === 0) body.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:30px; color:#999;'>No se encontraron estudiantes con esos filtros.</td></tr>";
+            if (estudiantesActuales.length === 0) body.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:30px; color:#999;'>No se encontraron estudiantes.</td></tr>";
         });
     };
 
@@ -220,74 +221,56 @@
         const body = document.getElementById("bodyNotas");
         if (!exId) { body.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Seleccione un examen para ver las notas.</td></tr>"; return; }
 
-        const exSnap = await getDoc(doc(db, "examenes", exId));
-        const exData = exSnap.data() || {};
+        const examenDoc = await getDoc(doc(db, "examenes", exId));
+        const examenInfo = examenDoc.data() || {};
 
         if (unsubscribeNotas) unsubscribeNotas();
 
         unsubscribeNotas = onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
             body.innerHTML = "";
-            if(snap.empty) body.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Aún no hay resultados para este examen.</td></tr>";
+            if(snap.empty) body.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Sin resultados aún.</td></tr>";
             snap.forEach(d => {
-                const n = d.data();
+                const res = d.data();
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td><b>${n.nombre || "Estudiante"}</b></td>
-                    <td>${n.cedula || "---"}</td>
-                    <td>${n.grado || n.anio || "?"}° "${n.seccion || "?"}"</td>
-                    <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
+                    <td><b>${res.nombre || "Estudiante"}</b></td>
+                    <td>${res.cedula || "---"}</td>
+                    <td>${res.grado || res.anio || "?"}° "${res.seccion || "?"}"</td>
+                    <td style="font-weight:bold; color:#00796b;">${res.nota}/20</td>
                     <td><button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button></td>`;
                 body.appendChild(tr);
-                document.getElementById("btnPdf_" + d.id).onclick = () => descargarActaProfesor(n, exData);
+                document.getElementById("btnPdf_" + d.id).onclick = () => descargarActaProfesor(res, examenInfo);
             });
         });
     };
 
-    function triggerDownload(docPDF, fileName) {
-        const nombreFinal = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
-        try { 
-            docPDF.save(nombreFinal); 
-        } catch (e) {
-            const dataUri = docPDF.output('datauristring');
-            const link = document.createElement('a');
-            link.href = dataUri;
-            link.download = nombreFinal;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-
-    function descargarActaProfesor(n, ex) {
+    function descargarActaProfesor(res, ex) {
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
-        
         docPDF.setFontSize(14);
         docPDF.text("MATEEDUPRO - REPORTE DE CALIFICACIÓN", 105, 15, { align: "center" });
         docPDF.setFontSize(10);
         docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 22, { align: "center" });
         docPDF.line(20, 25, 190, 25);
-        
-        docPDF.text("EVALUACIÓN: " + ex.titulo, 20, 40);
-        docPDF.text("ESTUDIANTE: " + n.nombre, 20, 48);
-        docPDF.text("CÉDULA: " + n.cedula, 20, 56);
-        docPDF.text("GRADO/SECCIÓN: " + (n.grado || n.anio) + " / " + n.seccion, 20, 64);
-        
+        docPDF.text("EVALUACIÓN: " + (ex.titulo || "Examen"), 20, 40);
+        docPDF.text("ESTUDIANTE: " + res.nombre, 20, 48);
+        docPDF.text("CÉDULA: " + res.cedula, 20, 56);
         docPDF.setFontSize(14);
         docPDF.setTextColor(0, 121, 107);
-        docPDF.text("NOTA OBTENIDA: " + n.nota + " / 20", 20, 80);
+        docPDF.text("NOTA: " + res.nota + " / 20", 20, 80);
         
-        triggerDownload(docPDF, "Acta_" + (n.cedula || n.nombre).replace(/\s/g, '_'));
+        const nombreSujeto = (res.cedula || res.nombre).replace(/\s/g, '_');
+        docPDF.save("Acta_" + nombreSujeto + ".pdf");
     }
 
     window.descargarListaPDF = () => {
-        if (estudiantesActuales.length === 0) return alert("No hay datos para exportar.");
+        if (estudiantesActuales.length === 0) return alert("No hay datos.");
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
         docPDF.text("LISTADO DE ESTUDIANTES - MATEEDUPRO", 105, 20, { align: "center" });
         const filas = estudiantesActuales.map((u, i) => [i+1, u.nombres + " " + u.apellidos, u.cedula, (u.anio || "?") + "° " + (u.seccion || "?")]);
         docPDF.autoTable({ startY: 30, head: [['#', 'Nombre', 'Cédula', 'Año/Sec']], body: filas });
-        triggerDownload(docPDF, "Lista_Estudiantes_" + new Date().toLocaleDateString());
+        docPDF.save("Lista_Estudiantes.pdf");
     };
 
     window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
