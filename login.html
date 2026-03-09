@@ -9,15 +9,14 @@
 
 <style>
 html, body { height: 100%; overflow-x: hidden; margin:0; padding:0; }
-
-.contenedor-login { animation: aparecer 0.7s ease; }
+.contenedor-login { animation: aparecer 0.7s ease; padding: 20px; }
 
 @keyframes aparecer {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.contenedor-login input { margin-bottom: 10px; }
+.contenedor-login input { margin-bottom: 10px; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box;}
 
 .link-olvide {
   display: block;
@@ -30,7 +29,7 @@ html, body { height: 100%; overflow-x: hidden; margin:0; padding:0; }
   font-weight: 600;
 }
 
-.recuperar-seccion {
+.seccion-oculta {
   display: none;
   margin-top: 14px;
   background: #e0f7fa;
@@ -40,26 +39,9 @@ html, body { height: 100%; overflow-x: hidden; margin:0; padding:0; }
   animation: aparecer 0.3s ease;
 }
 
-.recuperar-seccion.visible { display: block; }
+.seccion-oculta.visible { display: block; }
 
-.recuperar-seccion p {
-  font-size: 0.78rem;
-  color: #004d40;
-  margin: 0 0 10px;
-  text-align: center;
-}
-
-.recuperar-seccion input {
-  width: 100%;
-  padding: 11px;
-  border: 1.5px solid #b2ebf2;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-.btn-turquesa, .btn-recuperar {
+.btn-turquesa, .btn-accion {
   width: 100%;
   background: #00796b;
   color: white;
@@ -69,146 +51,137 @@ html, body { height: 100%; overflow-x: hidden; margin:0; padding:0; }
   font-weight: bold;
   font-size: 0.88rem;
   cursor: pointer;
+  margin-top: 5px;
 }
 
-.msg-recuperar {
+.btn-turquesa:disabled { background: #b2dfdb; cursor: not-allowed; }
+
+.mensaje {
   font-size: 0.78rem;
   text-align: center;
   margin-top: 9px;
   font-weight: 600;
-  min-height: 18px;
 }
 </style>
-
 </head>
 
 <body class="pantalla-login">
 
 <div class="contenedor-login">
+    <h2>📚 Iniciar Sesión</h2>
+    
+    <input type="email" id="email" placeholder="Correo">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button id="btnLogin" class="btn-turquesa">Entrar</button>
 
-<h2>📚 Iniciar Sesión</h2>
+    <span class="link-olvide" onclick="toggleSeccion('recuperarSeccion')">¿Olvidaste tu contraseña?</span>
 
-<input type="email" id="email" placeholder="Correo">
-<input type="password" id="password" placeholder="Contraseña">
+    <div class="seccion-oculta" id="recuperarSeccion">
+        <p style="font-size: 0.8rem; text-align: center;">Ingresa tu correo para restablecer tu contraseña.</p>
+        <input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
+        <button class="btn-accion" onclick="enviarRecuperacion()">Enviar enlace</button>
+        <p class="mensaje" id="msgRecuperar"></p>
+    </div>
 
-<button id="btnLogin" class="btn-turquesa">Entrar</button>
-
-<span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
-
-<div class="recuperar-seccion" id="recuperarSeccion">
-
-<p>Ingresa tu correo para restablecer tu contraseña.</p>
-
-<input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
-
-<button class="btn-recuperar" onclick="enviarRecuperacion()">Enviar enlace</button>
-
-<p class="msg-recuperar" id="msgRecuperar"></p>
-
-</div>
-
+    <div class="seccion-oculta" id="verificarSeccion">
+        <p style="font-size: 0.8rem; text-align: center; color: #d32f2f;">⚠️ Tu cuenta no está verificada.</p>
+        <p style="font-size: 0.75rem; text-align: center;">Revisa tu correo o solicita un nuevo enlace.</p>
+        <button class="btn-accion" id="btnReenviar" style="background: #ef6c00;">Reenviar correo de verificación</button>
+        <p class="mensaje" id="msgVerificar"></p>
+    </div>
 </div>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const btnLogin = document.getElementById('btnLogin');
 
 btnLogin.addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('password').value.trim();
 
-  const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('password').value.trim();
-
-  if(!email || !pass){
-    alert("Por favor rellena todos los campos");
-    return;
-  }
-
-  btnLogin.innerText = "Verificando...";
-  btnLogin.disabled = true;
-
-  try {
-
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const user = userCredential.user;
-
-    const docSnap = await getDoc(doc(db, "usuarios", user.uid));
-
-    if (docSnap.exists()) {
-
-      const uData = docSnap.data();
-      const rol = uData.rol ? uData.rol.toLowerCase() : "estudiante";
-
-      try{
-        await updateDoc(doc(db, "usuarios", user.uid), { online:true });
-      }catch(e){
-        console.warn("No se pudo marcar online");
-      }
-
-      if (rol === "admin") {
-        window.location.replace("panel-admin.html");
-      }
-      else if (rol === "profesor") {
-        window.location.replace("panel-profesor.html");
-      }
-      else {
-        window.location.replace("panel-estudiante.html");
-      }
-
-    } else {
-
-      alert("Error: No tienes un perfil creado.");
-      btnLogin.innerText = "Entrar";
-      btnLogin.disabled = false;
-
+    if(!email || !pass){
+        alert("Por favor rellena todos los campos");
+        return;
     }
 
-  } catch(error){
+    btnLogin.innerText = "Verificando...";
+    btnLogin.disabled = true;
 
-    alert("Error de acceso: " + error.message);
-    btnLogin.innerText = "Entrar";
-    btnLogin.disabled = false;
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
 
-  }
+        // IMPORTANTE: Verificar si el correo está confirmado en Firebase
+        if (!user.emailVerified) {
+            document.getElementById('verificarSeccion').classList.add('visible');
+            btnLogin.innerText = "Entrar";
+            btnLogin.disabled = false;
+            return;
+        }
 
+        const docSnap = await getDoc(doc(db, "usuarios", user.uid));
+
+        if (docSnap.exists()) {
+            const uData = docSnap.data();
+            const rol = uData.rol ? uData.rol.toLowerCase() : "estudiante";
+
+            try{
+                await updateDoc(doc(db, "usuarios", user.uid), { online:true });
+            }catch(e){ console.warn("No se pudo marcar online"); }
+
+            if (rol === "admin") window.location.replace("panel-admin.html");
+            else if (rol === "profesor") window.location.replace("panel-profesor.html");
+            else window.location.replace("panel-estudiante.html");
+
+        } else {
+            alert("Error: No tienes un perfil creado.");
+            btnLogin.innerText = "Entrar";
+            btnLogin.disabled = false;
+        }
+
+    } catch(error){
+        alert("Error de acceso: " + error.message);
+        btnLogin.innerText = "Entrar";
+        btnLogin.disabled = false;
+    }
 });
 
-
-window.toggleRecuperar = () => {
-
-  const sec = document.getElementById('recuperarSeccion');
-  sec.classList.toggle('visible');
-
+// Función para mostrar/ocultar secciones
+window.toggleSeccion = (id) => {
+    const sec = document.getElementById(id);
+    sec.classList.toggle('visible');
 };
 
+// Lógica de recuperación
 window.enviarRecuperacion = async () => {
+    const email = document.getElementById('emailRecuperar').value.trim();
+    const msg = document.getElementById('msgRecuperar');
+    if(!email){ msg.textContent = '⚠️ Ingresa tu correo.'; return; }
 
-  const email = document.getElementById('emailRecuperar').value.trim();
-  const msg = document.getElementById('msgRecuperar');
-
-  if(!email){
-    msg.textContent = '⚠️ Ingresa tu correo.';
-    return;
-  }
-
-  try{
-
-    await sendPasswordResetEmail(auth, email);
-
-    msg.style.color = '#2e7d32';
-    msg.textContent = '✅ Enlace enviado.';
-
-  }catch(err){
-
-    msg.textContent = '❌ Error al enviar.';
-
-  }
-
+    try{
+        await sendPasswordResetEmail(auth, email);
+        msg.style.color = '#2e7d32';
+        msg.textContent = '✅ Enlace enviado.';
+    }catch(err){ msg.textContent = '❌ Error al enviar.'; }
 };
 
+// Lógica para reenviar verificación si el bloque estaba "trabado"
+document.getElementById('btnReenviar').addEventListener('click', async () => {
+    const user = auth.currentUser;
+    const msg = document.getElementById('msgVerificar');
+    if (user) {
+        try {
+            await sendEmailVerification(user);
+            msg.style.color = '#2e7d32';
+            msg.textContent = "✅ Correo enviado. Revisa tu bandeja.";
+        } catch (error) {
+            msg.textContent = "❌ Espera un poco para reenviar.";
+        }
+    }
+});
 </script>
 
 </body>
