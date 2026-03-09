@@ -10,17 +10,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        /* DISEÑO ORIGINAL PRESERVADO */
         body { 
             margin: 0; 
             padding: 0; 
             font-family: 'Segoe UI', sans-serif; 
-            background: #f0f4f8; 
+            background: `#f0f4f8`; 
             min-height: 100vh; 
         }
-
         .header { 
-            background: linear-gradient(135deg, #00796b, #004d40); 
+            background: linear-gradient(135deg, `#00796b`, `#004d40`); 
             color: white; 
             padding: 16px 24px; 
             display: flex; 
@@ -31,7 +29,6 @@
             top: 0; 
             z-index: 100; 
         }
-
         .tabs-bar { 
             display: flex; 
             overflow-x: auto; 
@@ -41,7 +38,6 @@
             top: 78px; 
             z-index: 90; 
         }
-
         .tab-btn { 
             flex: 1; 
             min-width: 100px; 
@@ -50,47 +46,36 @@
             padding: 14px; 
             font-size: 0.85rem; 
             font-weight: 600; 
-            color: #777; 
+            color: `#777`; 
             cursor: pointer; 
         }
-
         .tab-btn.activo { 
-            color: #00796b; 
-            border-bottom: 3px solid #00bcd4; 
-            background: #f0fdfd; 
+            color: `#00796b`; 
+            border-bottom: 3px solid `#00bcd4`; 
+            background: `#f0fdfd`; 
         }
-
         .contenedor { 
             padding: 20px; 
             max-width: 960px; 
             margin: 0 auto; 
         }
-
-        .tab-panel { 
-            display: none; 
-        }
-
-        .tab-panel.activo { 
-            display: block; 
-        }
-
+        .tab-panel { display: none; }
+        .tab-panel.activo { display: block; }
         .examen-card { 
             background: white; 
             border-radius: 12px; 
             margin-bottom: 15px; 
             overflow: hidden; 
-            border: 1px solid #e0f7fa; 
+            border: 1px solid `#e0f7fa`; 
             box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
         }
-
         .examen-card-header { 
-            background: #00796b; 
+            background: `#00796b`; 
             color: white; 
             padding: 12px 15px; 
             display: flex; 
             justify-content: space-between; 
         }
-
         .btn-accion { 
             padding: 6px 12px; 
             border-radius: 6px; 
@@ -101,40 +86,31 @@
             font-weight: bold; 
             margin-top: 5px; 
         }
-
-        .btn-activar { background: #4caf50; }
-        .btn-desactivar { background: #ff9800; }
-        .btn-eliminar { background: #d32f2f; margin-left: 5px; }
-
+        .btn-activar { background: `#4caf50`; }
+        .btn-desactivar { background: `#ff9800`; }
+        .btn-eliminar { background: `#d32f2f`; margin-left: 5px; }
         .filtros-box { 
             display: flex; 
             gap: 10px; 
             margin-bottom: 15px; 
             flex-wrap: wrap; 
         }
-
         select, .input-busqueda { 
             padding: 8px; 
             border-radius: 8px; 
-            border: 1px solid #ccc; 
+            border: 1px solid `#ccc`; 
             flex: 1; 
             min-width: 120px; 
         }
-
         .status-online { 
-            color: #4caf50; 
+            color: `#4caf50`; 
             font-weight: bold; 
             font-size: 10px; 
             display: flex; 
             align-items: center; 
             gap: 4px; 
         }
-
-        .status-online::before { 
-            content: '●'; 
-            font-size: 14px; 
-        }
-
+        .status-online::before { content: '●'; font-size: 14px; }
         .tabla-scroll { 
             width: 100%; 
             overflow-x: auto; 
@@ -142,27 +118,11 @@
             border-radius: 10px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
         }
-
-        table { 
-            min-width: 600px; 
-            border-collapse: collapse; 
-            width: 100%; 
-        }
-
-        th { 
-            background: #00796b; 
-            color: white; 
-            padding: 12px; 
-            text-align: left; 
-        }
-
-        td { 
-            padding: 12px; 
-            border-bottom: 1px solid #eee; 
-        }
-
+        table { min-width: 600px; border-collapse: collapse; width: 100%; }
+        th { background: `#00796b`; color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid `#eee`; }
         .btn-descargar-lista { 
-            background: #00bcd4; 
+            background: `#00bcd4`; 
             color: white; 
             border: none; 
             padding: 8px 15px; 
@@ -195,14 +155,14 @@
 
     <div class="tab-panel activo" id="tab-examenes">
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h3 style="margin:0; color:#00796b">Mis Evaluaciones</h3>
-            <button onclick="window.location.href='crear-examen.html'" style="background:#ff9800; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">+ Nuevo</button>
+            <h3 style="margin:0; color:`#00796b`">Mis Evaluaciones</h3>
+            <button onclick="window.location.href='crear-examen.html'" style="background:`#ff9800`; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">+ Nuevo</button>
         </div>
         <div id="listaExamenes"></div>
     </div>
 
     <div class="tab-panel" id="tab-estudiantes">
-        <h3 style="color:#00796b">Lista de Inscritos</h3>
+        <h3 style="color:`#00796b`">Lista de Inscritos</h3>
         <div class="filtros-box">
             <select id="fAnio" onchange="cargarEstudiantes()">
                 <option value="todos">Todos los Años</option>
@@ -216,9 +176,7 @@
                 <option value="B">B</option>
                 <option value="C">C</option>
             </select>
-            
             <input type="text" id="busquedaEstudiante" class="input-busqueda" placeholder="🔍 Buscar por nombre..." onkeyup="cargarEstudiantes()">
-            
             <button class="btn-descargar-lista" onclick="descargarListaPDF()">📥 Descargar Lista PDF</button>
         </div>
         <div class="tabla-scroll">
@@ -237,7 +195,7 @@
     </div>
 
     <div class="tab-panel" id="tab-resultados">
-        <h3 style="color:#00796b">Acta de Calificaciones</h3>
+        <h3 style="color:`#00796b`">Acta de Calificaciones</h3>
         <div class="filtros-box">
             <select id="filtroExamenNotas" onchange="cargarNotas()">
                 <option value="">Seleccione un Examen...</option>
@@ -268,11 +226,12 @@
 
     // Variables globales
     let estudiantesActuales = [];
+    let unsubscribeEstudiantes = null; // Para evitar múltiples listeners
 
     // Verificación de sesión
     onAuthStateChanged(auth, (user) => { 
-        if(!user) { 
-            window.location.href="login.html"; 
+        if (!user) { 
+            window.location.href = "login.html"; 
             return; 
         }
         cargarExamenes();
@@ -281,27 +240,24 @@
 
     // Control de Navegación (Tabs)
     window.cambiarTab = (name, btn) => {
-        const paneles = document.querySelectorAll('.tab-panel');
-        const botones = document.querySelectorAll('.tab-btn');
-
-        paneles.forEach(p => p.classList.remove('activo'));
-        botones.forEach(b => b.classList.remove('activo'));
-
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
         document.getElementById('tab-' + name).classList.add('activo');
         btn.classList.add('activo');
-
-        if(name === 'estudiantes') cargarEstudiantes();
-        if(name === 'resultados') cargarNotas();
+        if (name === 'estudiantes') cargarEstudiantes();
+        if (name === 'resultados') cargarNotas();
     };
 
-    // Funciones de Exámenes
+    // ─────────────────────────────────────────────
+    // FUNCIONES DE EXÁMENES
+    // ─────────────────────────────────────────────
     async function cargarExamenes() {
         const lista = document.getElementById("listaExamenes");
         onSnapshot(collection(db, "examenes"), (snap) => {
             lista.innerHTML = "";
             snap.forEach(d => {
                 const ex = d.data();
-                const card = `
+                lista.innerHTML += `
                     <div class="examen-card">
                         <div class="examen-card-header" style="background:${ex.activo ? '#00796b' : '#777'}">
                             <strong>${ex.titulo}</strong>
@@ -312,7 +268,7 @@
                             <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="toggleEx('${d.id}', ${ex.activo})">
                                 ${ex.activo ? 'Desactivar' : 'Activar'}
                             </button>
-                            <button class="btn-accion" style="background:#2196F3" onclick="window.location.href='editar-examen.html?id=${d.id}'">
+                            <button class="btn-accion" style="background:`#2196F3`" onclick="window.location.href='editar-examen.html?id=${d.id}'">
                                 ✏️ Editar
                             </button>
                             <button class="btn-accion btn-eliminar" onclick="borrarEx('${d.id}')">
@@ -320,7 +276,6 @@
                             </button>
                         </div>
                     </div>`;
-                lista.innerHTML += card;
             });
         });
     }
@@ -330,26 +285,32 @@
     };
 
     window.borrarEx = async (id) => { 
-        if(confirm("¿Eliminar examen?")) { 
+        if (confirm("¿Eliminar examen?")) { 
             await deleteDoc(doc(db, "examenes", id)); 
         } 
     };
 
-    // Funciones de Estudiantes (MEJORADA CON FILTRO DE BÚSQUEDA)
+    // ─────────────────────────────────────────────
+    // FUNCIONES DE ESTUDIANTES
+    // FIX `#1`: Expuesta en window para que el HTML pueda llamarla
+    // FIX `#3`: eliminarEstudiante ahora está definida
+    // ─────────────────────────────────────────────
     async function cargarEstudiantes() {
         const anioSel = document.getElementById("fAnio").value;
         const secSel = document.getElementById("fSec").value;
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
 
-        onSnapshot(collection(db, "usuarios"), (snap) => {
+        // Cancelar listener anterior para evitar duplicados
+        if (unsubscribeEstudiantes) unsubscribeEstudiantes();
+
+        unsubscribeEstudiantes = onSnapshot(collection(db, "usuarios"), (snap) => {
             body.innerHTML = "";
             estudiantesActuales = [];
 
             snap.forEach(d => {
                 const u = d.data();
-                if(u.rol === 'estudiante' || !u.rol) {
-                    // Normalización para evitar errores de coincidencia
+                if (u.rol === 'estudiante' || !u.rol) {
                     const anioU = String(u.anio || "");
                     const secU = String(u.seccion || "").toUpperCase();
                     const nombreComp = `${u.nombres} ${u.apellidos}`.toLowerCase();
@@ -358,28 +319,43 @@
                     const cumpleSec = (secSel === 'todas' || secU === secSel.toUpperCase());
                     const cumpleBusqueda = nombreComp.includes(busqueda);
 
-                    if(cumpleAnio && cumpleSec && cumpleBusqueda) {
+                    if (cumpleAnio && cumpleSec && cumpleBusqueda) {
                         estudiantesActuales.push(u);
-                        const fila = `
+                        body.innerHTML += `
                             <tr>
                                 <td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td>
                                 <td>${u.anio || '?'}° ${u.seccion || '?'}</td>
-                                <td>${u.online ? '<span class="status-online">Línea</span>':'Off'}</td>
+                                <td>${u.online ? '<span class="status-online">Línea</span>' : 'Off'}</td>
                                 <td>
                                     <button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button>
                                 </td>
                             </tr>`;
-                        body.innerHTML += fila;
                     }
                 }
             });
-            if(estudiantesActuales.length === 0) {
+
+            if (estudiantesActuales.length === 0) {
                 body.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:15px;'>No se encontraron resultados.</td></tr>";
             }
         });
     }
+    // FIX `#1`: Exponer en window para que onchange/onkeyup del HTML funcionen
+    window.cargarEstudiantes = cargarEstudiantes;
 
-    // Funciones de Notas
+    // FIX `#3`: Función eliminar que antes no existía
+    window.eliminarEstudiante = async (uid) => {
+        if (confirm("¿Eliminar este estudiante del sistema?")) {
+            try {
+                await deleteDoc(doc(db, "usuarios", uid));
+            } catch (e) {
+                alert("Error al eliminar: " + e.message);
+            }
+        }
+    };
+
+    // ─────────────────────────────────────────────
+    // FUNCIONES DE NOTAS
+    // ─────────────────────────────────────────────
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
         const snap = await getDocs(collection(db, "examenes"));
@@ -395,7 +371,7 @@
     window.cargarNotas = async () => {
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
-        if(!exId) { body.innerHTML = ""; return; }
+        if (!exId) { body.innerHTML = ""; return; }
 
         const exSnap = await getDoc(doc(db, "examenes", exId));
         const exData = exSnap.data() || {};
@@ -405,41 +381,52 @@
             snap.forEach(d => {
                 const n = d.data();
                 const row = document.createElement("tr");
-
                 row.innerHTML = `
                     <td><b>${n.nombre || "Sin Nombre"}</b></td>
                     <td>${n.cedula || "---"}</td>
                     <td>${n.grado || n.anio || "?"}° "${n.seccion || "?"}"</td>
-                    <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
+                    <td style="font-weight:bold; color:`#00796b`;">${n.nota}/20</td>
                     <td>
                         <button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer; font-size:16px;">📥</button>
                     </td>`;
                 body.appendChild(row);
-
-                document.getElementById(`btnPdf_${d.id}`).onclick = () => {
-                    descargarActaProfesor(n, exData);
-                };
+                document.getElementById(`btnPdf_${d.id}`).onclick = () => descargarActaProfesor(n, exData);
             });
-            if(snap.empty) {
+            if (snap.empty) {
                 body.innerHTML = "<tr><td colspan='5' style='padding:20px; text-align:center;'>Sin resultados aún.</td></tr>";
             }
         });
     };
 
-    // --- FUNCIÓN DE DESCARGA APK-READY ---
-    function triggerDownload(doc, fileName) {
-        const blob = doc.output('blob');
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    // ─────────────────────────────────────────────
+    // FIX `#2`: triggerDownload compatible con APK/WebView
+    // ─────────────────────────────────────────────
+    function triggerDownload(docPDF, fileName) {
+        try {
+            // Método principal: funciona en Chrome, Firefox, Safari desktop
+            docPDF.save(fileName);
+        } catch (e) {
+            try {
+                // Fallback APK/WebView Android: abrir como data URI en nueva pestaña
+                const dataUri = docPDF.output('datauristring');
+                const nuevaVentana = window.open('', '_blank');
+                if (nuevaVentana) {
+                    nuevaVentana.document.write(
+                        `<iframe src="${dataUri}" style="width:100%;height:100vh;border:none;"></iframe>`
+                    );
+                } else {
+                    // Último recurso: navegar en la misma ventana
+                    window.location.href = dataUri;
+                }
+            } catch (e2) {
+                alert("No se pudo descargar el PDF. Intente desde un navegador web.");
+            }
+        }
     }
 
-    // GENERACIÓN DE PDF ACTA
+    // ─────────────────────────────────────────────
+    // GENERACIÓN DE PDF ACTA DEL PROFESOR
+    // ─────────────────────────────────────────────
     function descargarActaProfesor(n, ex) {
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
@@ -471,10 +458,12 @@
         triggerDownload(docPDF, `Acta_${safeName}.pdf`);
     }
 
-    // GENERACIÓN DE PDF LISTADO
+    // ─────────────────────────────────────────────
+    // GENERACIÓN DE PDF LISTADO DE ESTUDIANTES
+    // ─────────────────────────────────────────────
     window.descargarListaPDF = () => {
         if (estudiantesActuales.length === 0) { 
-            alert("No hay estudiantes para descargar."); 
+            alert("No hay estudiantes para descargar. Asegúrese de que los filtros muestren resultados."); 
             return; 
         }
 
@@ -518,8 +507,7 @@
         triggerDownload(docPDF, `${safeFile}.pdf`);
     };
 
-    window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
-
+    window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
 </script>
 </body>
 </html>
