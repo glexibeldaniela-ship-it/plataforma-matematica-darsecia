@@ -11,125 +11,62 @@
   :root {
     --primary: #00796b;
     --primary-dark: #004d40;
-    --secondary: #00bcd4;
+    --secondary: #00796b;
     --success: #2e7d32;
     --danger: #c62828;
     --background: #f0f4f8;
   }
 
   body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     font-family: 'Segoe UI', system-ui, sans-serif;
     background: var(--background);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
   }
 
   .header {
-    width: 100%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    padding: 40px 0;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
+    width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white; padding: 40px 0; text-align: center;
+    border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
   }
 
-  .contenedorResultado {
-    width: 90%;
-    max-width: 500px;
-    margin-top: -30px; 
-    margin-bottom: 40px;
-  }
+  .contenedorResultado { width: 95%; max-width: 500px; margin-top: -30px; margin-bottom: 40px; }
 
   .card {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    text-align: center;
+    background: white; border-radius: 20px; padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
   }
 
-  .nota-container { margin: 20px 0; }
-
-  .nota-valor {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1;
-  }
-
-  .nota-label {
-    font-size: 0.9rem;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
+  .nota-valor { font-size: 3.5rem; font-weight: 800; margin: 0; }
+  
   .status-badge {
-    display: inline-block;
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    margin-top: 10px;
+    display: inline-block; padding: 8px 20px; border-radius: 50px;
+    font-weight: bold; font-size: 0.9rem; margin-top: 10px;
   }
 
   .aprobado { color: var(--success); background: #e8f5e9; border: 1px solid var(--success); }
   .reprobado { color: var(--danger); background: #ffebee; border: 1px solid var(--danger); }
 
   .detalles-lista {
-    text-align: left;
-    margin: 25px 0;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 15px;
+    text-align: left; margin: 25px 0; padding: 20px;
+    background: #f9f9f9; border-radius: 15px;
   }
 
   .detalle-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    border-bottom: 1px dashed #ddd;
-    padding-bottom: 5px;
+    display: flex; justify-content: space-between;
+    margin-bottom: 10px; font-size: 0.95rem;
+    border-bottom: 1px dashed #ddd; padding-bottom: 5px;
   }
-
-  .detalle-item span:first-child { color: #666; font-weight: 500; }
-  .detalle-item span:last-child { color: #333; font-weight: bold; }
 
   .btn-pdf {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1rem;
-    transition: 0.3s;
+    background: #00bcd4; color: white; border: none;
+    border-radius: 12px; padding: 15px; font-weight: bold;
+    cursor: pointer; width: 100%; font-size: 1rem;
     box-shadow: 0 4px 15px rgba(0,188,212,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
   }
 
-  .btn-pdf:hover { background: #0097a7; transform: translateY(-2px); }
-
-  .btn-volver {
-    display: block;
-    margin-top: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
+  .btn-volver { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: 600; }
 </style>
 </head>
 
@@ -143,20 +80,17 @@
   <div id="resultado" class="card">
     <p>Cargando tus resultados...</p>
   </div>
-
+  <br>
   <button id="btnPDF" class="btn-pdf" style="display:none;">
     📥 Descargar Acta Oficial PDF
   </button>
-
   <center><a href="panel-estudiante.html" class="btn-volver">⬅ Volver al Panel Estudiante</a></center>
 </div>
 
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { doc, getDoc, collection, getDocs, query, where }     
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { onAuthStateChanged }     
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const params = new URLSearchParams(window.location.search);
 const examenId = params.get("id");
@@ -166,6 +100,13 @@ const btnPDF = document.getElementById("btnPDF");
 let datosResultado = null;
 let examenData = null;
 
+// FUNCIÓN CLAVE PARA ARREGLAR ACENTOS EN EL PDF
+function fixTxt(t) {
+  if (!t) return "N/P";
+  // Normaliza y asegura que los caracteres especiales se mantengan legibles
+  return t.toString().normalize("NFC");
+}
+
 onAuthStateChanged(auth, async (user) => {
   if(!user){ window.location.href="index.html"; return; }
   if(!examenId){ window.location.href="panel-estudiante.html"; return; }
@@ -174,43 +115,38 @@ onAuthStateChanged(auth, async (user) => {
     const examenSnap = await getDoc(doc(db,"examenes",examenId));
     examenData = examenSnap.data();
 
-    const resultadosRef = collection(db,"examenes",examenId,"resultados");
-    const q = query(resultadosRef, where("estudiante_id","==",user.uid));
+    const q = query(collection(db,"examenes",examenId,"resultados"), where("estudiante_id","==",user.uid));
     const querySnap = await getDocs(q);
 
     querySnap.forEach(docu => { datosResultado = docu.data(); });
 
     if(!datosResultado){
-      resultadoDiv.innerHTML="<h3>No se encontró el resultado</h3><p>Verifica si el examen fue enviado correctamente.</p>";
+      resultadoDiv.innerHTML="<h3>No se encontró el resultado</h3>";
       return;
     }
 
-    const esAprobado = datosResultado.nota >= 10;
+    const esAprobado = datosResultado.nota >= 9.5;
     const colorNota = esAprobado ? "var(--success)" : "var(--danger)";
 
     resultadoDiv.innerHTML = `
       <h3 style="margin:0; color:var(--primary);">${examenData.titulo}</h3>
       <div class="nota-container">
-        <p class="nota-label">Calificación Obtenida</p>
+        <p style="color:#666; font-size:0.8rem; margin-bottom:5px;">CALIFICACIÓN</p>
         <p class="nota-valor" style="color: ${colorNota}">${datosResultado.nota}</p>
         <span class="status-badge ${esAprobado ? 'aprobado' : 'reprobado'}">
           ${esAprobado ? '✅ APROBADO' : '❌ REPROBADO'}
         </span>
       </div>
-
       <div class="detalles-lista">
         <div class="detalle-item"><span>Estudiante:</span> <span>${datosResultado.nombre}</span></div>
-        <div class="detalle-item"><span>Año:</span> <span>${datosResultado.grado || "N/A"}</span></div>
-        <div class="detalle-item"><span>Sección:</span> <span>"${datosResultado.seccion || "N/A"}"</span></div>
-        <div class="detalle-item"><span>Lapso:</span> <span>${datosResultado.lapso || "1"}</span></div>
-        <div class="detalle-item"><span>Estado:</span> <span>${datosResultado.estado}</span></div>
+        <div class="detalle-item"><span>Cédula:</span> <span>${datosResultado.cedula || "N/P"}</span></div>
+        <div class="detalle-item"><span>Año/Sección:</span> <span>${datosResultado.grado || "1"}° "${datosResultado.seccion || "A"}"</span></div>
       </div>
     `;
     btnPDF.style.display = "flex";
 
   } catch (error) {
-    console.error(error);
-    resultadoDiv.innerHTML = "<p>Error al cargar los datos.</p>";
+    resultadoDiv.innerHTML = "<p>Error al cargar.</p>";
   }
 });
 
@@ -218,52 +154,61 @@ btnPDF.addEventListener("click", () => {
   if(!datosResultado || !examenData) return;
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  // Usamos 'p' (portrait), 'mm' y 'a4'
+  const doc = new jsPDF('p', 'mm', 'a4');
 
-  doc.setFont("times", "bold");
-  doc.setFontSize(11);
+  // Forzamos el uso de una fuente estándar que soporte latín
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  
+  // Encabezado corregido
   doc.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
-  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
-  doc.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
-  doc.setFont("times", "normal");
-  doc.setFontSize(9);
-  doc.text("ESTADO ZULIA - MUNICIPIO MARA - PARROQUIA LA SIERRITA", 105, 32, { align: "center" });
+  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 20, { align: "center" });
+  doc.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 25, { align: "center" });
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("LA SIERRITA - MUNICIPIO MARA - ESTADO ZULIA", 105, 30, { align: "center" });
 
   doc.setLineWidth(0.5);
-  doc.line(20, 37, 190, 37);
+  doc.line(20, 35, 190, 35);
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
+  doc.text("ACTA DE EVALUACIÓN DIGITAL", 105, 45, { align: "center" });
 
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  let y = 65;
-  const leftMargin = 25;
+  
+  let y = 60;
+  const x = 25;
 
-  doc.text(`Por medio de la presente se hace constar el resultado obtenido en el sistema:`, leftMargin, y);
-  y += 15;
-  doc.text(`TÍTULO DEL EXAMEN: ${examenData.titulo.toUpperCase()}`, leftMargin, y); y += 10;
-  doc.text(`ESTUDIANTE: ${datosResultado.nombre.toUpperCase()}`, leftMargin, y); y += 10;
-  doc.text(`GRADO: ${datosResultado.grado || "N/A"} - SECCIÓN: "${datosResultado.seccion || "N/A"}"`, leftMargin, y); y += 10;
-  doc.text(`LAPSO CORRESPONDIENTE: ${datosResultado.lapso || "1"}`, leftMargin, y); y += 10;
-
+  // Usamos la función fixTxt para asegurar que el texto sea procesado bien
+  doc.text(`Por medio de la presente se hace constar el resultado del estudiante:`, x, y);
+  y += 12;
   doc.setFont("helvetica", "bold");
-  doc.text(`CALIFICACIÓN FINAL: ${datosResultado.nota} / 20 pts.`, leftMargin, y); y += 10;
-  doc.text(`ESTADO: ${datosResultado.estado.toUpperCase()}`, leftMargin, y); y += 20;
+  doc.text(`ESTUDIANTE: ${fixTxt(datosResultado.nombre).toUpperCase()}`, x, y); y += 8;
+  doc.text(`CÉDULA: ${fixTxt(datosResultado.cedula)}`, x, y); y += 8;
+  doc.text(`EXAMEN: ${fixTxt(examenData.titulo).toUpperCase()}`, x, y); y += 8;
+  doc.text(`AÑO Y SECCIÓN: ${datosResultado.grado}° "${datosResultado.seccion}"`, x, y); y += 15;
 
-  const fecha = new Date().toLocaleDateString();
-  doc.setFont("helvetica", "italic");
-  doc.text(`Fecha de emisión: ${fecha}`, leftMargin, y);
+  doc.setFontSize(13);
+  doc.text(`CALIFICACIÓN: ${datosResultado.nota} / 20 pts.`, x, y); y += 20;
 
-  doc.setFont("helvetica", "bold");
-  doc.line(65, 210, 145, 210);
-  doc.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
+  const hoy = new Date().toLocaleDateString();
   doc.setFontSize(10);
-  doc.text("C.I. 28.123.219", 105, 222, { align: "center" });
-  doc.text("Docente Evaluador", 105, 228, { align: "center" });
+  doc.setFont("helvetica", "italic");
+  doc.text(`Documento emitido de forma digital el día: ${hoy}`, x, y);
 
-  doc.save(`Acta_${datosResultado.nombre.replace(/ /g, "_")}.pdf`);
+  // Firma del Docente (Tus datos)
+  doc.setFont("helvetica", "bold");
+  doc.line(70, 120, 140, 120);
+  doc.text("JOSÉ FERNÁNDEZ", 105, 125, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("C.I. 28.123.219", 105, 130, { align: "center" });
+  doc.text("Docente Evaluador", 105, 135, { align: "center" });
+
+  doc.save(`Resultado_${datosResultado.nombre.replace(/ /g, "_")}.pdf`);
 });
 </script>
 
