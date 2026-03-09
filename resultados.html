@@ -1,196 +1,283 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Resultado del Examen</title>
+<title>Resultado del Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<link rel="stylesheet" href="estilos.css">
-
 <style>
-body{
-  margin:0;
-  padding:15px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background:#f0f4f8;
-}
-
-.header{
-  background:#00796b;
-  color:white;
-  padding:15px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
-  margin-bottom:20px;
-}
-
-.header h2{
-  margin:0;
-}
-
-/* CONTENEDOR RESULTADO */
-
-.contenedorResultado{
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* TARJETA RESULTADO */
-
-.card{
-  border:1px solid #ddd;
-  border-radius:10px;
-  padding:20px;
-  margin-top:15px;
-  background:#fafafa;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* BOTON PDF */
-
-button{
-  background:#00bcd4;
-  color:white;
-  border:none;
-  border-radius:10px;
-  padding:12px;
-  font-weight:bold;
-  cursor:pointer;
-  width:100%;
-  margin-top:15px;
-}
-
-button:hover{
-  background:#0097a7;
-}
-
-/* RESPONSIVE */
-
-@media(max-width:600px){
-  .card{
-    font-size:14px;
-    padding:15px;
+  :root {
+    --primary: #00796b;
+    --primary-dark: #004d40;
+    --secondary: #00bcd4;
+    --success: #2e7d32;
+    --danger: #c62828;
+    --background: #f0f4f8;
   }
-  button{
-    padding:10px;
-    font-size:14px;
-  }
-}
 
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .header {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+  }
+
+  .contenedorResultado {
+    width: 90%;
+    max-width: 500px;
+    margin-top: -30px; /* Sube la tarjeta sobre el header */
+    margin-bottom: 40px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  /* Estilo de la Nota */
+  .nota-container {
+    margin: 20px 0;
+  }
+
+  .nota-valor {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .nota-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+
+  .aprobado { color: var(--success); background: #e8f5e9; border: 1px solid var(--success); }
+  .reprobado { color: var(--danger); background: #ffebee; border: 1px solid var(--danger); }
+
+  /* Detalles */
+  .detalles-lista {
+    text-align: left;
+    margin: 25px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 15px;
+  }
+
+  .detalle-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 5px;
+  }
+
+  .detalle-item span:first-child { color: #666; font-weight: 500; }
+  .detalle-item span:last-child { color: #333; font-weight: bold; }
+
+  /* Botones */
+  .btn-pdf {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,188,212,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-pdf:hover { background: #0097a7; transform: translateY(-2px); }
+
+  .btn-volver {
+    display: block;
+    margin-top: 15px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  @media(max-width:600px){
+    .header { padding: 30px 0 50px; }
+    .card { padding: 20px; }
+  }
 </style>
-
 </head>
 
 <body>
 
 <div class="header">
-<h2>Resultado del Examen</h2>
+  <h2 style="margin:0;">Resultado de Evaluación</h2>
 </div>
 
 <div class="contenedorResultado">
-<div id="resultado" class="card"></div>
-
-<button id="btnPDF">Descargar Acta Oficial PDF</button>
+  <div id="resultado" class="card">
+    <p>Cargando tus resultados...</p>
+  </div>
+  
+  <button id="btnPDF" class="btn-pdf" style="display:none;">
+    📥 Descargar Acta Oficial PDF
+  </button>
+  
+  <center><a href="panel-estudiante.html" class="btn-volver">⬅ Volver al Panel Estudiante</a></center>
 </div>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
 import { doc, getDoc, collection, getDocs, query, where }     
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged }     
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const { jsPDF } = window.jspdf;
-
 const params = new URLSearchParams(window.location.search);
 const examenId = params.get("id");
-
 const resultadoDiv = document.getElementById("resultado");
 const btnPDF = document.getElementById("btnPDF");
 
 let datosResultado = null;
+let examenData = null;
 
 onAuthStateChanged(auth, async (user) => {
+  if(!user){ window.location.href="index.html"; return; }
+  if(!examenId){ window.location.href="panel-estudiante.html"; return; }
 
-  if(!user){
-    window.location.href="index.html";
-    return;
+  try {
+    const examenSnap = await getDoc(doc(db,"examenes",examenId));
+    examenData = examenSnap.data();
+
+    const resultadosRef = collection(db,"examenes",examenId,"resultados");
+    const q = query(resultadosRef, where("estudiante_id","==",user.uid));
+    const querySnap = await getDocs(q);
+
+    querySnap.forEach(docu => { datosResultado = docu.data(); });
+
+    if(!datosResultado){
+      resultadoDiv.innerHTML="<h3>No se encontró el resultado</h3><p>Verifica si el examen fue enviado correctamente.</p>";
+      return;
+    }
+
+    const esAprobado = datosResultado.nota >= 10;
+    const colorNota = esAprobado ? "var(--success)" : "var(--danger)";
+
+    resultadoDiv.innerHTML = `
+      <h3 style="margin:0; color:var(--primary);">${examenData.titulo}</h3>
+      <div class="nota-container">
+        <p class="nota-label">Calificación Obtenida</p>
+        <p class="nota-valor" style="color: ${colorNota}">${datosResultado.nota}</p>
+        <span class="status-badge ${esAprobado ? 'aprobado' : 'reprobado'}">
+          ${esAprobado ? '✅ APROBADO' : '❌ REPROBADO'}
+        </span>
+      </div>
+
+      <div class="detalles-lista">
+        <div class="detalle-item"><span>Estudiante:</span> <span>${datosResultado.nombre}</span></div>
+        <div class="detalle-item"><span>Año/Sección:</span> <span>${datosResultado.grado}° "${datosResultado.seccion}"</span></div>
+        <div class="detalle-item"><span>Lapso:</span> <span>${datosResultado.lapso}</span></div>
+        <div class="detalle-item"><span>Estado:</span> <span>${datosResultado.estado}</span></div>
+      </div>
+    `;
+    btnPDF.style.display = "flex";
+
+  } catch (error) {
+    console.error(error);
+    resultadoDiv.innerHTML = "<p>Error al cargar los datos.</p>";
   }
-
-  const examenSnap = await getDoc(doc(db,"examenes",examenId));
-  const examenData = examenSnap.data();
-
-  const resultadosRef = collection(db,"examenes",examenId,"resultados");
-  const q = query(resultadosRef, where("estudiante_id","==",user.uid));
-  const querySnap = await getDocs(q);
-
-  querySnap.forEach(docu=>{
-    datosResultado = docu.data();
-  });
-
-  if(!datosResultado){
-    resultadoDiv.innerHTML="<p>No se encontró resultado.</p>";
-    btnPDF.style.display="none";
-    return;
-  }
-
-  resultadoDiv.innerHTML = `
-    <h3>${examenData.titulo}</h3>
-    <p><strong>Estudiante:</strong> ${datosResultado.nombre}</p>
-    <p><strong>Año:</strong> ${datosResultado.grado}</p>
-    <p><strong>Sección:</strong> ${datosResultado.seccion}</p>
-    <p><strong>Lapso:</strong> ${datosResultado.lapso}</p>
-    <p><strong>Nota:</strong> ${datosResultado.nota} / 20</p>
-    <p><strong>Estado:</strong> ${datosResultado.estado}</p>
-  `;
-
 });
 
-btnPDF.addEventListener("click", ()=>{
+btnPDF.addEventListener("click", () => {
+  if(!datosResultado || !examenData) return;
 
-  if(!datosResultado) return;
-
+  const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  doc.setFont("times","normal");
+  // Membrete Formal
+  doc.setFont("times", "bold");
+  doc.setFontSize(11);
+  doc.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
+  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 21, { align: "center" });
+  doc.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
+  doc.setFont("times", "normal");
+  doc.setFontSize(9);
+  doc.text("ESTADO ZULIA - MUNICIPIO MARA - PARROQUIA LA SIERRITA", 105, 32, { align: "center" });
 
-  doc.text("REPÚBLICA BOLIVARIANA DE VENEZUELA",105,20,null,null,"center");
-  doc.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN",105,28,null,null,"center");
-  doc.text("UEE Cecilia Núñez",105,36,null,null,"center");
-  doc.text("Estado Zulia - Municipio Mara - Parroquia La Sierrita",105,44,null,null,"center");
+  doc.setLineWidth(0.5);
+  doc.line(20, 37, 190, 37);
 
-  doc.line(20,50,190,50);
-
+  // Título
   doc.setFontSize(14);
-  doc.text("ACTA DE EVALUACIÓN",105,60,null,null,"center");
+  doc.setFont("helvetica", "bold");
+  doc.text("ACTA DE EVALUACIÓN DIGITAL", 105, 50, { align: "center" });
 
+  // Cuerpo del Acta
   doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  let y = 65;
+  const leftMargin = 25;
 
-  doc.text("Estudiante: " + datosResultado.nombre,20,80);
-  doc.text("Año: " + datosResultado.grado,20,90);
-  doc.text("Sección: " + datosResultado.seccion,20,100);
-  doc.text("Lapso: " + datosResultado.lapso,20,110);
-  doc.text("Nota Obtenida: " + datosResultado.nota + " / 20",20,120);
-  doc.text("Estado: " + datosResultado.estado.toUpperCase(),20,130);
+  doc.text(`Por medio de la presente se hace constar el resultado obtenido en el sistema:`, leftMargin, y);
+  y += 15;
+  doc.text(`TÍTULO DEL EXAMEN: ${examenData.titulo.toUpperCase()}`, leftMargin, y); y += 10;
+  doc.text(`ESTUDIANTE: ${datosResultado.nombre.toUpperCase()}`, leftMargin, y); y += 10;
+  doc.text(`GRADO Y SECCIÓN: ${datosResultado.grado}° "${datosResultado.seccion}"`, leftMargin, y); y += 10;
+  doc.text(`LAPSO CORRESPONDIENTE: ${datosResultado.lapso}`, leftMargin, y); y += 10;
+  
+  doc.setFont("helvetica", "bold");
+  doc.text(`CALIFICACIÓN FINAL: ${datosResultado.nota} / 20 pts.`, leftMargin, y); y += 10;
+  doc.text(`ESTADO: ${datosResultado.estado.toUpperCase()}`, leftMargin, y); y += 20;
 
   const fecha = new Date().toLocaleDateString();
-  doc.text("Fecha: " + fecha,20,150);
+  doc.setFont("helvetica", "italic");
+  doc.text(`Fecha de emisión: ${fecha}`, leftMargin, y);
 
-  doc.line(60,190,150,190);
-  doc.text("José Fernández",105,200,null,null,"center");
-  doc.text("C.I. 28.123.219",105,208,null,null,"center");
-  doc.text("Docente Evaluador",105,216,null,null,"center");
+  // Firma
+  doc.setFont("helvetica", "bold");
+  doc.line(65, 210, 145, 210);
+  doc.text("JOSÉ FERNÁNDEZ", 105, 216, { align: "center" });
+  doc.setFontSize(10);
+  doc.text("C.I. 28.123.219", 105, 222, { align: "center" });
+  doc.text("Docente Evaluador", 105, 228, { align: "center" });
 
-  doc.save("Acta_Resultado.pdf");
-
+  doc.save(`Resultado_${datosResultado.nombre}.pdf`);
 });
-
 </script>
 
 </body>
