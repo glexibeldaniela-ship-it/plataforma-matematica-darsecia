@@ -1,70 +1,381 @@
-/* --- BUSCA ESTA PARTE EN TU PANEL DE CONTROL Y REEMPLÁZALA --- */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Presentar Examen - MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="estilos.css">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f4f7f6;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+  }
 
-// 1. Agregué el botón de descarga en el HTML del panel de Estudiantes
-// Busca el <h3> de "Lista de Inscritos" y pon esto debajo:
+  /* Banner Superior */
+  .header {
+    background: linear-gradient(135deg, #00796b, #004d40);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
 
-<div class="tab-panel" id="tab-estudiantes">
-    <h3 style="color:#00796b">Lista de Inscritos</h3>
-    <div class="filtros-box">
-      <select id="fAnio" onchange="cargarEstudiantes()"><option value="todos">Todos los Años</option><option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option></select>
-      <select id="fSec" onchange="cargarEstudiantes()"><option value="todas">Todas las Secciones</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-    </div>
-    
-    <button onclick="descargarListaEstudiantes()" style="background:#00796b; color:white; border:none; padding:10px; border-radius:8px; width:100%; margin-bottom:15px; font-weight:bold; cursor:pointer;">
-      📥 Descargar Lista de Asistencia (PDF)
-    </button>
+  .header h2 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
 
-    <div class="tabla-scroll">
-      <table id="tablaEstudiantes" style="width:100%;">
-        <thead style="background:#00bcd4; color:white;">
-          <tr><th style="padding:10px">Nombre Completo</th><th style="padding:10px">Cédula</th><th style="padding:10px">Año/Sec</th><th style="padding:10px">Acción</th></tr>
-        </thead>
-        <tbody id="bodyEstudiantes"></tbody>
-      </table>
-    </div>
+  /* Contenedor Principal */
+  .contenedorExamen {
+    max-width: 800px;
+    margin: -30px auto 50px;
+    padding: 0 15px;
+  }
+
+  /* Caja de Información e Instrucciones */
+  .info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+  }
+
+  .instrucciones {
+    background: #e0f2f1;
+    border-left: 5px solid #00796b;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.95rem;
+    color: #004d40;
+  }
+
+  /* Temporizador Flotante */
+  #temporizador {
+    position: sticky;
+    top: 10px;
+    z-index: 100;
+    background: #ff5252;
+    color: white;
+    padding: 12px;
+    border-radius: 50px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(255,82,82,0.3);
+    margin-bottom: 25px;
+    font-size: 1.1rem;
+  }
+
+  /* Estilo de las Preguntas */
+  .pregunta-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    transition: transform 0.3s ease;
+  }
+
+  .pregunta-card h4 {
+    margin-top: 0;
+    color: #00796b;
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+
+  /* Inputs y Labels */
+  .opcion-label {
+    display: block;
+    background: #f9f9f9;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.2s;
+  }
+
+  .opcion-label:hover {
+    background: #f0f0f0;
+    border-color: #00bcd4;
+  }
+
+  input[type="radio"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #eee;
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  input:focus { border-color: #00bcd4; }
+
+  /* Botón Enviar */
+  #btnEnviar {
+    background: #00bcd4;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 6px 20px rgba(0,188,212,0.3);
+    transition: 0.3s;
+    margin-top: 20px;
+  }
+
+  #btnEnviar:hover { background: #0097a7; transform: translateY(-2px); }
+  #btnEnviar:disabled { background: #ccc; cursor: not-allowed; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>MateEduPro 🎓</h2>
+  <p style="margin-top: 5px; opacity: 0.9;">Evaluación en curso</p>
 </div>
 
-/* --- 2. AGREGA ESTA FUNCIÓN AL FINAL DE TU <script> --- */
+<div class="contenedorExamen">
+  <div id="temporizador">⏳ Cargando tiempo...</div>
 
-window.descargarListaEstudiantes = async () => {
-    const { jsPDF } = window.jspdf;
-    const docPDF = new jsPDF();
-    
-    const anioFiltro = document.getElementById("fAnio").value;
-    const secFiltro = document.getElementById("fSec").value;
-    
-    // Encabezado institucional (Igual a tus actas)
-    docPDF.setFont("times", "bold"); docPDF.setFontSize(10);
-    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
-    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 20, { align: "center" });
-    docPDF.setFontSize(12);
-    docPDF.text(`LISTA DE ESTUDIANTES - ${anioFiltro === 'todos' ? 'TODOS' : anioFiltro + '° AÑO'} ${secFiltro === 'todas' ? '' : 'SECCIÓN ' + secFiltro}`, 105, 30, { align: "center" });
+  <div id="infoExamen" class="info-card">
+    <p style="text-align:center;">Cargando detalles del examen...</p>
+  </div>
 
-    // Preparar datos de la tabla
-    const filas = [];
-    const tableBody = document.getElementById("bodyEstudiantes");
-    const rows = tableBody.querySelectorAll("tr");
+  <div id="preguntas"></div>
 
-    rows.forEach(row => {
-        const cols = row.querySelectorAll("td");
-        if(cols.length > 0) {
-            // Limpiamos el texto del nombre (quitando el CI pequeño si existe)
-            const nombre = cols[0].querySelector("b").innerText;
-            const cedula = cols[0].querySelector("small").innerText.replace("CI: ", "");
-            const gradoSec = cols[1].innerText;
-            filas.push([nombre, cedula, gradoSec, "________________"]); // Espacio para firma
-        }
+  <button id="btnEnviar">🚀 Finalizar y Enviar Examen</button>
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { doc, getDoc, collection, getDocs, setDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const params = new URLSearchParams(window.location.search);
+const examenId = params.get("id");
+
+const infoDiv = document.getElementById("infoExamen");
+const preguntasDiv = document.getElementById("preguntas");
+const btnEnviar = document.getElementById("btnEnviar");
+const temporizadorDiv = document.getElementById("temporizador");
+
+let preguntasData = [];
+let usuarioActual = null;
+let tiempoRestante = 0;
+let intervaloTimer = null;
+let examenEnviado = false;
+let examenIniciado = false;
+let duracionTotal = 180; // FIJO A 3 MINUTOS (180 SEGUNDOS)
+
+/* SEGURIDAD: Bloqueos de salida */
+window.addEventListener("beforeunload", (e) => {
+  if (!examenEnviado && examenIniciado) { e.preventDefault(); e.returnValue = ""; }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && !examenEnviado && examenIniciado) {
+    alert("⚠ Has salido de la pantalla del examen. Por seguridad, se enviará automáticamente con la nota obtenida hasta ahora.");
+    enviarExamen(true);
+  }
+});
+
+function iniciarTemporizador() {
+  examenIniciado = true;
+  tiempoRestante = duracionTotal;
+
+  intervaloTimer = setInterval(() => {
+    let min = Math.floor(tiempoRestante / 60);
+    let seg = tiempoRestante % 60;
+    temporizadorDiv.innerText = `⏱ Tiempo Restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
+
+    if (tiempoRestante <= 30) temporizadorDiv.style.background = "#d32f2f";
+
+    tiempoRestante--;
+
+    if (tiempoRestante < 0) {
+      clearInterval(intervaloTimer);
+      alert("¡Tiempo agotado!");
+      enviarExamen(true);
+    }
+  }, 1000);
+}
+
+async function cargarExamen() {
+  const examenRef = doc(db, "examenes", examenId);
+  const examenSnap = await getDoc(examenRef);
+
+  if (!examenSnap.exists()) {
+    infoDiv.innerHTML = "<p>El examen no existe.</p>";
+    return;
+  }
+
+  const examen = examenSnap.data();
+
+  if (!examen.activo) {
+    infoDiv.innerHTML = "<h2 style='color:red; text-align:center;'>Este examen no está activo actualmente.</h2>";
+    btnEnviar.style.display = "none";
+    temporizadorDiv.style.display = "none";
+    return;
+  }
+
+  infoDiv.innerHTML = `
+    <h2 style="margin:0; color:#00796b;">${examen.titulo}</h2>
+    <div style="margin-top:10px; font-size: 0.9rem; color:#666;">
+      <span>📌 ${examen.anio}° Año - Sección ${examen.seccion}</span> | 
+      <span>⏱ 3 minutos (Tiempo Limitado)</span>
+    </div>
+    <div class="instrucciones">
+      <strong>Instrucciones:</strong><br>
+      ${examen.descripcion || "Lee atentamente cada pregunta antes de responder."}
+    </div>
+  `;
+
+  iniciarTemporizador();
+
+  const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
+  let numero = 1;
+
+  preguntasSnap.forEach(docu => {
+    const pregunta = docu.data();
+    pregunta.id = docu.id;
+    preguntasData.push(pregunta);
+
+    const div = document.createElement("div");
+    div.className = "pregunta-card";
+
+    let contenidoInput = "";
+
+    if (pregunta.tipo === "opcion_multiple" && Array.isArray(pregunta.opciones)) {
+      pregunta.opciones.forEach(op => {
+        contenidoInput += `
+          <label class="opcion-label">
+            <input type="radio" name="preg_${pregunta.id}" value="${op.texto}"> ${op.texto}
+          </label>
+        `;
+      });
+    } else if (pregunta.tipo === "numerica") {
+      contenidoInput = `<input type="number" name="preg_${pregunta.id}" placeholder="Respuesta numérica...">`;
+    } else if (pregunta.tipo === "completar") {
+      contenidoInput = `<input type="text" name="preg_${pregunta.id}" placeholder="Escribe aquí...">`;
+    } else if (pregunta.tipo === "verdadero_falso") {
+      contenidoInput = `
+        <label class="opcion-label"><input type="radio" name="preg_${pregunta.id}" value="verdadero"> Verdadero</label>
+        <label class="opcion-label"><input type="radio" name="preg_${pregunta.id}" value="falso"> Falso</label>
+      `;
+    } else if (pregunta.tipo === "desarrollo") {
+        contenidoInput = `<textarea name="preg_${pregunta.id}" style="width:100%; height:100px; border-radius:10px; border:2px solid #eee; padding:10px;" placeholder="Tu desarrollo..."></textarea>`;
+    }
+
+    div.innerHTML = `
+      <h4>Pregunta ${numero}</h4>
+      <p style="font-weight:500; margin-bottom:15px;">${pregunta.enunciado}</p>
+      ${contenidoInput}
+    `;
+
+    preguntasDiv.appendChild(div);
+    numero++;
+  });
+}
+
+async function enviarExamen(forzado = false) {
+  if (examenEnviado) return;
+  examenEnviado = true;
+
+  clearInterval(intervaloTimer);
+  btnEnviar.disabled = true;
+
+  const resultadoRef = doc(db, "examenes", examenId, "resultados", usuarioActual.uid);
+
+  let correctas = 0;
+
+  if (!forzado) {
+    preguntasData.forEach(pregunta => {
+      const input = document.querySelector(`[name="preg_${pregunta.id}"]:checked`) ||
+                    document.querySelector(`[name="preg_${pregunta.id}"]`);
+      if (!input) return;
+
+      const respuestaUsuario = input.value;
+
+      if (pregunta.tipo === "opcion_multiple" && Array.isArray(pregunta.opciones)) {
+        const correcta = pregunta.opciones.find(op => op.correcta);
+        if (correcta && respuestaUsuario === correcta.texto) correctas++;
+      } else if (pregunta.tipo === "numerica") {
+        if (parseFloat(respuestaUsuario) === pregunta.respuestaCorrecta) correctas++;
+      } else if (pregunta.tipo === "completar") {
+        if (respuestaUsuario.trim().toLowerCase() === pregunta.respuestaCorrecta.trim().toLowerCase()) correctas++;
+      } else if (pregunta.tipo === "verdadero_falso") {
+        if (respuestaUsuario === pregunta.respuestaCorrecta) correctas++;
+      }
     });
+  }
 
-    // Generar tabla en el PDF
-    docPDF.autoTable({
-        head: [['Nombre Completo', 'Cédula', 'Año/Sec', 'Firma / Observación']],
-        body: filas,
-        startY: 40,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 121, 107] },
-        styles: { fontSize: 9 }
-    });
+  const total = preguntasData.length;
+  const nota = (total === 0) ? 0 : (correctas / total) * 20;
+  const tiempoConsumido = duracionTotal - tiempoRestante;
 
-    docPDF.save(`Lista_Estudiantes_${anioFiltro}_${secFiltro}.pdf`);
-};
+  // --- REFUERZO DE DATOS PARA DESCARGAS ---
+  const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
+  const uD = usuarioSnap.data() || {};
+
+  // Estos nombres de campos deben coincidir con lo que lee el panel del profesor
+  const nombreEst = `${uD.nombres || ""} ${uD.apellidos || ""}`.trim() || "Estudiante";
+  const ciEst = uD.cedula || "S/C";
+  const gradoEst = uD.anio || "S/A";
+  const seccionEst = uD.seccion || "S/S";
+
+  await setDoc(resultadoRef, {
+    estudiante_id: usuarioActual.uid,
+    nombre: nombreEst,
+    cedula: ciEst,    
+    grado: gradoEst,   
+    seccion: seccionEst, 
+    tiempo_segundos: tiempoConsumido,
+    nota: parseFloat(nota.toFixed(2)),
+    estado: nota >= 10 ? "Aprobado" : "Reprobado",
+    fecha: new Date()
+  });
+
+  alert("Examen finalizado. Tu nota es: " + nota.toFixed(2));
+  window.location.href = "resultados.html?id=" + examenId;
+}
+
+btnEnviar.addEventListener("click", () => {
+    if(confirm("¿Estás seguro de que quieres finalizar el examen?")) {
+        enviarExamen(false);
+    }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = "index.html"; return; }
+  usuarioActual = user;
+
+  const resRef = doc(db, "examenes", examenId, "resultados", user.uid);
+  const resSnap = await getDoc(resRef);
+  if (resSnap.exists()) {
+    infoDiv.innerHTML = "<h2 style='color:#ff5252; text-align:center;'>Ya has presentado esta evaluación.</h2>";
+    btnEnviar.style.display = "none";
+    temporizadorDiv.style.display = "none";
+    return;
+  }
+
+  await cargarExamen();
+});
+</script>
+</body>
+</html>
