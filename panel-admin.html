@@ -161,6 +161,9 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, onSnapshot, doc, deleteDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// --- PASO 1: Variable para controlar la limpieza del listener ---
+var unsubscribeUsuarios = null;
+
 // --- MANTENEMOS TUS FUNCIONES ORIGINALES ---
 window.cambiarTab = (id, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
@@ -183,7 +186,10 @@ onAuthStateChanged(auth, async (user) => {
     signOut(auth); return;
   }
 
-  onSnapshot(collection(db, "usuarios"), (snapshot) => {
+  // --- PASO 2: Limpiamos conexión previa antes de abrir una nueva ---
+  if (unsubscribeUsuarios) { unsubscribeUsuarios(); }
+
+  unsubscribeUsuarios = onSnapshot(collection(db, "usuarios"), function(snapshot) {
     const tabla = document.getElementById("tablaUsuariosBody");
     let cEst = 0, cProf = 0;
     tabla.innerHTML = "";
@@ -194,7 +200,6 @@ onAuthStateChanged(auth, async (user) => {
       if(u.rol === "estudiante") cEst++;
       if(u.rol === "profesor") cProf++;
 
-      // Se añadió el botón ✏️ para editar nombres
       tabla.innerHTML += `
         <tr>
           <td>
@@ -220,11 +225,10 @@ onAuthStateChanged(auth, async (user) => {
 
 // --- FUNCIONES DE ADMINISTRADOR ---
 
-// NUEVA FUNCIÓN: EDITAR NOMBRE
 window.editarNombre = async (id, nombreAct, apellidoAct) => {
   const nuevoNom = prompt("Editar Nombres:", nombreAct);
   const nuevoApe = prompt("Editar Apellidos:", apellidoAct);
-  
+
   if (nuevoNom !== null && nuevoApe !== null) {
     try {
       await updateDoc(doc(db, "usuarios", id), {
@@ -278,7 +282,11 @@ window.eliminarUsuario = async (id) => {
   }
 };
 
-window.cerrarSesion = () => signOut(auth).then(() => window.location.href = "login.html");
+window.cerrarSesion = () => {
+  // Limpiamos el listener al salir también por seguridad
+  if (unsubscribeUsuarios) unsubscribeUsuarios();
+  signOut(auth).then(() => window.location.href = "login.html");
+};
 </script>
 </body>
 </html>
