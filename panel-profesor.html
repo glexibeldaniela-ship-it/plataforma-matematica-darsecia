@@ -117,11 +117,11 @@
 <script type="module">
     import { auth, db } from "./firebase.js";
     import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"; // Import corregido internamente por seguridad de enlace
-    import { collection as col, onSnapshot as snap, doc as dDoc, updateDoc as upDoc, deleteDoc as delDoc, getDocs as gDocs, getDoc as gDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let estudiantesActuales = [];
     let unsubscribeEstudiantes = null;
+    let unsubscribeNotas = null;
 
     onAuthStateChanged(auth, (user) => { 
         if (!user) { window.location.href = "login.html"; return; }
@@ -134,15 +134,15 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
         document.getElementById('tab-' + name).classList.add('activo');
         btn.classList.add('activo');
-        if (name === 'estudiantes') cargarEstudiantes();
-        if (name === 'resultados') cargarNotas();
+        if (name === 'estudiantes') window.cargarEstudiantes();
+        if (name === 'resultados') window.cargarNotas();
     };
 
     async function cargarExamenes() {
         const lista = document.getElementById("listaExamenes");
-        snap(col(db, "examenes"), (snapShot) => {
+        onSnapshot(collection(db, "examenes"), (snap) => {
             lista.innerHTML = "";
-            snapShot.forEach(d => {
+            snap.forEach(d => {
                 const ex = d.data();
                 lista.innerHTML += `
                     <div class="examen-card">
@@ -163,8 +163,8 @@
         });
     }
 
-    window.toggleEx = async (id, st) => { await upDoc(dDoc(db, "examenes", id), { activo: !st }); };
-    window.borrarEx = async (id) => { if (confirm("¿Eliminar examen?")) await delDoc(dDoc(db, "examenes", id)); };
+    window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); };
+    window.borrarEx = async (id) => { if (confirm("¿Eliminar examen?")) await deleteDoc(doc(db, "examenes", id)); };
 
     window.cargarEstudiantes = async () => {
         const anioSel = document.getElementById("fAnio").value;
@@ -172,11 +172,13 @@
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
 
+        // FIX de la auditoría: Si ya hay una conexión abierta, la cerramos antes de abrir la nueva
         if (unsubscribeEstudiantes) unsubscribeEstudiantes();
-        unsubscribeEstudiantes = snap(col(db, "usuarios"), (snapShot) => {
+
+        unsubscribeEstudiantes = onSnapshot(collection(db, "usuarios"), (snap) => {
             body.innerHTML = "";
             estudiantesActuales = [];
-            snapShot.forEach(d => {
+            snap.forEach(d => {
                 const u = d.data();
                 if (u.rol === 'estudiante' || !u.rol) {
                     const anioU = String(u.anio || "");
@@ -199,14 +201,14 @@
     };
 
     window.eliminarEstudiante = async (uid) => {
-        if (confirm("¿Eliminar este estudiante?")) await delDoc(dDoc(db, "usuarios", uid));
+        if (confirm("¿Eliminar este estudiante?")) await deleteDoc(doc(db, "usuarios", uid));
     };
 
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
-        const snapShot = await gDocs(col(db, "examenes"));
+        const snap = await getDocs(collection(db, "examenes"));
         select.innerHTML = '<option value="">Seleccione un Examen...</option>';
-        snapShot.forEach(d => {
+        snap.forEach(d => {
             const op = document.createElement("option");
             op.value = d.id; op.textContent = d.data().titulo; select.appendChild(op);
         });
@@ -216,11 +218,16 @@
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
         if (!exId) { body.innerHTML = ""; return; }
-        const exSnap = await gDoc(dDoc(db, "examenes", exId));
+        
+        const exSnap = await getDoc(doc(db, "examenes", exId));
         const exData = exSnap.data() || {};
-        snap(col(db, "examenes", exId, "resultados"), (snapShot) => {
+
+        // FIX de la auditoría: Cerramos conexión previa de notas
+        if (unsubscribeNotas) unsubscribeNotas();
+
+        unsubscribeNotas = onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
             body.innerHTML = "";
-            snapShot.forEach(d => {
+            snap.forEach(d => {
                 const n = d.data();
                 const row = document.createElement("tr");
                 row.innerHTML = `
@@ -230,12 +237,11 @@
                     <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
                     <td><button id="btnPdf_${d.id}" style="border:none; background:none; cursor:pointer;">📥</button></td>`;
                 body.appendChild(row);
-                document.getElementById(`btnPdf_${d.id}`).onclick = () => descargarActaProfesor(n, exData);
+                document.getElementById("btnPdf_" + d.id).onclick = () => descargarActaProfesor(n, exData);
             });
         });
     };
 
-    // FUNCIÓN MEJORADA: Única modificación para asegurar el .pdf automático en APK
     function triggerDownload(docPDF, fileName) {
         const nombreFinal = fileName.toLowerCase().endsWith('.pdf') ? fileName : fileName + '.pdf';
         try { 
@@ -257,10 +263,10 @@
         docPDF.setFontSize(10);
         docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 15, { align: "center" });
         docPDF.text("ACTA DE EVALUACIÓN", 105, 25, { align: "center" });
-        docPDF.text(`Examen: ${ex.titulo}`, 20, 40);
-        docPDF.text(`Estudiante: ${n.nombre}`, 20, 50);
-        docPDF.text(`Nota: ${n.nota} / 20`, 20, 60);
-        triggerDownload(docPDF, `Acta_${n.cedula}`);
+        docPDF.text("Examen: " + ex.titulo, 20, 40);
+        docPDF.text("Estudiante: " + n.nombre, 20, 50);
+        docPDF.text("Nota: " + n.nota + " / 20", 20, 60);
+        triggerDownload(docPDF, "Acta_" + n.cedula);
     }
 
     window.descargarListaPDF = () => {
@@ -268,7 +274,7 @@
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
         docPDF.text("LISTADO DE ESTUDIANTES", 105, 20, { align: "center" });
-        const filas = estudiantesActuales.map((u, i) => [i+1, `${u.nombres} ${u.apellidos}`, u.cedula, `${u.anio}° ${u.seccion}`]);
+        const filas = estudiantesActuales.map((u, i) => [i+1, u.nombres + " " + u.apellidos, u.cedula, u.anio + "° " + u.seccion]);
         docPDF.autoTable({ startY: 30, head: [['#', 'Nombre', 'Cédula', 'Año/Sec']], body: filas });
         triggerDownload(docPDF, "Lista_Estudiantes");
     };
