@@ -73,7 +73,7 @@ function agregarPreguntaConDatos(p) {
   div.style.padding = "15px";
   div.style.marginBottom = "15px";
   div.style.background = "#fff";
-  
+
   const idLocal = contador;
 
   div.innerHTML = `
@@ -117,7 +117,7 @@ function renderContenidoDinamico(select, contenido, idLocal, datos) {
     btnAgregar.type = "button";
     btnAgregar.style.padding = "5px 10px";
     btnAgregar.style.borderRadius = "5px";
-    
+
     const lista = document.createElement("div");
     lista.style.marginTop = "10px";
 
@@ -175,28 +175,26 @@ function crearFilaOpcion(lista, idLocal, texto, esCorrecta) {
   lista.appendChild(opcionDiv);
 }
 
-// 🚀 FUNCIÓN DE GUARDADO MEJORADA POR EL CONEJO 🐇
 async function guardarExamen() {
   const user = usuarioActual || auth.currentUser;
   if (!user) { 
-    alert("❌ Error: No se detectó sesión de usuario. Intenta recargar la página."); 
+    alert("❌ Error: No se detectó sesión de usuario."); 
     return; 
   }
 
   try {
     const titulo   = document.getElementById("titulo").value.trim();
     const anio     = document.getElementById("anio").value.trim();
-    const seccion  = document.getElementById("seccion").value.trim();
+    // Captura el valor del Select (A, B o Ambas)
+    const seccion  = document.getElementById("seccion").value;
     const lapso    = document.getElementById("lapso").value.trim();
     const duracion = parseInt(document.getElementById("duracion").value);
     const repaso   = document.getElementById("repaso").value.trim();
 
-    // Validaciones campo por campo
-    if (!titulo)   { alert("Falta el título"); return; }
-    if (!anio)     { alert("Falta el año"); return; }
-    if (!seccion)  { alert("Falta la sección"); return; }
-    if (!lapso)    { alert("Falta el lapso"); return; }
-    if (!duracion) { alert("Falta la duración"); return; }
+    if (!titulo || !anio || !seccion || !lapso || !duracion) { 
+      alert("⚠️ Por favor rellena todos los campos obligatorios."); 
+      return; 
+    }
 
     const datosExamen = {
       titulo, anio, seccion, lapso, duracion,
@@ -227,7 +225,7 @@ async function guardarExamen() {
     for (const preguntaDiv of preguntas) {
       const tipo = preguntaDiv.querySelector(".tipoPregunta").value;
       const enunciado = preguntaDiv.querySelector(".enunciado").value;
-      if (!tipo || !enunciado) continue; // Saltarse preguntas incompletas
+      if (!tipo || !enunciado) continue;
 
       let datosPregunta = { tipo, enunciado, puntos: 1 };
 
@@ -254,12 +252,12 @@ async function guardarExamen() {
       await addDoc(collection(db, "examenes", examenId, "preguntas"), datosPregunta);
     }
 
-    alert(examenIdEditando ? "✅ Examen actualizado correctamente" : "✅ Examen creado correctamente");
+    alert(examenIdEditando ? "✅ Examen actualizado" : "✅ Examen publicado");
     window.location.href = "panel-profesor.html";
 
   } catch (error) {
     console.error("Error al guardar:", error);
-    alert("❌ Error de Firebase al guardar: " + error.message);
+    alert("❌ Error: " + error.message);
   }
 }
 
