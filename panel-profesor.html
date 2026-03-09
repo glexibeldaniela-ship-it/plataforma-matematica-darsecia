@@ -24,14 +24,15 @@ body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #
 .btn-activar { background: #4caf50; }
 .btn-desactivar { background: #ff9800; }
 .btn-eliminar { background: #d32f2f; margin-left: 5px; }
-.filtros-box { display: flex; gap: 10px; margin-bottom: 15px; }
-select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; }
+.filtros-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 120px; }
 .status-online { color: #4caf50; font-weight: bold; font-size: 10px; display: flex; align-items: center; gap: 4px; }
 .status-online::before { content: '●'; font-size: 14px; }
 .tabla-scroll { width: 100%; overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 table { min-width: 600px; border-collapse: collapse; width: 100%; }
 th { background: #00796b; color: white; padding: 12px; text-align: left; }
 td { padding: 12px; border-bottom: 1px solid #eee; }
+.btn-descargar-lista { background: #00bcd4; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 </style>
 </head>
 <body>
@@ -61,6 +62,7 @@ td { padding: 12px; border-bottom: 1px solid #eee; }
     <div class="filtros-box">
       <select id="fAnio" onchange="cargarEstudiantes()"><option value="todos">Todos los Años</option><option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option></select>
       <select id="fSec" onchange="cargarEstudiantes()"><option value="todas">Todas las Secciones</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+      <button class="btn-descargar-lista" onclick="descargarListaPDF()">📥 Descargar Lista PDF</button>
     </div>
     <div class="tabla-scroll">
       <table>
@@ -98,6 +100,9 @@ td { padding: 12px; border-bottom: 1px solid #eee; }
 import { auth, db } from "./firebase.js";
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Variable global para guardar los estudiantes filtrados actualmente
+let estudiantesActuales = [];
 
 onAuthStateChanged(auth, (user) => { 
   if(!user) { window.location.href="login.html"; return; }
@@ -140,7 +145,6 @@ async function cargarExamenes() {
 window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); };
 window.borrarEx = async (id) => { if(confirm("¿Eliminar examen?")) { await deleteDoc(doc(db, "examenes", id)); } };
 
-// FUNCIÓN AÑADIDA PARA BORRAR ESTUDIANTES
 window.eliminarEstudiante = async (id) => {
   if(confirm("¿Estás seguro de que deseas eliminar a este estudiante de la base de datos?")) {
     try {
@@ -158,10 +162,12 @@ async function cargarEstudiantes() {
   const body = document.getElementById("bodyEstudiantes");
   onSnapshot(collection(db, "usuarios"), (snap) => {
     body.innerHTML = "";
+    estudiantesActuales = []; // Reiniciar lista global
     snap.forEach(d => {
       const u = d.data();
       if(u.rol === 'estudiante' || !u.rol) {
         if((anioSel === 'todos' || String(u.anio) === anioSel) && (secSel === 'todas' || u.seccion === secSel)) {
+          estudiantesActuales.push(u); // Guardar para el PDF
           body.innerHTML += `<tr><td><b>${u.nombres} ${u.apellidos}</b><br><small>CI: ${u.cedula || 'N/P'}</small></td><td>${u.anio || '?'}° ${u.seccion || '?'}</td><td>${u.online ? '<span class="status-online">Línea</span>':'Off'}</td><td><button class="btn-accion btn-eliminar" onclick="eliminarEstudiante('${d.id}')">🗑️</button></td></tr>`;
         }
       }
@@ -194,7 +200,6 @@ window.cargarNotas = async () => {
     snap.forEach(d => {
       const n = d.data();
       const row = document.createElement("tr");
-
       const ci = n.cedula || "---";
       const grado = n.grado || n.anio || "?";
       const seccion = n.seccion || "?";
@@ -239,6 +244,56 @@ function descargarActaProfesor(n, ex) {
   docPDF.text("Docente Evaluador", 105, 222, { align: "center" });
   docPDF.save(`Acta_${n.nombre}.pdf`);
 }
+
+// NUEVA FUNCIÓN: DESCARGAR LISTA POR AÑO Y SECCIÓN
+window.descargarListaPDF = () => {
+  if (estudiantesActuales.length === 0) {
+    alert("No hay estudiantes en la lista actual para descargar.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const docPDF = new jsPDF();
+  const anio = document.getElementById("fAnio").value;
+  const seccion = document.getElementById("fSec").value;
+
+  // Membrete
+  docPDF.setFont("times", "bold"); docPDF.setFontSize(10);
+  docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 15, { align: "center" });
+  docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 20, { align: "center" });
+  docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 25, { align: "center" });
+  docPDF.line(20, 30, 190, 30);
+
+  docPDF.setFontSize(12);
+  docPDF.text(`LISTADO DE ESTUDIANTES: ${anio !== 'todos' ? anio + '° AÑO' : 'TODOS'} - SECCIÓN: ${seccion !== 'todas' ? seccion : 'TODAS'}`, 105, 40, { align: "center" });
+
+  // Preparar datos de la tabla
+  const filas = estudiantesActuales.map((u, index) => [
+    index + 1,
+    `${u.nombres} ${u.apellidos}`.toUpperCase(),
+    u.cedula || "N/P",
+    `${u.anio || '?'}° "${u.seccion || '?'}"`
+  ]);
+
+  // Generar tabla
+  docPDF.autoTable({
+    startY: 50,
+    head: [['N°', 'APELLIDOS Y NOMBRES', 'CÉDULA', 'AÑO/SEC']],
+    body: filas,
+    headStyles: { fillStyle: 'dark', fillColor: [0, 121, 107] },
+    theme: 'grid',
+    styles: { fontSize: 9 }
+  });
+
+  // Pie de página con firma
+  const finalY = docPDF.lastAutoTable.finalY + 20;
+  docPDF.line(75, finalY + 15, 135, finalY + 15);
+  docPDF.setFontSize(10);
+  docPDF.text("PROF. JOSÉ FERNÁNDEZ", 105, finalY + 20, { align: "center" });
+  docPDF.text("Control de Estudios / Docente", 105, finalY + 25, { align: "center" });
+
+  docPDF.save(`Lista_${anio}_${seccion}.pdf`);
+};
 
 window.cerrarSesion = () => signOut(auth).then(() => window.location.href="login.html");
 </script>
