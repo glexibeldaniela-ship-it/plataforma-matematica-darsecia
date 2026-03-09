@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Crear Examen - MateEduPro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   body {
     margin: 0; padding: 10px;
@@ -15,7 +15,7 @@
     background: linear-gradient(135deg, #00796b, #004d40);
     color: white; padding: 25px 15px;
     border-radius: 15px; text-align: center;
-    margin-bottom: 25px; /* Más espacio debajo del banner verde */
+    margin-bottom: 25px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   }
 
@@ -23,12 +23,11 @@
     max-width: 700px; margin: 0 auto;
   }
 
-  /* Secciones Estilizadas */
   .seccion-card {
     background: white;
     padding: 20px;
     border-radius: 15px;
-    margin-bottom: 25px; /* Espacio entre secciones */
+    margin-bottom: 25px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border: 1px solid #e0e6ed;
   }
@@ -70,6 +69,15 @@
 
   .row { display: flex; gap: 10px; }
   .col { flex: 1; }
+
+  /* Estilo para las preguntas dinámicas */
+  .pregunta-item {
+    background: #f9fdfd;
+    border: 1px solid #c8e6c9;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+  }
 
   @media(max-width: 600px) {
     .row { flex-direction: column; }
@@ -128,13 +136,13 @@
 
     <div class="campo-grupo">
       <label>Instrucciones / Descripción</label>
-      <textarea id="descripcion" placeholder="Ej: Lee con atención..."></textarea>
+      <textarea id="descripcion" placeholder="Ej: Lee con atención cada pregunta. Tienes un solo intento."></textarea>
     </div>
 
     <div class="row">
         <div class="campo-grupo col">
             <label>Duración (Minutos)</label>
-            <input type="number" id="duracion" placeholder="45">
+            <input type="number" id="duracion" value="45" min="1">
         </div>
         <div class="campo-grupo col" style="flex: 2;">
             <label>Link de Repaso (Google Drive)</label>
@@ -145,6 +153,7 @@
 
   <div class="seccion-card">
     <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
+    
     <div id="contenedorPreguntas"></div>
 
     <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
@@ -152,7 +161,7 @@
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
     <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
-    <button class="btn-accion btn-volver" onclick="history.back()">⬅️ Volver al Panel</button>
+    <button class="btn-accion btn-volver" onclick="window.location.href='panel-profesor.html'">⬅️ Volver al Panel</button>
   </div>
 
 </div>
