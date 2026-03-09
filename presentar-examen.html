@@ -204,9 +204,9 @@ function iniciarTemporizador(minutos) {
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
     temporizadorDiv.innerText = `⏱ Tiempo Restante: ${min}:${seg < 10 ? "0"+seg : seg}`;
-    
+
     if (tiempoRestante <= 60) temporizadorDiv.style.background = "#d32f2f";
-    
+
     tiempoRestante--;
 
     if (tiempoRestante < 0) {
@@ -260,7 +260,7 @@ async function cargarExamen() {
 
     const div = document.createElement("div");
     div.className = "pregunta-card";
-    
+
     let contenidoInput = "";
 
     if (pregunta.tipo === "opcion_multiple" && Array.isArray(pregunta.opciones)) {
@@ -331,13 +331,21 @@ async function enviarExamen(forzado = false) {
   const nota = (total === 0) ? 0 : (correctas / total) * 20;
   const tiempoConsumido = duracionTotal - tiempoRestante;
 
+  // CORRECCIÓN FIRE-DATOS: Obtener datos específicos del perfil
   const usuarioSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
-  const usuarioData = usuarioSnap.data();
-  const nombreEstudiante = `${usuarioData.nombres || ""} ${usuarioData.apellidos || ""}`.trim();
+  const usuarioData = usuarioSnap.data() || {};
+  
+  // Capturamos Nombres, Apellidos, Año y Sección del perfil
+  const nombreEstudiante = `${usuarioData.nombres || ""} ${usuarioData.apellidos || ""}`.trim() || "Estudiante";
+  const gradoEstudiante = usuarioData.anio || "S/A";
+  const seccionEstudiante = usuarioData.seccion || "S/S";
 
   await setDoc(resultadoRef, {
     estudiante_id: usuarioActual.uid,
     nombre: nombreEstudiante,
+    grado: gradoEstudiante,
+    seccion: seccionEstudiante,
+    lapso: "1", // Por defecto o podrías traerlo del examen
     tiempo_segundos: tiempoConsumido,
     nota: parseFloat(nota.toFixed(2)),
     estado: nota >= 10 ? "Aprobado" : "Reprobado",
@@ -357,7 +365,7 @@ btnEnviar.addEventListener("click", () => {
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "index.html"; return; }
   usuarioActual = user;
-  
+
   const resRef = doc(db, "examenes", examenId, "resultados", user.uid);
   const resSnap = await getDoc(resRef);
   if (resSnap.exists()) {
@@ -366,7 +374,7 @@ onAuthStateChanged(auth, async (user) => {
     temporizadorDiv.style.display = "none";
     return;
   }
-  
+
   await cargarExamen();
 });
 </script>
