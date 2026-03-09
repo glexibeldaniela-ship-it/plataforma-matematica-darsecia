@@ -8,16 +8,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 <style>
-    body { font-family: sans-serif; background: #f4f7f6; }
-    .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
+    .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .contenedor { padding: 20px; max-width: 800px; margin: 0 auto; }
-    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; }
-    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; display: flex; justify-content: space-between; align-items: center; }
+    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #ff9800; }
+    .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-    th { background: #00796b; color: white; padding: 10px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #eee; }
-    .btn-pdf-examen { background: #00796b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+    th { background: #00796b; color: white; padding: 12px; text-align: left; font-size: 0.9rem; }
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    .btn-pdf-examen { background: #00796b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -26,17 +27,19 @@
     <h2 style="margin:0">MateEduPro 🎓</h2>
     <small>Panel Estudiante</small>
   </div>
-  <button onclick="cerrarSesion()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px;">Salir</button>
+  <button onclick="cerrarSesion()" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold;">Salir</button>
 </div>
 
 <div class="contenedor">
-  <div id="datosPersonales" class="perfil-card"><p>Cargando perfil...</p></div>
+  <div id="datosPersonales" class="perfil-card">
+      <p>Cargando perfil del estudiante...</p>
+  </div>
 
   <div class="seccion-titulo">📋 Exámenes Disponibles</div>
   <div id="listaExamenes"></div>
 
   <div class="seccion-titulo">📊 Tu Historial de Notas</div>
-  <div style="overflow-x:auto;">
+  <div style="overflow-x:auto;" class="tabla-scroll">
     <table>
       <thead>
         <tr>
@@ -63,7 +66,9 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (userSnap.exists()) {
       datosUsuario = userSnap.data();
+      // Mostramos los datos con formato limpio
       document.getElementById("datosPersonales").innerHTML = "<b>" + datosUsuario.nombres + " " + datosUsuario.apellidos + "</b><br>C.I: " + (datosUsuario.cedula || "N/P") + " | " + datosUsuario.anio + "° Año Secc: " + datosUsuario.seccion;
+      
       cargarExamenes(datosUsuario.anio, datosUsuario.seccion);
       cargarHistorial(user.uid, datosUsuario.anio, datosUsuario.seccion);
     }
@@ -75,53 +80,59 @@ onAuthStateChanged(auth, async (user) => {
 async function cargarExamenes(anio, sec) {
   const lista = document.getElementById("listaExamenes");
   try {
-    // CORRECCIÓN: Filtro optimizado para mostrar exámenes según año y sección
+    // Filtramos por año y que estén activos
     const q = query(collection(db, "examenes"), where("activo", "==", true), where("anio", "==", anio));
     const snap = await getDocs(q);
-    
-    lista.innerHTML = snap.empty ? "<p>No hay exámenes activos para tu grado.</p>" : "";
-    
+
+    lista.innerHTML = snap.empty ? "<p style='text-align:center; color:#777; padding:20px;'>No hay exámenes activos para tu grado actualmente.</p>" : "";
+
     snap.forEach(d => {
       const ex = d.data();
       // Validamos sección (específica o 'Ambas')
       if (ex.seccion === sec || ex.seccion === "Ambas") {
-        lista.innerHTML += "<div class='examen-card'><div><strong>" + ex.titulo + "</strong><br><small>Duración: " + ex.duracion + " min</small></div><button onclick=\"window.location.href='presentar-examen.html?id=" + d.id + "'\" style='background:#00796b; color:white; border:none; padding:8px 15px; border-radius:5px;'>Iniciar</button></div>";
+        let html = "<div class='examen-card'>";
+        html += "<div><strong>" + ex.titulo + "</strong><br><small>Tiempo: " + ex.duracion + " minutos</small></div>";
+        html += "<button class='btn-iniciar' onclick=\"window.location.href='presentar-examen.html?id=" + d.id + "'\">Iniciar</button>";
+        html += "</div>";
+        lista.innerHTML += html;
       }
     });
   } catch (error) {
-    lista.innerHTML = "Error al cargar exámenes.";
+    lista.innerHTML = "<p>Error al cargar la lista de exámenes.</p>";
   }
 }
 
 async function cargarHistorial(uid, anio, sec) {
   const body = document.getElementById("bodyHistorial");
-  body.innerHTML = "<tr><td colspan='3'>Cargando historial...</td></tr>";
-  
+  body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Buscando tus notas...</td></tr>";
+
   try {
     const qEx = query(collection(db, "examenes"), where("anio", "==", anio));
     const snapEx = await getDocs(qEx);
+    let hayNotas = false;
     body.innerHTML = "";
 
     for (const docEx of snapEx.docs) {
         const exData = docEx.data();
         if (exData.seccion === sec || exData.seccion === "Ambas") {
-            // CORRECCIÓN #2: Buscar resultados específicos de este estudiante
             const resSnap = await getDocs(collection(db, "examenes", docEx.id, "resultados"));
             resSnap.forEach(resDoc => {
                 const res = resDoc.data();
+                // Verificamos que la nota sea de este alumno
                 if (res.estudiante_id === uid || res.cedula === datosUsuario.cedula) {
+                    hayNotas = true;
                     const tr = document.createElement("tr");
-                    tr.innerHTML = "<td>" + exData.titulo + "</td><td><b style='color:#00796b'>" + res.nota + "/20</b></td><td><button class='btn-pdf-examen' id='btnPdf_" + resDoc.id + "'>📥 PDF</button></td>";
+                    tr.innerHTML = "<td>" + exData.titulo + "</td><td><b style='color:#00796b'>" + res.nota + " / 20</b></td><td><button class='btn-pdf-examen' id='btnPdf_" + resDoc.id + "'>📥 PDF</button></td>";
                     body.appendChild(tr);
-                    
+
                     document.getElementById("btnPdf_" + resDoc.id).onclick = () => window.descargarExamenPDF(docEx.id, exData.titulo, res.nota);
                 }
             });
         }
     }
-    if (body.innerHTML === "") body.innerHTML = "<tr><td colspan='3'>Aún no tienes exámenes realizados.</td></tr>";
+    if (!hayNotas) body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Aún no tienes evaluaciones registradas.</td></tr>";
   } catch (error) {
-    body.innerHTML = "<tr><td colspan='3'>Error al cargar historial.</td></tr>";
+    body.innerHTML = "<tr><td colspan='3'>Error al cargar el historial.</td></tr>";
   }
 }
 
@@ -145,24 +156,25 @@ window.descargarExamenPDF = async (exId, titulo, nota) => {
     const pregSnap = await getDocs(collection(db, "examenes", exId, "preguntas"));
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
-    
-    // Encabezado del Acta
+
     docPDF.setFontSize(14);
-    docPDF.text("MATEEDUPRO - REPORTE DE EVALUACIÓN", 105, 15, { align: "center" });
+    docPDF.text("MATEEDUPRO - COMPROBANTE DE NOTA", 105, 15, { align: "center" });
     docPDF.setFontSize(10);
     docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 22, { align: "center" });
-    
     docPDF.line(20, 25, 190, 25);
-    
+
     docPDF.text("ESTUDIANTE: " + datosUsuario.nombres + " " + datosUsuario.apellidos, 20, 35);
     docPDF.text("CÉDULA: " + (datosUsuario.cedula || "N/P"), 20, 42);
-    docPDF.text("EXAMEN: " + titulo, 20, 49);
+    docPDF.text("EVALUACIÓN: " + titulo, 20, 49);
+    
     docPDF.setFontSize(12);
-    docPDF.text("CALIFICACIÓN FINAL: " + nota + " / 20", 20, 58);
-    
+    docPDF.setTextColor(0, 121, 107);
+    docPDF.text("CALIFICACIÓN: " + nota + " / 20", 20, 58);
+
     docPDF.setFontSize(10);
-    docPDF.text("CONTENIDO EVALUADO:", 20, 70);
-    
+    docPDF.setTextColor(0, 0, 0);
+    docPDF.text("TEMAS EVALUADOS:", 20, 70);
+
     let y = 80;
     let cont = 1;
     pregSnap.forEach((p) => {
@@ -173,9 +185,9 @@ window.descargarExamenPDF = async (exId, titulo, nota) => {
         cont++;
     });
 
-    triggerDownload(docPDF, "Resultado_" + titulo);
+    triggerDownload(docPDF, "Nota_" + titulo.replace(/\s/g, '_'));
   } catch (error) {
-    alert("No se pudo generar el PDF. Intente de nuevo.");
+    alert("Error al generar el reporte PDF.");
   }
 };
 
