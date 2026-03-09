@@ -6,110 +6,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="estilos.css">
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f4f7f6;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: #333;
-  }
-
-  .header {
-    background: linear-gradient(135deg, #00796b, #004d40);
-    color: white;
-    padding: 30px 20px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-
+  body { margin: 0; padding: 0; background: #f4f7f6; font-family: 'Segoe UI', sans-serif; color: #333; }
+  .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
   .header h2 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
-
-  .contenedorExamen {
-    max-width: 800px;
-    margin: -30px auto 50px;
-    padding: 0 15px;
-  }
-
-  .info-card {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
-  }
-
-  .instrucciones {
-    background: #e0f2f1;
-    border-left: 5px solid #00796b;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 0 8px 8px 0;
-    font-size: 0.95rem;
-    color: #004d40;
-  }
-
-  #temporizador {
-    position: sticky;
-    top: 10px;
-    z-index: 100;
-    background: #ff5252;
-    color: white;
-    padding: 12px;
-    border-radius: 50px;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(255,82,82,0.3);
-    margin-bottom: 25px;
-    font-size: 1.1rem;
-  }
-
-  .pregunta-card {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid #eee;
-  }
-
-  .pregunta-card h4 {
-    margin-top: 0;
-    color: #00796b;
-    font-size: 1.1rem;
-    line-height: 1.4;
-  }
-
-  .opcion-label {
-    display: block;
-    background: #f9f9f9;
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 2px solid transparent;
-  }
-
+  .contenedorExamen { max-width: 800px; margin: -30px auto 50px; padding: 0 15px; }
+  .info-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; }
+  .instrucciones { background: #e0f2f1; border-left: 5px solid #00796b; padding: 15px; margin-top: 15px; border-radius: 0 8px 8px 0; font-size: 0.95rem; color: #004d40; }
+  #temporizador { position: sticky; top: 10px; z-index: 100; background: #ff5252; color: white; padding: 12px; border-radius: 50px; text-align: center; font-weight: bold; box-shadow: 0 4px 12px rgba(255,82,82,0.3); margin-bottom: 25px; font-size: 1.1rem; transition: background 0.3s; }
+  .pregunta-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
+  .pregunta-card h4 { margin-top: 0; color: #00796b; font-size: 1.1rem; line-height: 1.4; }
+  .opcion-label { display: block; background: #f9f9f9; padding: 12px 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
   input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-  input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #eee;
-    box-sizing: border-box;
-  }
-
-  #btnEnviar {
-    background: #00bcd4;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 18px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 20px;
-  }
+  input[type="text"], input[type="number"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
+  #btnEnviar { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 18px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,188,212,0.3); }
 </style>
 </head>
 <body>
@@ -146,58 +55,59 @@ let usuarioActual = null;
 let tiempoRestante = 0;
 let intervaloTimer = null;
 let examenEnviado = false;
-let duracionTotal = 180; // Valor por defecto (3 min)
 
-/* SEGURIDAD: Bloqueos de salida */
+/* BLOQUEO DE SALIDA (Anti-Trampa) */
 window.addEventListener("beforeunload", (e) => {
   if (!examenEnviado) { e.preventDefault(); e.returnValue = ""; }
 });
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && !examenEnviado) {
-    alert("⚠ Has salido de la pantalla. Se enviará el examen automáticamente.");
-    enviarExamen(true);
+    alert("⚠ Has salido de la pantalla. El examen se enviará automáticamente por seguridad.");
+    window.enviarExamen(true);
   }
 });
 
-function iniciarTemporizador() {
-  tiempoRestante = duracionTotal;
+window.iniciarTemporizador = (duracionMinutos) => {
+  tiempoRestante = duracionMinutos * 60;
   intervaloTimer = setInterval(() => {
     let min = Math.floor(tiempoRestante / 60);
     let seg = tiempoRestante % 60;
     temporizadorDiv.innerText = "⏱ Tiempo Restante: " + min + ":" + (seg < 10 ? "0"+seg : seg);
+    
     if (tiempoRestante <= 30) temporizadorDiv.style.background = "#d32f2f";
     if (tiempoRestante <= 0) {
       clearInterval(intervaloTimer);
-      enviarExamen(true);
+      window.enviarExamen(true);
     }
     tiempoRestante--;
   }, 1000);
-}
+};
 
 async function cargarExamen() {
   const examenRef = doc(db, "examenes", examenId);
   const examenSnap = await getDoc(examenRef);
   if (!examenSnap.exists()) { infoDiv.innerHTML = "<p>El examen no existe.</p>"; return; }
 
-  const examen = examenSnap.data();
-  
-  // CORRECCIÓN #1: Cronómetro Dinámico (Usa lo que tú pusiste al crear el examen)
-  duracionTotal = (parseInt(examen.duracion) || 3) * 60;
+  const ex = examenSnap.data();
 
-  infoDiv.innerHTML = "<h2>" + examen.titulo + "</h2>" +
-    "<p>📌 " + examen.anio + "° Año - Secc: " + examen.seccion + " | ⏱ " + (duracionTotal/60) + " min</p>" +
-    "<div class='instrucciones'><strong>Instrucciones:</strong><br>" + (examen.descripcion || "Responde con cuidado.") + "</div>";
+  // CORRECCIÓN CLAVE: El tiempo ahora es el que tú pongas al crear el examen
+  const duracionReal = parseInt(ex.duracion) || 10; 
 
-  iniciarTemporizador();
+  infoDiv.innerHTML = "<h2>" + ex.titulo + "</h2>" +
+    "<p>📌 " + ex.anio + "° Año - Secc: " + ex.seccion + " | ⏱ " + duracionReal + " min</p>" +
+    "<div class='instrucciones'><strong>Instrucciones:</strong><br>" + (ex.descripcion || "Responde con cuidado.") + "</div>";
+
+  window.iniciarTemporizador(duracionReal);
 
   const preguntasSnap = await getDocs(collection(db, "examenes", examenId, "preguntas"));
-  let numero = 1;
+  let cont = 1;
+  preguntasDiv.innerHTML = "";
   preguntasSnap.forEach(docu => {
     const p = docu.data(); p.id = docu.id;
     preguntasData.push(p);
-    let htmlP = "<div class='pregunta-card'><h4>Pregunta " + numero + "</h4><p>" + p.enunciado + "</p>";
-    
+    let htmlP = "<div class='pregunta-card'><h4>Pregunta " + cont + "</h4><p>" + p.enunciado + "</p>";
+
     if (p.tipo === "opcion_multiple") {
       p.opciones.forEach(op => {
         htmlP += "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='" + op.texto + "'> " + op.texto + "</label>";
@@ -206,61 +116,67 @@ async function cargarExamen() {
       htmlP += "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='verdadero'> Verdadero</label>" +
                "<label class='opcion-label'><input type='radio' name='preg_" + p.id + "' value='falso'> Falso</label>";
     } else {
-      htmlP += "<input type='text' name='preg_" + p.id + "' placeholder='Tu respuesta...'>";
+      htmlP += "<input type='text' name='preg_" + p.id + "' placeholder='Escribe tu respuesta aquí...'>";
     }
-    
+
     preguntasDiv.innerHTML += htmlP + "</div>";
-    numero++;
+    cont++;
   });
 }
 
-async function enviarExamen(forzado = false) {
+window.enviarExamen = async (forzado = false) => {
   if (examenEnviado) return;
   examenEnviado = true;
   clearInterval(intervaloTimer);
   btnEnviar.disabled = true;
+  btnEnviar.innerText = "Enviando...";
 
-  let correctas = 0;
+  let puntos = 0;
   preguntasData.forEach(p => {
     const input = document.querySelector("[name='preg_" + p.id + "']:checked") || document.querySelector("[name='preg_" + p.id + "']");
     if (!input) return;
-    let resU = input.value.trim().toLowerCase();
-    
+    let respuestaAlumno = input.value.trim().toLowerCase();
+
     if (p.tipo === "opcion_multiple") {
-      const c = p.opciones.find(o => o.correcta);
-      if (c && resU === c.texto.toLowerCase()) correctas++;
-    } else if (resU === String(p.respuestaCorrecta).toLowerCase()) {
-      correctas++;
+      const correcta = p.opciones.find(o => o.correcta);
+      if (correcta && respuestaAlumno === correcta.texto.toLowerCase()) puntos++;
+    } else if (respuestaAlumno === String(p.respuestaCorrecta).toLowerCase()) {
+      puntos++;
     }
   });
 
-  const nota = (correctas / preguntasData.length) * 20;
-  
-  // CORRECCIÓN #2: Guardar datos completos para que el profesor los vea en el acta
-  const uSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
-  const uD = uSnap.data() || {};
+  const calificacion = (puntos / preguntasData.length) * 20;
 
-  await setDoc(doc(db, "examenes", examenId, "resultados", usuarioActual.uid), {
-    estudiante_id: usuarioActual.uid,
-    nombre: uD.nombres + " " + uD.apellidos,
-    cedula: uD.cedula || "N/P",
-    grado: uD.anio,
-    seccion: uD.seccion,
-    nota: parseFloat(nota.toFixed(2)),
-    fecha: serverTimestamp()
-  });
+  try {
+    const uSnap = await getDoc(doc(db, "usuarios", usuarioActual.uid));
+    const uData = uSnap.data() || {};
 
-  alert("Examen enviado. Nota: " + nota.toFixed(2));
-  window.location.href = "panel-estudiante.html";
-}
+    await setDoc(doc(db, "examenes", examenId, "resultados", usuarioActual.uid), {
+      estudiante_id: usuarioActual.uid,
+      nombre: uData.nombres + " " + uData.apellidos,
+      cedula: uData.cedula || "N/P",
+      grado: uData.anio,
+      seccion: uData.seccion,
+      nota: parseFloat(calificacion.toFixed(2)),
+      fecha: serverTimestamp(),
+      finalizado_por: forzado ? "tiempo/sistema" : "estudiante"
+    });
 
-btnEnviar.onclick = () => { if(confirm("¿Finalizar examen?")) enviarExamen(false); };
+    alert("Examen finalizado. Tu nota: " + calificacion.toFixed(2) + " / 20");
+    window.location.href = "panel-estudiante.html";
+  } catch (err) {
+    console.error(err);
+    alert("Hubo un problema al guardar tu nota. Comunícate con el profesor.");
+  }
+};
+
+btnEnviar.onclick = () => { if(confirm("¿Estás seguro de finalizar el examen?")) window.enviarExamen(false); };
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "login.html"; return; }
   usuarioActual = user;
-  const yaHizo = await getDoc(doc(db, "examenes", examenId, "resultados", user.uid));
-  if (yaHizo.exists()) { alert("Ya presentaste este examen."); window.location.href = "panel-estudiante.html"; return; }
+  const yaPresento = await getDoc(doc(db, "examenes", examenId, "resultados", user.uid));
+  if (yaPresento.exists()) { alert("Ya has presentado esta evaluación anteriormente."); window.location.href = "panel-estudiante.html"; return; }
   cargarExamen();
 });
 </script>
