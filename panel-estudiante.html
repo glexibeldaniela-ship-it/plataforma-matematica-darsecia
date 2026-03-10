@@ -202,27 +202,37 @@ window.descargarExamenPDF = async (exId, titulo, datRes) => {
     docPDF.text("CALIFICACIÓN FINAL: " + (datRes.nota || "0") + " / 20 Pts.", 25, 70);
     docPDF.setTextColor(0, 0, 0);
 
-    let y = 80;
-    const detalle = Array.isArray(datRes.respuestas_detalle) ? datRes.respuestas_detalle : [];
-
     if (detalle.length > 0) {
-      docPDF.setFont("helvetica", "bold");
-      docPDF.text("DETALLE DE RESPUESTAS:", 25, y); y += 8;
-      detalle.forEach((item, idx) => {
-        if (y > 250) { docPDF.addPage(); y = 25; }
-        const esOk = typeof item.resultado === "string" && item.resultado.toLowerCase().includes("correct");
-        const icono = esOk ? "[CORRECTO] " : "[INCORRECTO] ";
-        const lineas = docPDF.splitTextToSize((idx + 1) + ". " + (item.enunciado || ""), 160);
-        
-        docPDF.setFont("helvetica", "bold");
-        docPDF.setFontSize(9);
-        docPDF.text(lineas, 25, y); y += (lineas.length * 5);
-        
-        docPDF.setFont("helvetica", "normal");
-        docPDF.text(icono + "Respuesta: " + (item.respuesta_estudiante || "Sin respuesta"), 30, y); y += 7;
-      });
-    } else {
-      const preguntas = Array.isArray(exData.preguntas) ? exData.preguntas : [];
+  docPDF.setFont("helvetica", "bold");
+  docPDF.text("DETALLE DE RESPUESTAS:", 25, y); 
+  y += 8;
+  
+  detalle.forEach(function(item, idx) {
+      
+    if (y > 250) { 
+      docPDF.addPage(); 
+      y = 25; 
+    }
+
+    const esOk = typeof item.resultado === "string" && item.resultado.toLowerCase().trim() === "correcta";
+    const icono = esOk ? "[CORRECTO] " : "[INCORRECTO] ";
+
+    const enunciado = item.enunciado || "";
+    const lineas = docPDF.splitTextToSize((idx + 1) + ". " + enunciado, 160);
+
+    docPDF.setFont("helvetica", "bold");
+    docPDF.setFontSize(9);
+    docPDF.text(lineas, 25, y); 
+    y += (lineas.length * 5);
+
+    docPDF.setFont("helvetica", "normal");
+    const respEstudiante = item.respuesta_estudiante || "Sin respuesta";
+    docPDF.text(icono + "Respuesta: " + respEstudiante, 30, y);
+    y += 7;
+  });
+} else {
+
+    const preguntas = Array.isArray(exData.preguntas) ? exData.preguntas : [];
       docPDF.text("CONTENIDO EVALUADO:", 25, y); y += 8;
       preguntas.forEach((preg, idx) => {
         if (y > 250) { docPDF.addPage(); y = 25; }
