@@ -43,9 +43,9 @@
 </div>
 
 <div class="tabs-bar">
-    <button class="tab-btn activo" id="btn-tab-examenes" onclick="cambiarTab('examenes', this)">📋 Exámenes</button>
-    <button class="tab-btn" id="btn-tab-estudiantes" onclick="cambiarTab('estudiantes', this)">👥 Estudiantes</button>
-    <button class="tab-btn" id="btn-tab-resultados" onclick="cambiarTab('resultados', this)">📊 Notas</button>
+    <button class="tab-btn activo" id="btn-tab-examenes" onclick="window.cambiarTab('examenes', this)">📋 Exámenes</button>
+    <button class="tab-btn" id="btn-tab-estudiantes" onclick="window.cambiarTab('estudiantes', this)">👥 Estudiantes</button>
+    <button class="tab-btn" id="btn-tab-resultados" onclick="window.cambiarTab('resultados', this)">📊 Notas</button>
 </div>
 
 <div class="contenedor">
@@ -103,8 +103,9 @@
 <script type="module">
     import { auth, db } from "./firebase.js";
     import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // --- VARIABLES DE CONTROL PARA LIMPIEZA DE MEMORIA (REGLAS DEL CONEJITO) ---
     let estudiantesActuales = [];
     let unsubscribeEstudiantes = null;
     let unsubscribeNotas = null;
@@ -112,9 +113,11 @@
 
     onAuthStateChanged(auth, (user) => { 
         if (!user) { window.location.href = "login.html"; return; }
-        cargarExamenes();
+        window.cargarExamenes();
         llenarSelectExamenes();
     });
+
+    // --- EXPOSICIÓN DE FUNCIONES A WINDOW (Scope Global) ---
 
     window.cambiarTab = (name, btn) => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
@@ -128,6 +131,7 @@
     window.cargarExamenes = () => {
         const lista = document.getElementById("listaExamenes");
         if(unsubscribeExamenes) unsubscribeExamenes();
+        
         unsubscribeExamenes = onSnapshot(collection(db, "examenes"), (snap) => {
             lista.innerHTML = "";
             snap.forEach(d => {
@@ -154,6 +158,7 @@
     };
 
     window.toggleEx = async (id, st) => { await updateDoc(doc(db, "examenes", id), { activo: !st }); };
+    
     window.borrarEx = async (id) => { if (confirm("¿Eliminar evaluación definitivamente?")) await deleteDoc(doc(db, "examenes", id)); };
 
     window.cargarEstudiantes = () => {
@@ -163,6 +168,7 @@
         const body = document.getElementById("bodyEstudiantes");
 
         if (unsubscribeEstudiantes) unsubscribeEstudiantes();
+        
         unsubscribeEstudiantes = onSnapshot(collection(db, "usuarios"), (snap) => {
             body.innerHTML = "";
             estudiantesActuales = [];
@@ -193,12 +199,13 @@
         if (confirm("¿Eliminar definitivamente a este estudiante?")) await deleteDoc(doc(db, "usuarios", uid));
     };
 
-    window.cargarNotas = async () => {
+    window.cargarNotas = () => {
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
         if (!exId) { body.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Seleccione evaluación.</td></tr>"; return; }
 
         if (unsubscribeNotas) unsubscribeNotas();
+        
         unsubscribeNotas = onSnapshot(collection(db, "examenes", exId, "resultados"), (snap) => {
             body.innerHTML = "";
             snap.forEach(d => {
@@ -224,7 +231,9 @@
         }
     };
 
+    // --- CORRECCIÓN CRÍTICA DE COMUNICACIÓN CON RESULTADOS.HTML ---
     window.imprimirReporte = (resultadoId, examenId) => {
+        // Ahora pasamos correctamente el ID del estudiante para que el PDF no salga vacío
         window.location.href = `resultados.html?id=${examenId}&estudiante=${resultadoId}`;
     };
 
