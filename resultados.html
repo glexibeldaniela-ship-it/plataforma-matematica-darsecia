@@ -89,19 +89,17 @@ const lnkVolver = document.getElementById("lnkVolver");
 let datosResultado = null;
 let examenData = null;
 
-function fixPDF(t) {
-  if (t === null || t === undefined) return "N/P";
-  const map = {
-    'á':'a','é':'e','í':'i','ó':'o','ú':'u',
-    'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U',
-    'ñ':'n','Ñ':'N','ü':'u','Ü':'U'
-  };
-  return t.toString().normalize("NFC").replace(/[áéíóúÁÉÍÓÚñÑüÜ]/g, function(c) { return map[c] || c; });
-}
+// Función para limpiar caracteres especiales en el PDF (Evita errores de renderizado)
+const fixPDF = (texto) => {
+  if (!texto) return "N/P";
+  const acentos = {'á':'a','é':'e','í':'i','ó':'o','ú':'u','Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','ñ':'n','Ñ':'N'};
+  return texto.toString().split('').map( letra => acentos[letra] || letra).join('').normalize("NFC");
+};
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = "index.html"; return; }
+  if (!user) { window.location.href = "login.html"; return; }
 
+  // Detectar si venimos del panel profesor o estudiante
   if (estudianteIdUrl) {
     lnkVolver.href = "panel-profesor.html";
     lnkVolver.innerText = "⬅ Volver al Panel Profesor";
@@ -116,18 +114,20 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
+    // 1. Obtener datos del examen (La fuente de verdad)
     const examenSnap = await getDoc(doc(db, "examenes", examenId));
     if (!examenSnap.exists()) {
-      resultadoDiv.innerHTML = "<h3>El examen no existe.</h3>";
+      resultadoDiv.innerHTML = "<h3>El examen ya no existe en la base de datos.</h3>";
       return;
     }
     examenData = examenSnap.data();
 
+    // 2. Obtener el resultado (Si es prof ve al alumno, si es alumno se ve a sí mismo)
     const targetId = estudianteIdUrl || user.uid;
     const resSnap = await getDoc(doc(db, "examenes", examenId, "resultados", targetId));
 
     if (!resSnap.exists()) {
-      resultadoDiv.innerHTML = "<h3 style='color:#c62828;'>No se encontró el resultado.</h3><p style='color:#666;'>El estudiante aún no ha completado esta evaluación.</p>";
+      resultadoDiv.innerHTML = "<h3 style='color:#c62828;'>Sin registro.</h3><p>Aún no hay respuestas guardadas.</p>";
       return;
     }
 
@@ -147,121 +147,96 @@ onAuthStateChanged(auth, async (user) => {
       <div class="detalles-lista">
         <div class="detalle-item"><span>Estudiante:</span><span>${datosResultado.nombre || "N/P"}</span></div>
         <div class="detalle-item"><span>Cédula:</span><span>${datosResultado.cedula || "N/P"}</span></div>
-        <div class="detalle-item"><span>Grado/Sección:</span><span>${datosResultado.grado || "?"}° "${datosResultado.seccion || "?"}"</span></div>
+        <div class="detalle-item"><span>Sección:</span><span>${datosResultado.grado || "?"}° "${datosResultado.seccion || "?"}"</span></div>
       </div>`;
 
     btnPDF.style.display = "flex";
 
   } catch (error) {
-    resultadoDiv.innerHTML = "<p>Error al cargar el resultado.</p>";
-    console.error(error);
+    console.error("Error al cargar resultados:", error);
+    resultadoDiv.innerHTML = "<p>Error crítico al conectar con el servidor.</p>";
   }
 });
 
-btnPDF.addEventListener("click", function() {
+btnPDF.addEventListener("click", () => {
   if (!datosResultado || !examenData) return;
 
   const { jsPDF } = window.jspdf;
-  const docPDF = new jsPDF("p", "mm", "a4");
-  const margenIzq = 20;
-  const margenDer = 190;
+  const docGenerado = new jsPDF("p", "mm", "a4");
   const anchoMax = 170;
+  let posY = 53;
 
-  function saltoPag(y, espacio) {
-    if (y + espacio > 270) { docPDF.addPage(); return 20; }
-    return y;
-  }
+  const checkSalto = (espacio) => {
+    if (posY + espacio > 275) { docGenerado.addPage(); posY = 25; }
+  };
 
-  // MEMBRETE
-  docPDF.setFont("helvetica", "bold");
-  docPDF.setFontSize(9);
-  docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 13, { align: "center" });
-  docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 18, { align: "center" });
-  docPDF.text("MUNICIPIO MARA - ESTADO ZULIA - PARROQUIA LA SIERRITA", 105, 23, { align: "center" });
-  docPDF.setFont("helvetica", "normal");
-  docPDF.text("UNIDAD EDUCATIVA ESTADAL CECILIA NÚÑEZ SUCRE", 105, 28, { align: "center" });
-  docPDF.setLineWidth(0.5);
-  docPDF.line(margenIzq, 32, margenDer, 32);
+  // Cabecera institucional
+  docGenerado.setFont("helvetica", "bold").setFontSize(9);
+  docGenerado.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 13, { align: "center" });
+  docGenerado.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 18, { align: "center" });
+  docGenerado.text("U.E.E. CECILIA NÚÑEZ SUCRE - MATEEDUPRO", 105, 23, { align: "center" });
+  docGenerado.line(20, 28, 190, 28);
 
-  docPDF.setFontSize(13);
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text("ACTA DE EVALUACIÓN DIGITAL", 105, 41, { align: "center" });
+  docGenerado.setFontSize(14).text("ACTA DE EVALUACIÓN DETALLADA", 105, 40, { align: "center" });
 
-  // DATOS DEL ESTUDIANTE
-  var y = 53;
-  docPDF.setFontSize(10);
-  docPDF.setFont("helvetica", "normal");
-  docPDF.text("Evaluación realizada por el sistema MateEduPro:", margenIzq, y); y += 9;
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text("ESTUDIANTE: " + fixPDF(datosResultado.nombre || "N/P").toUpperCase(), margenIzq, y); y += 7;
-  docPDF.text("CÉDULA: " + fixPDF(datosResultado.cedula || "N/P"), margenIzq, y); y += 7;
-  docPDF.text("EVALUACIÓN: " + fixPDF(examenData.titulo || "").toUpperCase(), margenIzq, y); y += 7;
-  docPDF.text("GRADO Y SECCIÓN: " + (datosResultado.grado || "?") + " - Sección " + (datosResultado.seccion || "?"), margenIzq, y); y += 7;
-  
-  docPDF.setLineWidth(0.3);
-  docPDF.line(margenIzq, y + 1, margenDer, y + 1); y += 8;
+  // Datos del alumno
+  docGenerado.setFontSize(10).setFont("helvetica", "normal");
+  docGenerado.text(`ESTUDIANTE: ${fixPDF(datosResultado.nombre).toUpperCase()}`, 20, posY); posY += 7;
+  docGenerado.text(`CÉDULA: ${datosResultado.cedula || "N/P"}`, 20, posY); posY += 7;
+  docGenerado.text(`EVALUACIÓN: ${fixPDF(examenData.titulo).toUpperCase()}`, 20, posY); posY += 12;
 
-  // DETALLE DE PREGUNTAS Y RESPUESTAS
-  docPDF.setFontSize(11);
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text("DETALLE DE LA EVALUACIÓN:", 105, y, { align: "center" }); y += 8;
+  // LÓGICA DE DETALLE: Cruce de Examen vs Respuestas
+  docGenerado.setFont("helvetica", "bold").text("REVISIÓN DE PREGUNTAS:", 20, posY); posY += 8;
 
-  var detalle = datosResultado.respuestas_detalle || [];
-  var correctasCont = 0;
-  var totalPregs = detalle.length;
+  // Obtenemos las respuestas del alumno (diccionario id: valor)
+  const respuestasAlumno = datosResultado.respuestas || {};
+  const preguntasExamen = examenData.preguntas || [];
 
-  detalle.forEach(function(item, idx) {
-    var textoPrg = fixPDF(item.enunciado || ("Pregunta " + (idx + 1)));
-    var linesPrg = docPDF.splitTextToSize((idx + 1) + ". " + textoPrg, anchoMax);
-    y = saltoPag(y, linesPrg.length * 5 + 18);
+  preguntasExamen.forEach((pregunta, index) => {
+    const num = index + 1;
+    const enunciado = fixPDF(pregunta.texto || pregunta.enunciado);
+    const lineasEnunciado = docGenerado.splitTextToSize(`${num}. ${enunciado}`, anchoMax);
+    
+    checkSalto(lineasEnunciado.length * 7 + 15);
+    
+    docGenerado.setFont("helvetica", "bold").setFontSize(9);
+    docGenerado.text(lineasEnunciado, 20, posY);
+    posY += (lineasEnunciado.length * 5) + 2;
 
-    docPDF.setFontSize(9);
-    docPDF.setFont("helvetica", "bold");
-    docPDF.text(linesPrg, margenIzq, y); y += linesPrg.length * 5 + 1;
+    // Obtener qué respondió el alumno para esta pregunta
+    const rAlumno = respuestasAlumno[index] !== undefined ? respuestasAlumno[index] : "Sin responder";
+    const esCorrecta = String(rAlumno).trim() === String(pregunta.respuestaCorrecta).trim();
 
-    var esCorrecta = item.resultado === "Correcta";
-    if (esCorrecta) correctasCont++;
-
-    docPDF.setFont("helvetica", "normal");
-    var iconoR = esCorrecta ? "[OK] " : "[X]  ";
-    var respTxt = fixPDF(item.respuesta_estudiante || "Sin respuesta");
-    var linesResp = docPDF.splitTextToSize(iconoR + "Respuesta: " + respTxt, anchoMax);
-    docPDF.text(linesResp, margenIzq + 3, y); y += linesResp.length * 5 + 4;
+    docGenerado.setFont("helvetica", "normal");
+    docGenerado.text(`   Respuesta: ${fixPDF(rAlumno)}`, 20, posY);
+    
+    if (esCorrecta) {
+        docGenerado.setTextColor(46, 125, 50); // Verde
+        docGenerado.text("   [CORRECTO]", 150, posY);
+    } else {
+        docGenerado.setTextColor(198, 40, 40); // Rojo
+        docGenerado.text(`   [INCORRECTO] Sugerida: ${fixPDF(pregunta.respuestaCorrecta)}`, 100, posY);
+    }
+    
+    docGenerado.setTextColor(0, 0, 0);
+    posY += 8;
   });
 
-  if (totalPregs === 0) {
-    docPDF.setFont("helvetica", "italic");
-    docPDF.setFontSize(9);
-    docPDF.text("No se encontraron respuestas detalladas para esta evaluación.", margenIzq, y); y += 8;
-  }
-
-  // CALIFICACIÓN FINAL
-  y = saltoPag(y, 40);
-  docPDF.setLineWidth(0.4);
-  docPDF.line(margenIzq, y, margenDer, y); y += 8;
-  docPDF.setFontSize(11);
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text("CALIFICACIÓN FINAL: " + datosResultado.nota + " / 20 pts.", margenIzq, y); y += 7;
-  var aprobadoPDF = datosResultado.nota >= 9.5;
-  docPDF.text("ESTADO: " + (aprobadoPDF ? "APROBADO" : "REPROBADO"), margenIzq, y); y += 9;
+  // Nota final
+  checkSalto(30);
+  posY += 5;
+  docGenerado.setLineWidth(0.5).line(20, posY, 190, posY); posY += 10;
+  docGenerado.setFontSize(12).setFont("helvetica", "bold");
+  docGenerado.text(`CALIFICACIÓN OBTENIDA: ${datosResultado.nota} / 20 pts.`, 20, posY);
   
-  docPDF.setFontSize(9);
-  docPDF.setFont("helvetica", "italic");
-  docPDF.text("Fecha de emisión: " + new Date().toLocaleDateString("es-VE"), margenIzq, y);
+  // Firma Digitalizada
+  posY += 30;
+  checkSalto(20);
+  docGenerado.line(70, posY, 140, posY); posY += 5;
+  docGenerado.setFontSize(10).text("PROF. JOSÉ FERNÁNDEZ", 105, posY, { align: "center" });
+  docGenerado.setFontSize(8).text("VALIDADO POR MATEEDUPRO", 105, posY + 4, { align: "center" });
 
-  // FIRMA
-  y = saltoPag(y, 40);
-  y += 18;
-  docPDF.setLineWidth(0.5);
-  docPDF.line(65, y, 145, y); y += 5;
-  docPDF.setFont("helvetica", "bold");
-  docPDF.setFontSize(10);
-  docPDF.text("JOSÉ FERNÁNDEZ", 105, y, { align: "center" }); y += 5;
-  docPDF.setFontSize(9);
-  docPDF.text("C.I. 28.123.219", 105, y, { align: "center" }); y += 5;
-  docPDF.text("PROFESOR DE MATEMÁTICAS", 105, y, { align: "center" });
-
-  docPDF.save("Acta_" + fixPDF(datosResultado.nombre || "Alumno").replace(/ /g, "_") + ".pdf");
+  docGenerado.save(`Reporte_${fixPDF(datosResultado.nombre).replace(/ /g, "_")}.pdf`);
 });
 </script>
 </body>
