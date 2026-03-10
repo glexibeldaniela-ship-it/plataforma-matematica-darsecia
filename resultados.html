@@ -192,35 +192,67 @@ btnPDF.addEventListener("click", function() {
   docPDF.setLineWidth(0.3).line(margenIzq, y, margenDer, y); y += 8;
 
   // --- DETALLE DE REVISIÓN ---
-  docPDF.setFont("helvetica", "bold").text("REVISIÓN DE RESPUESTAS:", margenIzq, y); y += 8;
+docPDF.setFont("helvetica", "bold").setFontSize(10);
+docPDF.text("REVISIÓN DE RESPUESTAS:", margenIzq, y); 
+y += 8;
 
-  const preguntas = examenData.preguntas || [];
-  const respuestasEstudiante = datosResultado.respuestas || {}; 
+const preguntas = Array.isArray(examenData.preguntas) ? examenData.preguntas : [];
+// Usamos "respuestas_detalle" como fuente principal de los resultados
+const detalleRespuestas = Array.isArray(datosResultado.respuestas_detalle) 
+  ? datosResultado.respuestas_detalle 
+  : [];
 
-  preguntas.forEach((preg, idx) => {
-    const textoPreg = fixPDF(preg.enunciado || preg.texto);
-    const lineasPreg = docPDF.splitTextToSize(`${idx + 1}. ${textoPreg}`, anchoMax);
+preguntas.forEach(function(preg, idx) {
+  // Buscamos el detalle correspondiente a esta pregunta
+  const itemDetalle = detalleRespuestas[idx] || {};
+  
+  // Limpieza de texto y manejo de enunciados vacíos
+  const textoPreg = fixPDF(preg.enunciado || preg.texto || ("Pregunta " + (idx + 1)));
+  const lineasPreg = docPDF.splitTextToSize((idx + 1) + ". " + textoPreg, anchoMax);
 
-    y = checkPage(y, (lineasPreg.length * 5) + 12);
-    docPDF.setFont("helvetica", "bold").setFontSize(9);
-    docPDF.text(lineasPreg, margenIzq, y);
-    y += (lineasPreg.length * 5) + 2;
+  // Verificación de espacio en la página
+  y = checkPage(y, (lineasPreg.length * 5) + 14);
+  
+  docPDF.setFont("helvetica", "bold").setFontSize(9);
+  docPDF.text(lineasPreg, margenIzq, y);
+  y += (lineasPreg.length * 5) + 2;
 
-    const respAlu = respuestasEstudiante[idx] !== undefined ? respuestasEstudiante[idx] : "Sin respuesta";
-    const esCorrecta = String(respAlu).trim() === String(preg.respuestaCorrecta).trim();
+  // Extraer respuesta del estudiante de forma segura
+  const respAlu = itemDetalle.respuesta_estudiante || "Sin respuesta";
+  
+  // Comparación lógica: verificamos si el resultado dice "correcta"
+  const esCorrecta = typeof itemDetalle.resultado === "string" && 
+                     itemDetalle.resultado.toLowerCase().trim() === "correcta";
 
-    docPDF.setFont("helvetica", "normal");
-    docPDF.text(`Respuesta dada: ${fixPDF(respAlu)}`, margenIzq + 5, y);
-
-    if (esCorrecta) {
-      docPDF.setTextColor(46, 125, 50).text(" [CORRECTO]", 160, y);
-    } else {
-      docPDF.setTextColor(198, 40, 40).text(` [INCORRECTO] - Solución: ${fixPDF(preg.respuestaCorrecta)}`, 110, y);
+  // Identificar la respuesta correcta para mostrarla en caso de error
+  let respCorrecta = "N/P";
+  if (Array.isArray(preg.opciones)) {
+    const opFiltro = preg.opciones.find(function(o) { return o.correcta === true; });
+    if (opFiltro && opFiltro.texto) { 
+      respCorrecta = opFiltro.texto; 
     }
+  } else if (preg.respuestaCorrecta !== undefined && preg.respuestaCorrecta !== null) {
+    respCorrecta = String(preg.respuestaCorrecta);
+  }
 
-    docPDF.setTextColor(0, 0, 0);
-    y += 8;
-  });
+  docPDF.setFont("helvetica", "normal");
+  docPDF.setFontSize(9);
+  docPDF.text("Respuesta dada: " + fixPDF(respAlu), margenIzq + 5, y);
+
+  // Colorear el resultado según sea correcto o incorrecto
+  if (esCorrecta) {
+    docPDF.setTextColor(46, 125, 50); // Verde para correctas
+    docPDF.text("[CORRECTO]", 165, y, { align: "right" });
+  } else {
+    docPDF.setTextColor(198, 40, 40); // Rojo para incorrectas
+    const textoError = "[INCORRECTO] - Solución: " + fixPDF(respCorrecta);
+    docPDF.text(textoError, 190, y, { align: "right" });
+  }
+
+  // Resetear color a negro para la siguiente pregunta
+  docPDF.setTextColor(0, 0, 0);
+  y += 8;
+});
 
   // --- RESUMEN FINAL ---
   y = checkPage(y, 45);
