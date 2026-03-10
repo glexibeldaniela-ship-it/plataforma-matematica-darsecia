@@ -117,10 +117,9 @@ window.cargarHistorial = async (uid, anio, sec) => {
 
   try {
     const qEx = query(collection(db, "examenes"), where("anio", "==", anio));
-    const snapEx = await getDocs(qEx);
-    let hayNotas = false;
-    body.innerHTML = "";
-
+            document.getElementById(btnId).onclick = () => {
+          window.descargarExamenPDF(docEx.id, exData.titulo, res, exData);
+        };
     for (const docEx of snapEx.docs) {
       const exData = docEx.data();
       if (exData.seccion !== sec && exData.seccion !== "Ambas") { continue; }
