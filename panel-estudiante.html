@@ -126,7 +126,6 @@ window.cargarHistorial = async (uid, anio, sec) => {
       if (exData.seccion !== sec && exData.seccion !== "Ambas") { continue; }
 
       try {
-        // Búsqueda directa por UID del estudiante en la subcolección de resultados
         const resSnap = await getDoc(doc(db, "examenes", docEx.id, "resultados", uid));
         if (!resSnap.exists()) { continue; }
 
@@ -145,12 +144,10 @@ window.cargarHistorial = async (uid, anio, sec) => {
           "</td>";
         body.appendChild(tr);
 
-        // Acción: Generar PDF directamente
         document.getElementById(btnId).onclick = () => {
           window.descargarExamenPDF(docEx.id, exData.titulo, res);
         };
 
-        // Acción: Ver detalle en resultados.html
         document.getElementById(btnVerDetalle).onclick = () => {
           window.location.href = "resultados.html?id=" + docEx.id;
         };
@@ -169,6 +166,7 @@ window.cargarHistorial = async (uid, anio, sec) => {
   }
 };
 
+// --- FUNCIÓN DE PDF ACTUALIZADA CON MEMBRETE Y FIRMA ---
 window.descargarExamenPDF = async (exId, titulo, datRes) => {
   try {
     const exSnap = await getDoc(doc(db, "examenes", exId));
@@ -178,51 +176,85 @@ window.descargarExamenPDF = async (exId, titulo, datRes) => {
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
 
-    docPDF.setFontSize(14);
-    docPDF.text("MATEEDUPRO - COMPROBANTE DE NOTA", 105, 15, { align: "center" });
-    docPDF.setFontSize(10);
-    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 22, { align: "center" });
-    docPDF.line(20, 25, 190, 25);
+    // 1. MEMBRETE INSTITUCIONAL
+    docPDF.setFont("helvetica", "bold");
+    docPDF.setFontSize(9);
+    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 17, { align: "center" });
+    docPDF.text("MUNICIPIO MARA - PARROQUIA LA SIERRITA - ESTADO ZULIA", 105, 22, { align: "center" });
+    docPDF.text("UNIDAD EDUCATIVA ESTATAL CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
+    docPDF.setLineWidth(0.5);
+    docPDF.line(20, 30, 190, 30);
 
-    docPDF.text("ESTUDIANTE: " + (datosUsuario.nombres || "") + " " + (datosUsuario.apellidos || ""), 20, 35);
-    docPDF.text("CEDULA: " + (datosUsuario.cedula || "N/P"), 20, 42);
-    docPDF.text("EVALUACION: " + titulo, 20, 49);
-    docPDF.setFontSize(12);
-    docPDF.setTextColor(0, 121, 107);
-    docPDF.text("CALIFICACION: " + (datRes.nota || "N/P") + " / 20", 20, 58);
+    // Título del reporte
+    docPDF.setFontSize(13);
+    docPDF.text("COMPROBANTE DE EVALUACIÓN DIGITAL", 105, 40, { align: "center" });
+
+    // 2. DATOS DEL ESTUDIANTE
     docPDF.setFontSize(10);
+    docPDF.setFont("helvetica", "normal");
+    docPDF.text("ESTUDIANTE: " + (datosUsuario.nombres || "").toUpperCase() + " " + (datosUsuario.apellidos || "").toUpperCase(), 25, 50);
+    docPDF.text("CÉDULA: " + (datosUsuario.cedula || "N/P"), 25, 56);
+    docPDF.text("EVALUACIÓN: " + titulo.toUpperCase(), 25, 62);
+    
+    docPDF.setFont("helvetica", "bold");
+    docPDF.setTextColor(0, 121, 107); // Verde institucional
+    docPDF.text("CALIFICACIÓN FINAL: " + (datRes.nota || "0") + " / 20 Pts.", 25, 70);
     docPDF.setTextColor(0, 0, 0);
 
-    let y = 68;
+    let y = 80;
     const detalle = Array.isArray(datRes.respuestas_detalle) ? datRes.respuestas_detalle : [];
 
     if (detalle.length > 0) {
-      docPDF.text("DETALLE DE RESPUESTAS:", 20, y); y += 8;
+      docPDF.setFont("helvetica", "bold");
+      docPDF.text("DETALLE DE RESPUESTAS:", 25, y); y += 8;
       detalle.forEach((item, idx) => {
-        if (y > 270) { docPDF.addPage(); y = 20; }
+        if (y > 250) { docPDF.addPage(); y = 25; }
         const esOk = typeof item.resultado === "string" && item.resultado.toLowerCase().includes("correct");
-        const icono = esOk ? "[OK] " : "[X]  ";
-        const lineas = docPDF.splitTextToSize((idx + 1) + ". " + (item.enunciado || ""), 165);
+        const icono = esOk ? "[CORRECTO] " : "[INCORRECTO] ";
+        const lineas = docPDF.splitTextToSize((idx + 1) + ". " + (item.enunciado || ""), 160);
+        
         docPDF.setFont("helvetica", "bold");
-        docPDF.text(lineas, 22, y); y += lineas.length * 5 + 1;
+        docPDF.setFontSize(9);
+        docPDF.text(lineas, 25, y); y += (lineas.length * 5);
+        
         docPDF.setFont("helvetica", "normal");
-        docPDF.text(icono + "Tu respuesta: " + (item.respuesta_estudiante || "Sin respuesta"), 25, y); y += 6;
+        docPDF.text(icono + "Respuesta: " + (item.respuesta_estudiante || "Sin respuesta"), 30, y); y += 7;
       });
     } else {
       const preguntas = Array.isArray(exData.preguntas) ? exData.preguntas : [];
-      docPDF.text("PREGUNTAS DEL EXAMEN:", 20, y); y += 8;
+      docPDF.text("CONTENIDO EVALUADO:", 25, y); y += 8;
       preguntas.forEach((preg, idx) => {
-        if (y > 270) { docPDF.addPage(); y = 20; }
+        if (y > 250) { docPDF.addPage(); y = 25; }
         const texto = preg.enunciado || preg.texto || ("Pregunta " + (idx + 1));
-        const lineas = docPDF.splitTextToSize((idx + 1) + ". " + texto, 165);
-        docPDF.text(lineas, 22, y); y += lineas.length * 5 + 3;
+        const lineas = docPDF.splitTextToSize((idx + 1) + ". " + texto, 160);
+        docPDF.text(lineas, 25, y); y += (lineas.length * 5) + 3;
       });
     }
 
+    // 3. BLOQUE DE FIRMA (Al final del documento)
+    // Verificamos si hay espacio suficiente, si no, creamos página nueva
+    if (y > 240) { docPDF.addPage(); y = 30; } else { y += 20; }
+    
+    docPDF.setLineWidth(0.4);
+    docPDF.line(70, y, 140, y); // Línea de firma
+    y += 5;
+    docPDF.setFont("helvetica", "bold");
+    docPDF.setFontSize(10);
+    docPDF.text("JOSÉ FERNÁNDEZ", 105, y, { align: "center" });
+    y += 5;
+    docPDF.setFont("helvetica", "normal");
+    docPDF.setFontSize(9);
+    docPDF.text("C.I: 28.123.219", 105, y, { align: "center" });
+    y += 5;
+    docPDF.text("PROFESOR DEL ÁREA DE MATEMÁTICAS", 105, y, { align: "center" });
+
+    // Guardar archivo
     const nomArchivo = "Nota_" + titulo.replace(/\s/g, "_") + ".pdf";
     docPDF.save(nomArchivo);
+
   } catch (error) {
-    alert("No se pudo generar el PDF.");
+    alert("No se pudo generar el PDF con el formato oficial.");
     console.error("descargarExamenPDF:", error);
   }
 };
