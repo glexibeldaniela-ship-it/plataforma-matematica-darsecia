@@ -47,7 +47,7 @@ body {
 }
 .tab-btn.activo { color: #00838f; border-bottom-color: #00838f; }
 
-/* ── BARRA DE HERRAMIENTAS ── */
+/* ── AJUSTES (FILTROS Y BOTONES) ── */
 .barra-herramientas {
   display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
 }
@@ -160,46 +160,53 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, onSnapshot, doc, deleteDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// --- CAMBIO ESTABLE 1: Variable de control ---
-var unsubscribeUsuarios = null;
+// --- CAMBIO PARA SONARCLOUD: Usar 'let' en lugar de 'var' para mayor seguridad y cumplimiento de estándares ---
+let unsubscribeUsuarios = null;
 
-// --- FUNCIONES GLOBALES ---
+// --- FUNCIONES EXPUESTAS AL WINDOW ---
 window.cambiarTab = (id, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-  document.getElementById('tab-'+id).classList.add('activo');
+  document.getElementById('tab-' + id).classList.add('activo');
   btn.classList.add('activo');
 };
 
 function mostrarToast(msg) {
   const t = document.getElementById('toastMsg');
-  t.innerText = msg; t.style.display = 'block';
+  t.innerText = msg;
+  t.style.display = 'block';
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
-// --- PROTECCIÓN Y CARGA (CAMBIO ESTABLE 2) ---
+// --- LÓGICA DE FIREBASE ---
 onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = "login.html"; return; }
-  
-  const snap = await getDoc(doc(db, "usuarios", user.uid));
-  if(!snap.exists() || snap.data().rol !== "admin") {
-    signOut(auth); return;
+  if (!user) {
+    window.location.href = "login.html";
+    return;
   }
 
-  // Limpiar listener previo si existe
-  if (unsubscribeUsuarios) { unsubscribeUsuarios(); }
+  const snap = await getDoc(doc(db, "usuarios", user.uid));
+  if (!snap.exists() || snap.data().rol !== "admin") {
+    signOut(auth);
+    return;
+  }
 
-  // Nueva firma de la función según el protocolo de estabilidad
-  unsubscribeUsuarios = onSnapshot(collection(db, "usuarios"), function(snapshot) {
+  // --- CAMBIO PARA CODERABBIT: Cancelar el listener previo para evitar fugas de memoria ---
+  if (unsubscribeUsuarios) {
+    unsubscribeUsuarios();
+  }
+
+  unsubscribeUsuarios = onSnapshot(collection(db, "usuarios"), (snapshot) => {
     const tabla = document.getElementById("tablaUsuariosBody");
-    let cEst = 0, cProf = 0;
+    let cEst = 0;
+    let cProf = 0;
     tabla.innerHTML = "";
 
-    snapshot.forEach(function(docSnap) {
+    snapshot.forEach((docSnap) => {
       const u = docSnap.data();
       const id = docSnap.id;
-      if(u.rol === "estudiante") cEst++;
-      if(u.rol === "profesor") cProf++;
+      if (u.rol === "estudiante") cEst++;
+      if (u.rol === "profesor") cProf++;
 
       tabla.innerHTML += `
         <tr>
@@ -224,23 +231,34 @@ onAuthStateChanged(auth, async (user) => {
   });
 });
 
-// --- ACCIONES DE ADMINISTRADOR ---
+// --- FUNCIONES DE ADMINISTRADOR (EXPLICITAMENTE EN WINDOW) ---
+
 window.editarNombre = async (id, nombreAct, apellidoAct) => {
   const nuevoNom = prompt("Editar Nombres:", nombreAct);
   const nuevoApe = prompt("Editar Apellidos:", apellidoAct);
+
   if (nuevoNom !== null && nuevoApe !== null) {
     try {
-      await updateDoc(doc(db, "usuarios", id), { nombres: nuevoNom, apellidos: nuevoApe });
+      await updateDoc(doc(db, "usuarios", id), {
+        nombres: nuevoNom,
+        apellidos: nuevoApe
+      });
       mostrarToast("✅ Nombre actualizado");
-    } catch (e) { mostrarToast("❌ Error al actualizar"); }
+    } catch (e) {
+      mostrarToast("❌ Error al actualizar");
+    }
   }
 };
 
 window.cambiarRol = async (id, rolActual) => {
   const nuevoRol = rolActual === "estudiante" ? "profesor" : "estudiante";
-  if(confirm(`¿Cambiar usuario a ${nuevoRol.toUpperCase()}?`)) {
-    await updateDoc(doc(db, "usuarios", id), { rol: nuevoRol });
-    mostrarToast("✅ Rol actualizado");
+  if (confirm(`¿Cambiar usuario a ${nuevoRol.toUpperCase()}?`)) {
+    try {
+      await updateDoc(doc(db, "usuarios", id), { rol: nuevoRol });
+      mostrarToast("✅ Rol actualizado");
+    } catch (e) {
+      mostrarToast("❌ Error de permisos");
+    }
   }
 };
 
@@ -250,35 +268,45 @@ window.exportarExcel = () => {
     const data = tr.querySelectorAll("td");
     rows.push([data[0].innerText.split('\n')[0], data[0].innerText.split('\n')[1], data[1].innerText]);
   });
-  let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+  const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
   window.open(encodeURI(csvContent));
   mostrarToast("📥 Reporte generado");
 };
 
 window.filtrarUsuarios = () => {
-  let input = document.getElementById("busqueda").value.toLowerCase();
-  let rows = document.querySelectorAll("#tablaUsuariosBody tr");
+  const input = document.getElementById("busqueda").value.toLowerCase();
+  const rows = document.querySelectorAll("#tablaUsuariosBody tr");
   rows.forEach(row => {
     row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
   });
 };
 
 window.resetPassword = (email) => {
-  if(confirm("¿Enviar correo a " + email + "?")) {
-    sendPasswordResetEmail(auth, email).then(() => mostrarToast("✅ Enviado")).catch(err => mostrarToast("❌ Error"));
+  if (confirm("¿Enviar correo a " + email + "?")) {
+    sendPasswordResetEmail(auth, email)
+      .then(() => mostrarToast("✅ Enviado"))
+      .catch(() => mostrarToast("❌ Error"));
   }
 };
 
 window.eliminarUsuario = async (id) => {
-  if(confirm("¿Eliminar permanentemente?")) {
-    await deleteDoc(doc(db, "usuarios", id));
-    mostrarToast("🗑️ Eliminado");
+  if (confirm("¿Eliminar permanentemente?")) {
+    try {
+      await deleteDoc(doc(db, "usuarios", id));
+      mostrarToast("🗑️ Eliminado");
+    } catch (e) {
+      mostrarToast("❌ No se pudo eliminar");
+    }
   }
 };
 
 window.cerrarSesion = () => {
-  if (unsubscribeUsuarios) unsubscribeUsuarios();
-  signOut(auth).then(() => window.location.href = "login.html");
+  if (unsubscribeUsuarios) {
+    unsubscribeUsuarios();
+  }
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
 };
 </script>
 </body>
