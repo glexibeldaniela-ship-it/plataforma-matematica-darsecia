@@ -1,210 +1,303 @@
 /* ==========================
-   Reset Global
+   RESET GLOBAL
 ========================== */
 *, *::before, *::after {
   box-sizing: border-box;
-}
-
-/* ==========================
-   General
-========================= */
-body {
   margin: 0;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f0f4f8;
-  color: #004d40;
-  overflow-x: hidden;
+  padding: 0;
 }
 
-html {
+html, body {
+  height: 100%;
+  width: 100%;
   overflow-x: hidden;
 }
 
 /* ==========================
-   Pantallas con Fondos (Mantiene tus imágenes)
-========================= */
-.pantalla-inicio, .pantalla-login, .pantalla-registro {
+   BASE GENERAL
+========================== */
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #01579b; /* Azul oscuro para textos */
+  background-color: #f5f9ff;
+}
+
+/* ==========================
+   PANTALLAS CON FONDO (tus imágenes)
+========================== */
+.pantalla-inicio, 
+.pantalla-login, 
+.pantalla-registro,
+.pantalla-panel {
+  min-height: 100vh;
+  width: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed; /* Efecto moderno */
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
+  flex-direction: column;
+  padding: 20px;
 }
 
 .pantalla-inicio { background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); }
 .pantalla-login { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
-.pantalla-registro { 
-  background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png"); 
-  background-position: top right; 
-}
+.pantalla-registro { background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png"); }
+/* Las pantallas de panel usan la misma imagen de login o una neutra */
+.pantalla-panel { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
 
-/* Contenedores Blancos con mejor contraste */
-.contenedor-bienvenida, .contenedor-login, .contenedor-registro {
-  background-color: rgba(255, 255, 255, 0.98);
-  padding: 35px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  max-width: 380px;
-  width: 90%;
-  text-align: center;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 150, 136, 0.1);
-}
-
-/* Cuadros de texto y selects PROFESIONALES */
-input, select {
+/* ==========================
+   CONTENEDORES TRANSPARENTES (MODERNOS)
+========================== */
+.contenedor-bienvenida,
+.contenedor-login,
+.contenedor-registro,
+.contenedor-panel {
+  background-color: rgba(255, 255, 255, 0.75); /* 75% transparente */
+  backdrop-filter: blur(10px); /* Efecto vidrio */
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 28px;
+  padding: 24px 20px;
+  margin: 10px auto;
   width: 100%;
-  padding: 14px;
-  margin-bottom: 15px;
-  border: 2px solid #b2dfdb; /* Un toque verdoso suave */
-  border-radius: 12px;
+  max-width: 400px;
+  box-shadow: 0 15px 35px rgba(0, 131, 143, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Para paneles con más contenido, que no sean tan anchos */
+.contenedor-panel {
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+/* Títulos dentro de contenedores */
+.contenedor-bienvenida h1,
+.contenedor-login h1,
+.contenedor-registro h1,
+.contenedor-panel h2 {
+  color: #00838f; /* Turquesa */
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(255,255,255,0.5);
+}
+
+/* ==========================
+   FORMULARIOS (MODERNOS)
+========================== */
+input, select, textarea {
+  width: 100%;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  border: none;
+  border-radius: 50px; /* Bordes redondeados modernos */
   font-size: 16px;
   outline: none;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  background-color: #ffffff;
-  color: #004d40;
+  color: #01579b;
 }
 
-input:focus, select:focus {
-  border-color: #00838f; /* Turquesa Verdoso al escribir */
-  box-shadow: 0 0 10px rgba(0, 131, 143, 0.2);
-  background-color: #f0fdfd;
+input:focus, select:focus, textarea:focus {
+  background-color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 131, 143, 0.25);
+  transform: translateY(-2px);
 }
 
 /* ==========================
-   BOTONES CON TU TURQUESA (Adiós al Gris)
-========================= */
-.btn-iniciar, .btn-turquesa, .btn-primary {
+   BOTONES (TU COLOR TURQUESA)
+========================== */
+button, .btn {
   width: 100%;
-  color: white;
-  padding: 16px;
+  padding: 16px 24px;
   border: none;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s active;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 18px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Botón Naranja (Atención) */
-.btn-iniciar {
+.btn-primario {
+  background-color: #00838f; /* Tu turquesa */
+  color: white;
+}
+
+.btn-primario:active {
+  background-color: #006064;
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.btn-naranja {
   background-color: #ff9800;
+  color: white;
 }
-.btn-iniciar:active {
+
+.btn-naranja:active {
   background-color: #e68900;
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-/* Botón Turquesa Verdoso (Tu Color) */
-.btn-turquesa, .btn-primary {
-  background-color: #00838f; /* El turquesa verdoso que pediste */
-}
-
-.btn-turquesa:active, .btn-primary:active {
-  background-color: #006064; /* Más oscuro al presionar */
-  transform: scale(0.98);
+/* Botones pequeños para paneles */
+.btn-pequeno {
+  padding: 12px 20px;
+  font-size: 14px;
+  width: auto;
+  display: inline-block;
+  border-radius: 30px;
 }
 
 /* ==========================
-   COMPONENTES PANEL (Manteniendo lo que funciona)
-========================= */
+   BARRA SUPERIOR (FIJA Y MODERNA)
+========================== */
+.barra-superior {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 3px solid #00838f;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.barra-superior h1, .barra-superior h2 {
+  color: #00838f;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ==========================
+   TARJETAS PARA PANELES
+========================== */
+.tarjeta {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0, 131, 143, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
 .perfil-card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 15px rgba(0, 131, 143, 0.15);
   display: flex;
   align-items: center;
   gap: 15px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 30px;
+  padding: 15px;
   border-left: 8px solid #00838f;
 }
 
 .perfil-avatar {
-  width: 60px; height: 60px;
-  background: linear-gradient(135deg, #00acc1, #00838f);
-  border-radius: 15px;
-  display: flex; justify-content: center; align-items: center;
-  font-size: 30px;
+  width: 55px;
+  height: 55px;
+  background: #00838f;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
   color: white;
 }
 
-.badge {
-  background: #e0f2f1;
-  color: #00695c;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 800;
-  border: 1px solid #80cbc4;
-  display: inline-block;
-}
-
-/* Tablas con color institucional */
+/* ==========================
+   TABLAS (MODERNAS)
+========================== */
 .tabla-wrapper {
   overflow-x: auto;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  background: white;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(5px);
+  border-radius: 20px;
+  padding: 5px;
+  margin: 15px 0;
 }
 
-table { width: 100%; border-collapse: collapse; }
-th { 
-  background-color: #00838f; 
-  color: white; 
-  padding: 15px; 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 20px;
+}
+
+th {
+  background-color: #00838f;
+  color: white;
+  padding: 15px 10px;
   font-size: 14px;
+  font-weight: 600;
   text-transform: uppercase;
 }
-td { 
-  padding: 14px; 
-  border-bottom: 1px solid #e0f2f1; 
-  text-align: center;
-  color: #004d40;
+
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(0, 131, 143, 0.2);
+  color: #01579b;
   font-weight: 500;
 }
 
-/* =========================================
-   BARRA SUPERIOR (Ajuste del cuadro negro)
-   ========================================= */
-header, .header, .navbar {
-  background-color: rgba(255, 255, 255, 0.9) !important; /* Blanco suave translúcido */
-  border-bottom: 3px solid #00838f; /* Línea turquesa para dar identidad */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+/* ==========================
+   BADGES / ETIQUETAS
+========================== */
+.badge {
+  background: rgba(0, 131, 143, 0.2);
+  color: #006064;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+  border: 1px solid #00838f;
 }
 
-/* Asegurar que el nombre de la app sea legible en la barra blanca */
-header h1, .header h1, .brand-name {
-  color: #00838f !important;
-  font-weight: 800;
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-/* Responsive */
-@media screen and (max-width: 600px){
-  .perfil-card { flex-direction: column; text-align: center; }
-  .contenedor-bienvenida, .contenedor-login, .contenedor-registro { padding: 30px 20px; width: 92%; }
-  .btn-iniciar, .btn-turquesa { padding: 18px; font-size: 15px; } /* Más grande para el dedo */
-
-  /* Ajuste de espacio para que el formulario no choque con la nueva barra */
-  .pantalla-inicio, .pantalla-login, .pantalla-registro {
-    padding-top: 60px;
+/* ==========================
+   RESPONSIVE (TELÉFONO)
+========================== */
+@media screen and (max-width: 600px) {
+  .contenedor-bienvenida,
+  .contenedor-login,
+  .contenedor-registro,
+  .contenedor-panel {
+    padding: 20px 16px;
+    border-radius: 24px;
+    max-width: 95%;
+  }
+  
+  input, select, button {
+    padding: 16px;
+    font-size: 16px;
+  }
+  
+  .perfil-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .barra-superior {
+    padding: 10px 16px;
+  }
+  
+  th, td {
+    padding: 10px 6px;
+    font-size: 13px;
   }
 }
