@@ -4,26 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plataforma Matemática - Prof. José Fernández</title>
 
-    <title>Plataforma Matemática</title>
-
-    <!-- Esto es lo nuevo para que sea App -->
+    <!-- Para que sea App -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00796b">
+    <meta name="theme-color" content="#00838f">
 
-    <link rel="stylesheet" href="estilos.css">
+    <!-- CSS unificado (ahora en carpeta) -->
+    <link rel="stylesheet" href="css/estilos.css">
 
     <style>
-        /* mejora para apk */
-        html,
-        body {
-            height: 100%;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* animación suave del contenedor */
+        /* animación suave del contenedor (se mantiene) */
         .contenedor-bienvenida {
             animation: aparecer 0.8s ease;
         }
@@ -33,41 +24,59 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-    </style>
 
+        /* Estilo para el mensaje bíblico */
+        .mensaje-profesor {
+            font-style: italic;
+            color: #01579b;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 15px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #00838f;
+            font-size: 0.95rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+    </style>
 </head>
 
 <body class="pantalla-inicio">
 
     <div class="contenedor-bienvenida">
 
-        <div class="emoji-mate">📏✏️</div>
+        <div class="emoji-mate" style="font-size: 3rem; margin-bottom: 10px;">📏✏️</div>
 
-        <h1>Bienvenido a Plataforma Matemática</h1>
+        <h1>Plataforma Matemática</h1>
 
-        <p>Si eres estudiante nuevo, regístrate. Si ya tienes cuenta, inicia sesión.</p>
+        <!-- MENSAJE DEL PROFESOR JOSÉ FERNÁNDEZ (inspirado en Proverbios) -->
+        <div class="mensaje-profesor">
+            <p style="font-weight: 700; margin-bottom: 8px;">🗣️ Prof. José Fernández:</p>
+            <p>"El buen maestro no solo enseña números, sino que guía corazones.<br>
+            <strong>Proverbios 22:6</strong> - 'Instruye al niño en su camino, y aun cuando sea viejo no se apartará de él'.<br>
+            Que cada paso en esta plataforma sea un paso hacia la sabiduría y el conocimiento. ¡Adelante!"</p>
+        </div>
+
+        <p style="margin-bottom: 15px;">Estudiante nuevo, regístrate. Si ya tienes cuenta, inicia sesión.</p>
 
         <div class="botones-inicio">
-
             <a href="login.html">
-                <button class="btn-turquesa">Iniciar Sesión</button>
+                <button class="btn-primario">Iniciar Sesión</button>
             </a>
 
             <a href="registro.html">
-                <button class="btn-turquesa">Registrarse</button>
+                <button class="btn-primario">Registrarse</button>
             </a>
-
         </div>
 
     </div>
 
-    <!-- Script nuevo para habilitar la instalación -->
+    <!-- Service Worker para instalación -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
