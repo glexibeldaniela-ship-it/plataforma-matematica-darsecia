@@ -5,9 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Registro Estudiante</title>
-  <!-- Ruta corregida: css/estilos.css -->
+  
+  <!-- CSS unificado -->
   <link rel="stylesheet" href="css/estilos.css">
 
+  <!-- EmailJS (se queda igual) -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <style>
@@ -100,6 +102,7 @@
 
     <form id="formRegistro">
 
+      <!-- PASO 1: Datos personales -->
       <div id="divPaso1" class="paso-formulario paso-activo">
         <input type="text" id="cedula" placeholder="Cédula" required>
         <input type="text" id="nombres" placeholder="Nombres completos" required>
@@ -110,6 +113,7 @@
         <button type="button" class="btn-navegacion" style="background: #00838f; color: white;" onclick="cambiarPaso(2)">Siguiente</button>
       </div>
 
+      <!-- PASO 2: Correo, verificación y contraseña -->
       <div id="divPaso2" class="paso-formulario">
         <div class="fila-verificacion">
           <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
@@ -134,6 +138,7 @@
         </div>
       </div>
 
+      <!-- PASO 3: Año, sección, lapso -->
       <div id="divPaso3" class="paso-formulario">
         <select id="anio" required>
           <option value="">Seleccione Año</option>
@@ -176,7 +181,7 @@
     }
   </script>
 
-  <!-- Ruta corregida: js/registro.js -->
+  <!-- NUEVO JS: registro.js (con Supabase) -->
   <script type="module" src="js/registro.js"></script>
 </body>
 </html>
