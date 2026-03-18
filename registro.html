@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Registro Estudiante</title>
-  <link rel="stylesheet" href="estilos.css">
+  <!-- Ruta corregida: css/estilos.css -->
+  <link rel="stylesheet" href="css/estilos.css">
 
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
@@ -17,10 +18,9 @@
       padding: 0;
     }
 
-    /* Ajuste para que el contenedor no sea tan gigante */
     .contenedor-registro {
       animation: aparecer 0.7s ease;
-      padding: 15px !important; /* Menos espacio interno */
+      padding: 15px !important;
       margin-top: 10px;
     }
 
@@ -29,11 +29,10 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Reducción de altura de inputs y select para ahorrar espacio */
     .contenedor-registro input,
     .contenedor-registro select {
       margin-bottom: 8px;
-      padding: 10px !important; /* Más delgados */
+      padding: 10px !important;
       height: 45px;
       box-sizing: border-box;
     }
@@ -53,7 +52,7 @@
       font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
-      height: 45px; /* Alineado con el input */
+      height: 45px;
     }
 
     .estado-codigo {
@@ -74,7 +73,6 @@
       margin-bottom: 10px;
     }
 
-    /* Lógica de Pasos (Ocultar/Mostrar) */
     .paso-formulario {
       display: none;
     }
@@ -178,6 +176,7 @@
     }
   </script>
 
-  <script type="module" src="./registro.js"></script>
+  <!-- Ruta corregida: js/registro.js -->
+  <script type="module" src="js/registro.js"></script>
 </body>
 </html>
