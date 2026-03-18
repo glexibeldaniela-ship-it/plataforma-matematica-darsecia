@@ -207,4 +207,4 @@ header h1, .header h1, .brand-name {
   .pantalla-inicio, .pantalla-login, .pantalla-registro {
     padding-top: 60px;
   }
-}
+} 
