@@ -1,217 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Login · MateEduPro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login · MateEduPro</title>
 
-<link rel="stylesheet" href="estilos.css">
+    <!-- CSS unificado (carpeta) -->
+    <link rel="stylesheet" href="css/estilos.css">
 
-<style>
-html, body { height: 100%; overflow-x: hidden; margin:0; padding:0; }
+    <style>
+        .contenedor-login {
+            animation: aparecer 0.7s ease;
+        }
 
-.contenedor-login { animation: aparecer 0.7s ease; }
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-@keyframes aparecer {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+        .link-olvide {
+            display: block;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 0.82rem;
+            color: #00838f;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
 
-.contenedor-login input { margin-bottom: 10px; }
+        .recuperar-seccion {
+            display: none;
+            margin-top: 14px;
+            background: rgba(224, 247, 250, 0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 14px 16px;
+            border: 1px solid rgba(0, 131, 143, 0.3);
+            animation: aparecer 0.3s ease;
+        }
 
-.link-olvide {
-  display: block;
-  text-align: center;
-  margin-top: 14px;
-  font-size: 0.82rem;
-  color: #00796b;
-  cursor: pointer;
-  text-decoration: underline;
-  font-weight: 600;
-}
+        .recuperar-seccion.visible { display: block; }
 
-.recuperar-seccion {
-  display: none;
-  margin-top: 14px;
-  background: #e0f7fa;
-  border-radius: 12px;
-  padding: 14px 16px;
-  border: 1px solid #b2ebf2;
-  animation: aparecer 0.3s ease;
-}
+        .recuperar-seccion p {
+            font-size: 0.78rem;
+            color: #01579b;
+            margin: 0 0 10px;
+            text-align: center;
+        }
 
-.recuperar-seccion.visible { display: block; }
-
-.recuperar-seccion p {
-  font-size: 0.78rem;
-  color: #004d40;
-  margin: 0 0 10px;
-  text-align: center;
-}
-
-.recuperar-seccion input {
-  width: 100%;
-  padding: 11px;
-  border: 1.5px solid #b2ebf2;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-.btn-turquesa, .btn-recuperar {
-  width: 100%;
-  background: #00796b;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
-  font-weight: bold;
-  font-size: 0.88rem;
-  cursor: pointer;
-}
-
-.msg-recuperar {
-  font-size: 0.78rem;
-  text-align: center;
-  margin-top: 9px;
-  font-weight: 600;
-  min-height: 18px;
-}
-</style>
-
+        .msg-recuperar {
+            font-size: 0.78rem;
+            text-align: center;
+            margin-top: 9px;
+            font-weight: 600;
+            min-height: 18px;
+        }
+    </style>
 </head>
 
 <body class="pantalla-login">
 
 <div class="contenedor-login">
 
-<h2>📚 Iniciar Sesión</h2>
+    <h2>📚 Iniciar Sesión</h2>
 
-<input type="email" id="email" placeholder="Correo">
-<input type="password" id="password" placeholder="Contraseña">
+    <input type="email" id="email" placeholder="Correo">
+    <input type="password" id="password" placeholder="Contraseña">
 
-<button id="btnLogin" class="btn-turquesa">Entrar</button>
+    <button id="btnLogin" class="btn-primario">Entrar</button>
 
-<span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
+    <span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
 
-<div class="recuperar-seccion" id="recuperarSeccion">
-
-<p>Ingresa tu correo para restablecer tu contraseña.</p>
-
-<input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
-
-<button class="btn-recuperar" onclick="enviarRecuperacion()">Enviar enlace</button>
-
-<p class="msg-recuperar" id="msgRecuperar"></p>
-
-</div>
+    <div class="recuperar-seccion" id="recuperarSeccion">
+        <p>Ingresa tu correo para restablecer tu contraseña.</p>
+        <input type="email" id="emailRecuperar" placeholder="Tu correo registrado">
+        <button class="btn-primario" onclick="enviarRecuperacion()" style="padding: 12px;">Enviar enlace</button>
+        <p class="msg-recuperar" id="msgRecuperar"></p>
+    </div>
 
 </div>
 
 <script type="module">
+    // IMPORTAR SUPABASE (nuestro cerebro)
+    import { supabase } from './js/supabase.js';
 
-import { auth, db } from "./firebase.js";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    const btnLogin = document.getElementById('btnLogin');
 
-const btnLogin = document.getElementById('btnLogin');
+    // LOGIN PRINCIPAL
+    btnLogin.addEventListener('click', async () => {
+        const email = document.getElementById('email').value.trim();
+        const pass  = document.getElementById('password').value.trim();
 
-btnLogin.addEventListener('click', async () => {
+        if(!email || !pass){
+            alert("Por favor rellena todos los campos");
+            return;
+        }
 
-  const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('password').value.trim();
+        btnLogin.innerText = "Verificando...";
+        btnLogin.disabled = true;
 
-  if(!email || !pass){
-    alert("Por favor rellena todos los campos");
-    return;
-  }
+        try {
+            // 1. Autenticar con Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: pass
+            });
 
-  btnLogin.innerText = "Verificando...";
-  btnLogin.disabled = true;
+            if (authError) throw authError;
 
-  try {
+            const user = authData.user;
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const user = userCredential.user;
+            // 2. Buscar el rol del usuario en la tabla 'usuarios'
+            const { data: perfil, error: perfilError } = await supabase
+                .from('usuarios')
+                .select('rol')
+                .eq('email', email)
+                .single();
 
-    const docSnap = await getDoc(doc(db, "usuarios", user.uid));
+            if (perfilError || !perfil) {
+                // Si no está en 'usuarios', buscar en 'estudiantes'
+                const { data: estudiante, error: estError } = await supabase
+                    .from('estudiantes')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
 
-    if (docSnap.exists()) {
+                if (estError || !estudiante) {
+                    throw new Error("No tienes un perfil creado en el sistema");
+                }
 
-      const uData = docSnap.data();
-      const rol = uData.rol ? uData.rol.toLowerCase() : "estudiante";
+                // Es estudiante
+                window.location.replace("panel-estudiante.html");
+            } else {
+                // Tiene rol en la tabla usuarios (admin o profesor)
+                const rol = perfil.rol.toLowerCase();
 
-      try{
-        await updateDoc(doc(db, "usuarios", user.uid), { online:true });
-      }catch(e){
-        console.warn("No se pudo marcar online");
-      }
+                if (rol === "administrador") {
+                    window.location.replace("panel-admin.html");
+                } else if (rol === "profesor") {
+                    window.location.replace("panel-profesor.html");
+                } else {
+                    window.location.replace("panel-estudiante.html");
+                }
+            }
 
-      if (rol === "admin") {
-        window.location.replace("panel-admin.html");
-      }
-      else if (rol === "profesor") {
-        window.location.replace("panel-profesor.html");
-      }
-      else {
-        window.location.replace("panel-estudiante.html");
-      }
+        } catch(error) {
+            alert("Error de acceso: " + error.message);
+            btnLogin.innerText = "Entrar";
+            btnLogin.disabled = false;
+        }
+    });
 
-    } else {
+    // FUNCIONES PARA RECUPERAR CONTRASEÑA
+    window.toggleRecuperar = () => {
+        const sec = document.getElementById('recuperarSeccion');
+        sec.classList.toggle('visible');
+    };
 
-      alert("Error: No tienes un perfil creado.");
-      btnLogin.innerText = "Entrar";
-      btnLogin.disabled = false;
+    window.enviarRecuperacion = async () => {
+        const email = document.getElementById('emailRecuperar').value.trim();
+        const msg = document.getElementById('msgRecuperar');
 
-    }
+        if(!email){
+            msg.textContent = '⚠️ Ingresa tu correo.';
+            msg.style.color = '#d32f2f';
+            return;
+        }
 
-  } catch(error){
+        try {
+            // Usar Supabase Auth para recuperación
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/login.html',
+            });
 
-    alert("Error de acceso: " + error.message);
-    btnLogin.innerText = "Entrar";
-    btnLogin.disabled = false;
+            if (error) throw error;
 
-  }
-
-});
-
-
-window.toggleRecuperar = () => {
-
-  const sec = document.getElementById('recuperarSeccion');
-  sec.classList.toggle('visible');
-
-};
-
-window.enviarRecuperacion = async () => {
-
-  const email = document.getElementById('emailRecuperar').value.trim();
-  const msg = document.getElementById('msgRecuperar');
-
-  if(!email){
-    msg.textContent = '⚠️ Ingresa tu correo.';
-    return;
-  }
-
-  try{
-
-    await sendPasswordResetEmail(auth, email);
-
-    msg.style.color = '#2e7d32';
-    msg.textContent = '✅ Enlace enviado.';
-
-  }catch(err){
-
-    msg.textContent = '❌ Error al enviar.';
-
-  }
-
-};
-
+            msg.style.color = '#2e7d32';
+            msg.textContent = '✅ Revisa tu correo.';
+        } catch(err) {
+            msg.style.color = '#d32f2f';
+            msg.textContent = '❌ Error al enviar.';
+        }
+    };
 </script>
 
 </body>
 </html>
-
- 
