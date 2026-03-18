@@ -18,12 +18,12 @@ html, body {
 ========================== */
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #01579b; /* Azul oscuro para textos */
+  color: #01579b;
   background-color: #f5f9ff;
 }
 
 /* ==========================
-   PANTALLAS CON FONDO (tus imágenes)
+   PANTALLAS CON FONDO
 ========================== */
 .pantalla-inicio, 
 .pantalla-login, 
@@ -34,7 +34,7 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* Efecto moderno */
+  background-attachment: fixed;
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -43,40 +43,46 @@ body {
 .pantalla-inicio { background-image: url("https://i.postimg.cc/3NkpJdj8/1772847314587.png"); }
 .pantalla-login { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
 .pantalla-registro { background-image: url("https://i.postimg.cc/DfXhV7sB/1772854819741.png"); }
-/* Las pantallas de panel usan la misma imagen de login o una neutra */
 .pantalla-panel { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
 
 /* ==========================
-   CONTENEDORES TRANSPARENTES (MODERNOS)
+   CONTENEDORES CORREGIDOS (AJUSTE DE ALTURA)
 ========================== */
 .contenedor-bienvenida,
 .contenedor-login,
 .contenedor-registro,
 .contenedor-panel {
-  background-color: rgba(255, 255, 255, 0.75); /* 75% transparente */
-  backdrop-filter: blur(10px); /* Efecto vidrio */
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 28px;
-  padding: 24px 20px;
-  margin: 10px auto;
-  width: 100%;
-  max-width: 400px;
+  padding: 20px 16px;
+  margin: auto;
+  width: 90%;
+  max-width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 15px 35px rgba(0, 131, 143, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.5);
+  
+  /* Centrado perfecto */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* Para paneles con más contenido, que no sean tan anchos */
+/* Para paneles con más contenido */
 .contenedor-panel {
   max-width: 500px;
-  margin-bottom: 20px;
+  max-height: 90vh;
 }
 
-/* Títulos dentro de contenedores */
+/* Títulos */
 .contenedor-bienvenida h1,
 .contenedor-login h1,
 .contenedor-registro h1,
 .contenedor-panel h2 {
-  color: #00838f; /* Turquesa */
+  color: #00838f;
   font-weight: 700;
   font-size: 1.8rem;
   margin-bottom: 20px;
@@ -85,14 +91,14 @@ body {
 }
 
 /* ==========================
-   FORMULARIOS (MODERNOS)
+   FORMULARIOS
 ========================== */
 input, select, textarea {
   width: 100%;
   padding: 16px 18px;
   margin-bottom: 16px;
   border: none;
-  border-radius: 50px; /* Bordes redondeados modernos */
+  border-radius: 50px;
   font-size: 16px;
   outline: none;
   background-color: rgba(255, 255, 255, 0.9);
@@ -108,7 +114,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================
-   BOTONES (TU COLOR TURQUESA)
+   BOTONES
 ========================== */
 button, .btn {
   width: 100%;
@@ -127,7 +133,7 @@ button, .btn {
 }
 
 .btn-primario {
-  background-color: #00838f; /* Tu turquesa */
+  background-color: #00838f;
   color: white;
 }
 
@@ -147,7 +153,6 @@ button, .btn {
   transform: scale(0.97);
 }
 
-/* Botones pequeños para paneles */
 .btn-pequeno {
   padding: 12px 20px;
   font-size: 14px;
@@ -157,7 +162,7 @@ button, .btn {
 }
 
 /* ==========================
-   BARRA SUPERIOR (FIJA Y MODERNA)
+   BARRA SUPERIOR
 ========================== */
 .barra-superior {
   background-color: rgba(255, 255, 255, 0.8);
@@ -185,7 +190,7 @@ button, .btn {
 }
 
 /* ==========================
-   TARJETAS PARA PANELES
+   TARJETAS
 ========================== */
 .tarjeta {
   background-color: rgba(255, 255, 255, 0.7);
@@ -222,7 +227,7 @@ button, .btn {
 }
 
 /* ==========================
-   TABLAS (MODERNAS)
+   TABLAS
 ========================== */
 .tabla-wrapper {
   overflow-x: auto;
@@ -256,7 +261,7 @@ td {
 }
 
 /* ==========================
-   BADGES / ETIQUETAS
+   BADGES
 ========================== */
 .badge {
   background: rgba(0, 131, 143, 0.2);
@@ -281,23 +286,43 @@ td {
     border-radius: 24px;
     max-width: 95%;
   }
-  
+
   input, select, button {
     padding: 16px;
     font-size: 16px;
   }
-  
+
   .perfil-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .barra-superior {
     padding: 10px 16px;
   }
-  
+
   th, td {
     padding: 10px 6px;
     font-size: 13px;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .contenedor-bienvenida,
+  .contenedor-login,
+  .contenedor-registro,
+  .contenedor-panel {
+    max-height: 90vh;
+    padding: 15px 12px;
+  }
+  
+  input, select, button {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  h1, h2 {
+    font-size: 1.4rem !important;
+    margin-bottom: 10px !important;
   }
 }
