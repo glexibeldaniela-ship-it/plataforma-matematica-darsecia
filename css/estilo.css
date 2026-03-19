@@ -46,7 +46,7 @@ body {
 .pantalla-panel { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
 
 /* ==========================
-   CONTENEDORES
+   CONTENEDORES CORREGIDOS (AJUSTE DE ALTURA)
 ========================== */
 .contenedor-bienvenida,
 .contenedor-login,
@@ -65,16 +65,19 @@ body {
   box-shadow: 0 15px 35px rgba(0, 131, 143, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.5);
 
+  /* Centrado perfecto */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
+/* Para paneles con más contenido */
 .contenedor-panel {
   max-width: 500px;
   max-height: 90vh;
 }
 
+/* Títulos */
 .contenedor-bienvenida h1,
 .contenedor-login h1,
 .contenedor-registro h1,
@@ -88,11 +91,11 @@ body {
 }
 
 /* ==========================
-   FORMULARIOS (GENERAL)
+   FORMULARIOS
 ========================== */
 input, select, textarea {
   width: 100%;
-  display: block; /* Asegura que ocupe su propia línea */
+  display: block; /* Asegura que no se colapse */
   padding: 16px 18px;
   margin-bottom: 16px;
   border: none;
@@ -106,16 +109,16 @@ input, select, textarea {
 }
 
 /* ==========================
-   CORRECCIÓN CAMPO DE CORREO
+   CAMPO DE CORREO CORREGIDO
 ========================== */
 input[type="email"] {
   width: 100% !important; /* Fuerza el ancho total */
-  min-height: 55px;        /* Asegura que sea visible */
+  min-height: 50px;        /* Evita que se vea sin espacio */
   padding: 16px 20px;
   font-size: 16px;
   background-color: #ffffff;
   border: 2px solid #00838f;
-  margin-top: 10px;
+  display: inline-block;
   box-sizing: border-box;
 }
 
@@ -287,7 +290,7 @@ td {
 }
 
 /* ==========================
-   RESPONSIVE
+   RESPONSIVE (TELÉFONO)
 ========================== */
 @media screen and (max-width: 600px) {
   .contenedor-bienvenida,
@@ -304,8 +307,9 @@ td {
     font-size: 16px;
   }
 
+  /* Ajuste responsivo para el email */
   input[type="email"] {
-    padding: 18px;
+    padding: 16px 18px;
     font-size: 16px;
   }
 
