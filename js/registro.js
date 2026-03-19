@@ -147,4 +147,73 @@ async function registrar() {
             return;
         }
 
-        // 2. Crear usuario en Supabase 
+        // 2. Verificar si el email ya existe
+        const { data: emailExistente, error: emailError } = await supabase
+            .from('estudiantes')
+            .select('email')
+            .eq('email', email);
+
+        if (emailError) throw emailError;
+        if (emailExistente && emailExistente.length > 0) {
+            alert("Email ya registrado");
+            return;
+        }
+
+        // 3. Crear usuario en Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    cedula: cedula,
+                    rol: 'estudiante'
+                }
+            }
+        });
+
+        if (authError) throw authError;
+
+        const userId = authData.user.id;
+
+        // 4. Guardar datos en tabla 'estudiantes'
+        const { error: insertError } = await supabase
+            .from('estudiantes')
+            .insert([
+                {
+                    id: userId,
+                    nombres_completos: nombres,
+                    apellido_completo: apellidos,
+                    cedula: cedula,
+                    email: email,
+                    fecha_nacimiento: fechaNacimiento,
+                    usuario: email,
+                    clave: password,
+                    año: anio,
+                    seccion: seccion,
+                    lapso: lapso,
+                    created_at: new Date()
+                }
+            ]);
+
+        if (insertError) throw insertError;
+
+        alert("¡Registro exitoso!");
+        window.location.href = "login.html";
+
+    } catch (error) {
+        console.error(error);
+        alert("Error en registro: " + error.message);
+    }
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("formRegistro").addEventListener("submit", (e) => {
+        e.preventDefault();
+        registrar();
+    });
+});
