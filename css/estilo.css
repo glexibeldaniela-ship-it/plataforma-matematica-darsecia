@@ -46,7 +46,7 @@ body {
 .pantalla-panel { background-image: url("https://i.postimg.cc/Z5QDHdnZ/1772851546228.png"); }
 
 /* ==========================
-   CONTENEDORES CORREGIDOS (AJUSTE DE ALTURA)
+   CONTENEDORES
 ========================== */
 .contenedor-bienvenida,
 .contenedor-login,
@@ -65,19 +65,16 @@ body {
   box-shadow: 0 15px 35px rgba(0, 131, 143, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.5);
 
-  /* Centrado perfecto */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* Para paneles con más contenido */
 .contenedor-panel {
   max-width: 500px;
   max-height: 90vh;
 }
 
-/* Títulos */
 .contenedor-bienvenida h1,
 .contenedor-login h1,
 .contenedor-registro h1,
@@ -91,10 +88,11 @@ body {
 }
 
 /* ==========================
-   FORMULARIOS
+   FORMULARIOS (GENERAL)
 ========================== */
 input, select, textarea {
   width: 100%;
+  display: block; /* Asegura que ocupe su propia línea */
   padding: 16px 18px;
   margin-bottom: 16px;
   border: none;
@@ -108,13 +106,17 @@ input, select, textarea {
 }
 
 /* ==========================
-   CAMPO DE CORREO MÁS GRANDE (SOLO ESTO CAMBIÉ)
+   CORRECCIÓN CAMPO DE CORREO
 ========================== */
 input[type="email"] {
-  padding: 20px 18px;
-  font-size: 18px;
-  background-color: rgba(255, 255, 255, 0.95);
+  width: 100% !important; /* Fuerza el ancho total */
+  min-height: 55px;        /* Asegura que sea visible */
+  padding: 16px 20px;
+  font-size: 16px;
+  background-color: #ffffff;
   border: 2px solid #00838f;
+  margin-top: 10px;
+  box-sizing: border-box;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -285,7 +287,7 @@ td {
 }
 
 /* ==========================
-   RESPONSIVE (TELÉFONO)
+   RESPONSIVE
 ========================== */
 @media screen and (max-width: 600px) {
   .contenedor-bienvenida,
@@ -302,10 +304,9 @@ td {
     font-size: 16px;
   }
 
-  /* Campo de correo aún más grande en móvil */
   input[type="email"] {
-    padding: 22px 18px;
-    font-size: 18px;
+    padding: 18px;
+    font-size: 16px;
   }
 
   .perfil-card {
