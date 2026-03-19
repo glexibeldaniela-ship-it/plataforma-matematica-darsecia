@@ -1,13 +1,21 @@
 // js/registro.js
 import { supabase } from './supabase.js';
 
+// CONFIGURACIÓN EMAILJS
+const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY";
+const EMAILJS_SERVICE_ID  = "service_43ampij";
+const EMAILJS_TEMPLATE_ID = "template_lfbez2i";
+
+// Inicializar EmailJS
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
 let codigoValidado = false;
 
 // ============================================
-// ENVIAR CÓDIGO DE VERIFICACIÓN (solo guarda en BD, Supabase enviará el correo)
+// ENVIAR CÓDIGO DE VERIFICACIÓN (CORREGIDO)
 // ============================================
 window.enviarCodigoVerificacion = async function () {
-    const email = document.getElementById("email").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
     const nombres = document.getElementById("nombres").value.trim();
 
     if (!email) {
@@ -15,12 +23,18 @@ window.enviarCodigoVerificacion = async function () {
         return;
     }
 
+    // Validar formato del correo
+    if (!email.includes('@') || !email.includes('.')) {
+        alert("El correo no tiene formato válido");
+        return;
+    }
+
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     const ahora = new Date();
-    const expira = new Date(ahora.getTime() + 10 * 60 * 1000); // 10 minutos
+    const expira = new Date(ahora.getTime() + 10 * 60 * 1000);
 
     try {
-        // Guardar código en Supabase (tabla codigos_verificacion)
+        // Guardar código en Supabase
         const { error } = await supabase
             .from('codigos_verificacion')
             .insert([
@@ -35,15 +49,23 @@ window.enviarCodigoVerificacion = async function () {
 
         if (error) throw error;
 
-        // Supabase enviará automáticamente un correo con el código usando SMTP
-        // (esto se maneja desde el trigger de la base de datos o función Edge)
-        
-        alert("Código enviado al correo (revisa tu bandeja)");
+        // Enviar correo con EmailJS
+        const templateParams = {
+            to_email: email,
+            to_name: nombres || "Estudiante",
+            codigo: codigo
+        };
+
+        console.log("Enviando a:", email); // Para debug
+
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+
+        alert("Código enviado al correo");
         document.getElementById("estadoCodigo").textContent = "📧 Revisa tu bandeja";
         document.getElementById("estadoCodigo").className = "estado-codigo espera";
     } catch (err) {
-        console.error(err);
-        alert("Error al enviar código");
+        console.error("Error completo:", err);
+        alert("Error al enviar código. Verifica tu correo.");
     }
 };
 
@@ -51,7 +73,7 @@ window.enviarCodigoVerificacion = async function () {
 // VALIDAR CÓDIGO
 // ============================================
 window.validarCodigo = async function () {
-    const email = document.getElementById("email").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
     const codigoInput = document.getElementById("codigoInput").value.trim();
 
     if (codigoInput.length !== 6) {
@@ -60,7 +82,6 @@ window.validarCodigo = async function () {
     }
 
     try {
-        // Buscar código válido en Supabase
         const { data, error } = await supabase
             .from('codigos_verificacion')
             .select('*')
@@ -76,7 +97,6 @@ window.validarCodigo = async function () {
             return;
         }
 
-        // Marcar como usado
         await supabase
             .from('codigos_verificacion')
             .update({ usado: true })
@@ -84,7 +104,6 @@ window.validarCodigo = async function () {
 
         codigoValidado = true;
 
-        // Mostrar badge de verificado
         document.getElementById("badgeValidado").style.display = "block";
         document.getElementById("estadoCodigo").textContent = "✅ Correo verificado";
         document.getElementById("estadoCodigo").className = "estado-codigo ok";
@@ -105,25 +124,23 @@ async function registrar() {
         return;
     }
 
-    // Obtener valores del formulario
     const cedula    = document.getElementById("cedula").value.trim();
     const nombres   = document.getElementById("nombres").value.trim();
     const apellidos = document.getElementById("apellidos").value.trim();
-    const email     = document.getElementById("email").value.trim();
+    const email     = document.getElementById("email").value.trim().toLowerCase();
     const password  = document.getElementById("password").value.trim();
     const fechaNacimiento = document.getElementById("fechaNacimiento").value;
     const anio      = document.getElementById("anio").value;
     const seccion   = document.getElementById("seccion").value;
     const lapso     = document.getElementById("lapso").value;
 
-    // Validar contraseña
     if (password.length < 8) {
         alert("La contraseña debe tener al menos 8 caracteres.");
         return;
     }
 
     try {
-        // 1. Verificar si la cédula ya existe
+        // Verificar si la cédula ya existe
         const { data: cedulaExistente, error: cedulaError } = await supabase
             .from('estudiantes')
             .select('cedula')
@@ -135,7 +152,7 @@ async function registrar() {
             return;
         }
 
-        // 2. Verificar si el email ya existe
+        // Verificar si el email ya existe
         const { data: emailExistente, error: emailError } = await supabase
             .from('estudiantes')
             .select('email')
@@ -147,7 +164,7 @@ async function registrar() {
             return;
         }
 
-        // 3. Crear usuario en Supabase Auth
+        // Crear usuario en Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
             password: password,
@@ -165,7 +182,7 @@ async function registrar() {
 
         const userId = authData.user.id;
 
-        // 4. Guardar datos en tabla 'estudiantes'
+        // Guardar en tabla estudiantes
         const { error: insertError } = await supabase
             .from('estudiantes')
             .insert([
@@ -196,9 +213,7 @@ async function registrar() {
     }
 }
 
-// ============================================
-// EVENT LISTENERS
-// ============================================
+// Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formRegistro").addEventListener("submit", (e) => {
         e.preventDefault();
