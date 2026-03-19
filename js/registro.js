@@ -12,7 +12,7 @@ emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 let codigoValidado = false;
 
 // ============================================
-// ENVIAR CÓDIGO DE VERIFICACIÓN (CORREGIDO)
+// ENVIAR CÓDIGO DE VERIFICACIÓN
 // ============================================
 window.enviarCodigoVerificacion = async function () {
     const email = document.getElementById("email").value.trim().toLowerCase();
@@ -50,21 +50,17 @@ window.enviarCodigoVerificacion = async function () {
         if (error) throw error;
 
         // Enviar correo con EmailJS
-        const templateParams = {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
             to_email: email,
             to_name: nombres || "Estudiante",
             codigo: codigo
-        };
-
-        console.log("Enviando a:", email); // Para debug
-
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+        });
 
         alert("Código enviado al correo");
         document.getElementById("estadoCodigo").textContent = "📧 Revisa tu bandeja";
         document.getElementById("estadoCodigo").className = "estado-codigo espera";
     } catch (err) {
-        console.error("Error completo:", err);
+        console.error(err);
         alert("Error al enviar código. Verifica tu correo.");
     }
 };
@@ -213,7 +209,9 @@ async function registrar() {
     }
 }
 
-// Event Listeners
+// ============================================
+// EVENT LISTENERS
+// ============================================
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formRegistro").addEventListener("submit", (e) => {
         e.preventDefault();
