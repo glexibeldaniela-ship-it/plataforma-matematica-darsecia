@@ -64,7 +64,7 @@ body {
   overflow-y: auto;
   box-shadow: 0 15px 35px rgba(0, 131, 143, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  
+
   /* Centrado perfecto */
   display: flex;
   flex-direction: column;
@@ -105,6 +105,16 @@ input, select, textarea {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   color: #01579b;
+}
+
+/* ==========================
+   CAMPO DE CORREO MÁS GRANDE (SOLO ESTO CAMBIÉ)
+========================== */
+input[type="email"] {
+  padding: 20px 18px;
+  font-size: 18px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #00838f;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -292,6 +302,12 @@ td {
     font-size: 16px;
   }
 
+  /* Campo de correo aún más grande en móvil */
+  input[type="email"] {
+    padding: 22px 18px;
+    font-size: 18px;
+  }
+
   .perfil-card {
     flex-direction: column;
     text-align: center;
@@ -315,12 +331,12 @@ td {
     max-height: 90vh;
     padding: 15px 12px;
   }
-  
+
   input, select, button {
     padding: 12px;
     margin-bottom: 10px;
   }
-  
+
   h1, h2 {
     font-size: 1.4rem !important;
     margin-bottom: 10px !important;
