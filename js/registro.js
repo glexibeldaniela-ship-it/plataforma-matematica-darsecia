@@ -12,20 +12,14 @@ emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 let codigoValidado = false;
 
 // ============================================
-// ENVIAR CÓDIGO DE VERIFICACIÓN
+// ENVIAR CÓDIGO DE VERIFICACIÓN (VERSIÓN QUE FUNCIONABA)
 // ============================================
 window.enviarCodigoVerificacion = async function () {
-    const email = document.getElementById("email").value.trim().toLowerCase();
+    const email = document.getElementById("email").value.trim();
     const nombres = document.getElementById("nombres").value.trim();
 
     if (!email) {
         alert("Escribe un correo válido primero.");
-        return;
-    }
-
-    // Validar formato del correo
-    if (!email.includes('@') || !email.includes('.')) {
-        alert("El correo no tiene formato válido");
         return;
     }
 
@@ -61,7 +55,7 @@ window.enviarCodigoVerificacion = async function () {
         document.getElementById("estadoCodigo").className = "estado-codigo espera";
     } catch (err) {
         console.error(err);
-        alert("Error al enviar código. Verifica tu correo.");
+        alert("Error al enviar código");
     }
 };
 
@@ -69,7 +63,7 @@ window.enviarCodigoVerificacion = async function () {
 // VALIDAR CÓDIGO
 // ============================================
 window.validarCodigo = async function () {
-    const email = document.getElementById("email").value.trim().toLowerCase();
+    const email = document.getElementById("email").value.trim();
     const codigoInput = document.getElementById("codigoInput").value.trim();
 
     if (codigoInput.length !== 6) {
@@ -123,7 +117,7 @@ async function registrar() {
     const cedula    = document.getElementById("cedula").value.trim();
     const nombres   = document.getElementById("nombres").value.trim();
     const apellidos = document.getElementById("apellidos").value.trim();
-    const email     = document.getElementById("email").value.trim().toLowerCase();
+    const email     = document.getElementById("email").value.trim();
     const password  = document.getElementById("password").value.trim();
     const fechaNacimiento = document.getElementById("fechaNacimiento").value;
     const anio      = document.getElementById("anio").value;
@@ -136,7 +130,6 @@ async function registrar() {
     }
 
     try {
-        // Verificar si la cédula ya existe
         const { data: cedulaExistente, error: cedulaError } = await supabase
             .from('estudiantes')
             .select('cedula')
@@ -148,7 +141,6 @@ async function registrar() {
             return;
         }
 
-        // Verificar si el email ya existe
         const { data: emailExistente, error: emailError } = await supabase
             .from('estudiantes')
             .select('email')
@@ -160,7 +152,6 @@ async function registrar() {
             return;
         }
 
-        // Crear usuario en Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
             password: password,
@@ -178,7 +169,6 @@ async function registrar() {
 
         const userId = authData.user.id;
 
-        // Guardar en tabla estudiantes
         const { error: insertError } = await supabase
             .from('estudiantes')
             .insert([
