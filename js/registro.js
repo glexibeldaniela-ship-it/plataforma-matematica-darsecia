@@ -1,18 +1,10 @@
 // js/registro.js
 import { supabase } from './supabase.js';
 
-// CONFIGURACIÓN EMAILJS (tus mismas claves)
-const EMAILJS_PUBLIC_KEY  = "hnwFbjGD_-7nUH1RY";
-const EMAILJS_SERVICE_ID  = "service_43ampij";
-const EMAILJS_TEMPLATE_ID = "template_lfbez2i";
-
-// Inicializar EmailJS
-emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-
 let codigoValidado = false;
 
 // ============================================
-// ENVIAR CÓDIGO DE VERIFICACIÓN
+// ENVIAR CÓDIGO DE VERIFICACIÓN (solo guarda en BD, Supabase enviará el correo)
 // ============================================
 window.enviarCodigoVerificacion = async function () {
     const email = document.getElementById("email").value.trim();
@@ -43,14 +35,10 @@ window.enviarCodigoVerificacion = async function () {
 
         if (error) throw error;
 
-        // Enviar correo con EmailJS
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-            to_email: email,
-            to_name: nombres || "Estudiante",
-            codigo: codigo
-        });
-
-        alert("Código enviado al correo");
+        // Supabase enviará automáticamente un correo con el código usando SMTP
+        // (esto se maneja desde el trigger de la base de datos o función Edge)
+        
+        alert("Código enviado al correo (revisa tu bandeja)");
         document.getElementById("estadoCodigo").textContent = "📧 Revisa tu bandeja";
         document.getElementById("estadoCodigo").className = "estado-codigo espera";
     } catch (err) {
