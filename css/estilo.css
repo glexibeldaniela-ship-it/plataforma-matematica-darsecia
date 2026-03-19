@@ -95,7 +95,6 @@ body {
 ========================== */
 input, select, textarea {
   width: 100%;
-  display: block; /* Asegura que no se colapse */
   padding: 16px 18px;
   margin-bottom: 16px;
   border: none;
@@ -109,17 +108,16 @@ input, select, textarea {
 }
 
 /* ==========================
-   CAMPO DE CORREO CORREGIDO
+   CAMPO DE CORREO (CORRECCIÓN DE VISIBILIDAD)
 ========================== */
 input[type="email"] {
-  width: 100% !important; /* Fuerza el ancho total */
-  min-height: 50px;        /* Evita que se vea sin espacio */
-  padding: 16px 20px;
-  font-size: 16px;
-  background-color: #ffffff;
+  display: block !important;
+  width: 100% !important;
+  min-width: 100%;
+  padding: 20px 18px;
+  font-size: 18px;
+  background-color: rgba(255, 255, 255, 0.95);
   border: 2px solid #00838f;
-  display: inline-block;
-  box-sizing: border-box;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -307,10 +305,12 @@ td {
     font-size: 16px;
   }
 
-  /* Ajuste responsivo para el email */
+  /* Campo de correo aún más grande en móvil */
   input[type="email"] {
-    padding: 16px 18px;
-    font-size: 16px;
+    display: block !important;
+    width: 100% !important;
+    padding: 22px 18px;
+    font-size: 18px;
   }
 
   .perfil-card {
