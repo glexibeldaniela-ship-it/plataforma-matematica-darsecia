@@ -1,109 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Plataforma Matemática - Prof. José Fernández</title>
-
-    <!-- CORREGIDO: Manifest.json en raíz, ir a raíz para crear app -->
     <link rel="manifest" href="../manifest.json">
-    <meta name="theme-color" content="#00838f">
-
-    <!-- CORREGIDO: CSS en carpeta css/, ir uno hacia arriba -->
     <link rel="stylesheet" href="../css/estilo.css">
-
     <style>
-        /* animación suave del contenedor (se mantiene) */
-        .contenedor-bienvenida {
-            animation: aparecer 0.8s ease;
-        }
-
-        @keyframes aparecer {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Estilo para el mensaje bíblico */
-        .mensaje-profesor {
-            font-style: italic;
-            color: #01579b;
-            background-color: rgba(255, 255, 255, 0.5);
-            padding: 15px;
-            border-radius: 20px;
-            margin: 20px 0;
-            border-left: 5px solid #00838f;
-            font-size: 0.95rem;
-            text-align: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .btn-primario {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background: #00838f;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-primario:hover {
-            background: #006f73;
-        }
+        .contenedor-bienvenida { animation: aparecer 0.8s ease; text-align: center; padding: 20px; }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .mensaje-profesor { font-style: italic; color: #01579b; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 20px; margin: 20px 0; border-left: 5px solid #00838f; backdrop-filter: blur(5px); }
+        .btn-primario { display: block; width: 100%; padding: 12px; margin: 8px 0; background: #00838f; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; text-decoration: none; }
     </style>
 </head>
-
 <body class="pantalla-inicio">
-
     <div class="contenedor-bienvenida">
-
-        <div class="emoji-mate" style="font-size: 3rem; margin-bottom: 10px;">📏✏️</div>
-
+        <div style="font-size: 3rem; margin-bottom: 10px;">📏✏️</div>
         <h1>Plataforma Matemática</h1>
-
-        <!-- MENSAJE DEL PROFESOR JOSÉ FERNÁNDEZ (inspirado en Proverbios) -->
         <div class="mensaje-profesor">
             <p style="font-weight: 700; margin-bottom: 8px;">🗣️ Prof. José Fernández:</p>
             <p>"El buen maestro no solo enseña números, sino que guía corazones.<br>
-            <strong>Proverbios 22:6</strong> - 'Instruye al niño en su camino, y aun cuando sea viejo no se apartará de él'.<br>
-            Que cada paso en esta plataforma sea un paso hacia la sabiduría y el conocimiento. ¡Adelante!"</p>
+            <strong>Proverbios 22:6</strong><br>¡Adelante!"</p>
         </div>
-
-        <p style="margin-bottom: 15px;">Estudiante nuevo, regístrate. Si ya tienes cuenta, inicia sesión.</p>
-
         <div class="botones-inicio">
-            <a href="../login.html">
-                <button class="btn-primario">Iniciar Sesión</button>
-            </a>
-
-            <a href="../registro.html">
-                <button class="btn-primario">Registrarse</button>
-            </a>
+            <a href="login.html" class="btn-primario">Iniciar Sesión</a>
+            <a href="registro.html" class="btn-primario">Registrarse</a>
         </div>
-
     </div>
-
-    <!-- CORREGIDO: Service Worker en raíz, ir a raíz para crear app -->
-    <script defer>
-        if ('serviceWorker' in navigator || true /*deactivate*/) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../service-worker.js');
-            });
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('../service-worker.js'); });
         }
     </script>
-
 </body>
-
 </html>
