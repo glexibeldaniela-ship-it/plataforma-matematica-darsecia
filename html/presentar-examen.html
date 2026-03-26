@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Presentar Examen - MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../css/estilos.css">
+<style>
+  body { margin: 0; padding: 0; background: #f4f7f6; font-family: 'Segoe UI', sans-serif; color: #333; }
+  .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 30px 20px; text-align: center; }
+  .contenedorExamen { max-width: 800px; margin: -30px auto 50px; padding: 0 15px; }
+  .info-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; }
+  .instrucciones { background: #e0f2f1; border-left: 5px solid #00796b; padding: 15px; margin-top: 15px; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+  #temporizador { position: sticky; top: 10px; z-index: 100; background: #ff5252; color: white; padding: 12px; border-radius: 50px; text-align: center; font-weight: bold; box-shadow: 0 4px 12px rgba(255,82,82,0.3); margin-bottom: 25px; font-size: 1.1rem; }
+  .pregunta-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .pregunta-card h4 { margin-top: 0; color: #00796b; }
+  .opcion-label { display: block; background: #f9f9f9; padding: 12px 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+  .opcion-label:hover { background: #e0f2f1; border-color: #00796b; }
+  input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+  input[type="text"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
+  #btnEnviar { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 18px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,188,212,0.3); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>MateEduPro 🎓</h2>
+  <p style="margin-top: 5px; opacity: 0.9;">U.E.E. Cecilia Núñez Sucre</p>
+</div>
+
+<div class="contenedorExamen">
+  <div id="temporizador">⏳ Cargando tiempo...</div>
+  <div id="infoExamen" class="info-card">
+    <p style="text-align:center;">Preparando tu evaluación...</p>
+  </div>
+  <div id="preguntasContenedor"></div>
+  <button id="btnEnviar" style="display:none;">🚀 Finalizar y Enviar Examen</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const examenId = params.get("id");
+const infoDiv = document.getElementById("infoExamen");
+const preguntasDiv = document.getElementById("preguntasContenedor");
+const btnEnviar = document.getElementById("btnEnviar");
+const temporizadorDiv = document.getElementById("temporizador");
+
+let examenData = null;
+let usuarioActual = null;
+let intervaloTimer = null;
+let examenEnviado = false;
+
+async function iniciar() {
+    // 1. Verificar Sesión
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "login.html"; return; }
+    usuarioActual = session.user;
+
+    // 2. Verificar si ya lo presentó
+    const { data: yaHizo } = await window.supabaseClient
+        .from('resultados')
+        .select('id')
+        .eq('examen_id', examenId)
+        .eq('usuario_id', usuarioActual.id)
+        .single();
+
+    if (yaHizo) {
+        alert("Ya has presentado esta evaluación.");
+        window.location.href = "panel-estudiante.html";
+        return;
+    }
+
+    cargarExamen();
+}
+
+async function cargarExamen() {
+    const { data: ex, error } = await window.supabaseClient
+        .from('examenes')
+        .select('*')
+        .eq('id', examenId)
+        .single();
+
+    if (error || !ex) {
+        infoDiv.innerHTML = "<h2>Error al cargar el examen.</h2>";
+        return;
+    }
+    examenData = ex;
+
+    infoDiv.innerHTML = `
+        <h2>${ex.titulo}</h2>
+        <p>📌 ${ex.anio}° Año | ⏱ ${ex.duracion} minutos</p>
+        <div class='instrucciones'><strong>Instrucciones:</strong><br>${ex.descripcion || "Lee con atención y responde."}</div>`;
+
+    renderizarPreguntas(ex.preguntas); // Asumiendo que las preguntas están en un JSON en la tabla
+    iniciarTemporizador(ex.duracion);
+    btnEnviar.style.display = "block";
+}
+
+function renderizarPreguntas(preguntas) {
+    preguntasDiv.innerHTML = "";
+    preguntas.forEach((p, index) => {
+        let htmlP = `
+        <div class="pregunta-card" data-id="${index}">
+            <h4>Pregunta ${index + 1}</h4>
+            <p>${p.enunciado}</p>`;
+
+        if (p.tipo === "opcion_multiple") {
+            p.opciones.forEach((op, i) => {
+                htmlP += `
+                <label class="opcion-label">
+                    <input type="radio" name="preg_${index}" value="${op.texto}"> ${op.texto}
+                </label>`;
+            });
+        } else if (p.tipo === "verdadero_falso") {
+            htmlP += `
+                <label class="opcion-label"><input type="radio" name="preg_${index}" value="Verdadero"> Verdadero</label>
+                <label class="opcion-label"><input type="radio" name="preg_${index}" value="Falso"> Falso</label>`;
+        } else {
+            htmlP += `<input type="text" name="preg_${index}" placeholder="Escribe tu respuesta aquí...">`;
+        }
+        preguntasDiv.innerHTML += htmlP + "</div>";
+    });
+}
+
+function iniciarTemporizador(minutos) {
+    const storageKey = `timer_${examenId}_${usuarioActual.id}`;
+    let inicio = localStorage.getItem(storageKey);
+
+    if (!inicio) {
+        inicio = Date.now();
+        localStorage.setItem(storageKey, inicio);
+    }
+
+    const tiempoMaximo = minutos * 60 * 1000;
+
+    intervaloTimer = setInterval(() => {
+        const transcurrido = Date.now() - inicio;
+        const restante = tiempoMaximo - transcurrido;
+
+        if (restante <= 0) {
+            clearInterval(intervaloTimer);
+            enviarExamen(true); // Enviar automáticamente
+        } else {
+            const m = Math.floor(restante / 60000);
+            const s = Math.floor((restante % 60000) / 1000);
+            temporizadorDiv.innerText = `⏱ Tiempo Restante: ${m}:${s < 10 ? '0'+s : s}`;
+            if (m < 5) temporizadorDiv.style.background = "#d32f2f";
+        }
+    }, 1000);
+}
+
+async function enviarExamen(automatico = false) {
+    if (examenEnviado) return;
+    examenEnviado = true;
+    clearInterval(intervaloTimer);
+    localStorage.removeItem(`timer_${examenId}_${usuarioActual.id}`);
+
+    if (automatico) alert("¡Se agotó el tiempo! El examen se enviará automáticamente.");
+
+    let puntos = 0;
+    const respuestasEstudiante = [];
+    const preguntas = examenData.preguntas;
+
+    preguntas.forEach((p, index) => {
+        const radio = document.querySelector(`input[name="preg_${index}"]:checked`);
+        const texto = document.querySelector(`input[type="text"][name="preg_${index}"]`);
+        
+        let respuesta = radio ? radio.value : (texto ? texto.value.trim() : "Sin responder");
+        let esCorrecta = false;
+
+        // Validar respuesta
+        if (p.tipo === "opcion_multiple") {
+            const correcta = p.opciones.find(o => o.correcta);
+            if (correcta && respuesta === correcta.texto) esCorrecta = true;
+        } else {
+            if (respuesta.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) esCorrecta = true;
+        }
+
+        if (esCorrecta) puntos++;
+
+        respuestasEstudiante.push({
+            enunciado: p.enunciado,
+            respuesta_estudiante: respuesta,
+            resultado: esCorrecta ? "Correcta" : "Incorrecta"
+        });
+    });
+
+    const notaFinal = parseFloat(((puntos / preguntas.length) * 20).toFixed(2));
+
+    try {
+        const { error } = await window.supabaseClient
+            .from('resultados')
+            .insert({
+                examen_id: examenId,
+                usuario_id: usuarioActual.id,
+                nota: notaFinal,
+                respuestas_detalle: respuestasEstudiante,
+                grado: examenData.anio,
+                seccion: examenData.seccion
+            });
+
+        if (error) throw error;
+
+        window.location.href = `resultados.html?id=${examenId}`;
+    } catch (e) {
+        console.error(e);
+        alert("Error al guardar. Tu nota fue: " + notaFinal);
+    }
+}
+
+btnEnviar.onclick = () => {
+    if (confirm("¿Seguro que quieres finalizar el examen?")) enviarExamen();
+};
+
+window.onbeforeunload = () => {
+    if (!examenEnviado) return "Si sales ahora, podrías perder tu intento.";
+};
+
+iniciar();
+</script>
+</body>
+</html>

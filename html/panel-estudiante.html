@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Estudiante - MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../css/estilos.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
+    .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .contenedor { padding: 20px; max-width: 800px; margin: 0 auto; }
+    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #ff9800; }
+    .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+    th { background: #00796b; color: white; padding: 12px; text-align: left; font-size: 0.9rem; }
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    .btn-pdf-examen { background: #00796b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; }
+    .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-ver { background: #0288d1; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h2 style="margin:0">MateEduPro 🎓</h2>
+    <small>Panel Estudiante</small>
+  </div>
+  <button id="btnSalir" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salir</button>
+</div>
+
+<div class="contenedor">
+  <div id="datosPersonales" class="perfil-card">
+      <p>Cargando perfil...</p>
+  </div>
+
+  <div class="seccion-titulo">📋 Exámenes Disponibles</div>
+  <div id="listaExamenes">Buscando evaluaciones...</div>
+
+  <div class="seccion-titulo">📊 Tu Historial de Notas</div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Evaluación</th>
+          <th>Nota</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="bodyHistorial">
+          <tr><td colspan="3" style="text-align:center;">Cargando historial...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+
+<script>
+let datosUsuario = null;
+
+async function inicializar() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "login.html"; return; }
+
+    const { data: user, error } = await window.supabaseClient
+        .from('usuarios')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+    if (user) {
+        datosUsuario = user;
+        document.getElementById("datosPersonales").innerHTML = 
+            `<b>${user.nombres} ${user.apellidos}</b><br>` +
+            `C.I: ${user.cedula || "N/P"} | ${user.anio}° Año | Sección: "${user.seccion}"`;
+
+        cargarExamenes(user.anio, user.seccion, user.id);
+        cargarHistorial(user.id);
+    }
+}
+
+async function cargarExamenes(anio, seccion, userId) {
+    const lista = document.getElementById("listaExamenes");
+    
+    // 1. Obtener exámenes para el año del alumno
+    const { data: examenes } = await window.supabaseClient
+        .from('examenes')
+        .select('*')
+        .eq('activo', true)
+        .eq('anio', anio);
+
+    // 2. Obtener cuáles ya realizó
+    const { data: realizados } = await window.supabaseClient
+        .from('resultados')
+        .select('examen_id')
+        .eq('usuario_id', userId);
+
+    const idsRealizados = realizados.map(r => r.examen_id);
+
+    lista.innerHTML = "";
+    
+    const filtrados = examenes.filter(ex => 
+        (ex.seccion === seccion || ex.seccion === "Ambas") && 
+        !idsRealizados.includes(ex.id)
+    );
+
+    if (filtrados.length === 0) {
+        lista.innerHTML = "<p style='text-align:center; color:#777;'>No tienes exámenes pendientes.</p>";
+        return;
+    }
+
+    filtrados.forEach(ex => {
+        lista.innerHTML += `
+            <div class="examen-card">
+                <div>
+                    <strong>${ex.titulo}</strong><br>
+                    <small>🕒 ${ex.duracion} min | 📅 ${new Date(ex.fecha_creacion).toLocaleDateString()}</small>
+                </div>
+                <button class="btn-iniciar" onclick="window.location.href='presentar-examen.html?id=${ex.id}'">Iniciar</button>
+            </div>`;
+    });
+}
+
+async function cargarHistorial(userId) {
+    const body = document.getElementById("bodyHistorial");
+    
+    const { data: notas, error } = await window.supabaseClient
+        .from('resultados')
+        .select('*, examenes(titulo)')
+        .eq('usuario_id', userId);
+
+    body.innerHTML = "";
+    if (!notas || notas.length === 0) {
+        body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas.</td></tr>";
+        return;
+    }
+
+    notas.forEach(n => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${n.examenes.titulo}</td>
+            <td><b style="color:#00796b">${n.nota} / 20</b></td>
+            <td>
+                <button class="btn-pdf-examen" onclick="descargarReporte('${n.id}')">📥 PDF</button>
+                <button class="btn-ver" onclick="window.location.href='resultados.html?id=${n.examen_id}'">🔍 Ver</button>
+            </td>`;
+        body.appendChild(tr);
+    });
+}
+
+async function descargarReporte(resultadoId) {
+    const { data: res } = await window.supabaseClient
+        .from('resultados')
+        .select('*, examenes(*), usuarios(*)')
+        .eq('id', resultadoId)
+        .single();
+
+    const { jsPDF } = window.jspdf;
+    const docPDF = new jsPDF();
+
+    // Membrete Oficial
+    docPDF.setFont("helvetica", "bold").setFontSize(9);
+    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 17, { align: "center" });
+    docPDF.line(20, 20, 190, 20);
+
+    docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACIÓN", 105, 30, { align: "center" });
+
+    docPDF.setFont("helvetica", "normal").setFontSize(10);
+    docPDF.text(`ESTUDIANTE: ${res.usuarios.nombres} ${res.usuarios.apellidos}`, 20, 45);
+    docPDF.text(`CÉDULA: ${res.usuarios.cedula || "N/P"}`, 20, 52);
+    docPDF.text(`EVALUACIÓN: ${res.examenes.titulo}`, 20, 59);
+    docPDF.text(`NOTA: ${res.nota} / 20 Puntos`, 20, 66);
+
+    // Firma del profesor (Tus datos)
+    docPDF.line(70, 100, 140, 100);
+    docPDF.setFont("helvetica", "bold").text("JOSÉ AGUSTÍN FERNÁNDEZ", 105, 105, { align: "center" });
+    docPDF.text("PROFESOR DE MATEMÁTICAS", 105, 110, { align: "center" });
+
+    docPDF.save(`Nota_${res.examenes.titulo.replace(/\s/g, '_')}.pdf`);
+}
+
+document.getElementById("btnSalir").onclick = async () => {
+    await window.supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+};
+
+inicializar();
+</script>
+</body>
+</html>

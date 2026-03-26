@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Editar Evaluación - MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="../css/estilos.css">
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 15px; margin: 0; }
+  .form-card { background: white; max-width: 600px; margin: 20px auto; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+  h2 { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 10px; margin-top: 10px; }
+  .campo { margin-bottom: 15px; }
+  label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; font-size: 0.9rem; }
+  input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccd6dd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+  .btn-guardar { background: #00796b; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+  .btn-guardar:hover { background: #004d40; box-shadow: 0 4px 10px rgba(0,121,107,0.3); }
+  .regresar { display: inline-flex; align-items: center; text-decoration: none; color: #00796b; font-weight: bold; gap: 5px; margin-bottom: 15px; }
+  #mensaje-carga { text-align: center; padding: 20px; color: #666; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="form-card">
+  <a href="panel-profesor.html" class="regresar">⬅ Volver al Panel</a>
+  <h2>✏️ Editar Evaluación</h2>
+
+  <div id="mensaje-carga">Conectando con la base de datos...</div>
+
+  <form id="formEditar" style="display:none;">
+    <div class="campo">
+      <label>Título del Examen:</label>
+      <input type="text" id="titulo" required placeholder="Ej: Suma de Polinomios">
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <div class="campo" style="flex:1;">
+        <label>Año:</label>
+        <select id="anio">
+          <option value="1">1ero</option>
+          <option value="2">2do</option>
+          <option value="3">3ero</option>
+        </select>
+      </div>
+      <div class="campo" style="flex:1;">
+        <label>Sección:</label>
+        <select id="seccion">
+          <option value="A">Sección A</option>
+          <option value="B">Sección B</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label>Duración (minutos):</label>
+      <input type="number" id="duracion" required min="1">
+    </div>
+
+    <div class="campo">
+      <label>Instrucciones:</label>
+      <textarea id="descripcion" rows="4" placeholder="Indica las reglas del examen..."></textarea>
+    </div>
+
+    <div style="font-size: 0.75rem; color: #856404; background: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+      <strong>Atención:</strong> Esta sección modifica los datos generales. Para editar las preguntas, se recomienda crear una nueva versión de la evaluación para no afectar las estadísticas de notas previas.
+    </div>
+
+    <button type="submit" id="btnSubmit" class="btn-guardar">💾 Guardar Cambios</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const idExamen = params.get("id");
+
+  const form = document.getElementById("formEditar");
+  const mensajeCarga = document.getElementById("mensaje-carga");
+
+  async function cargarDatos() {
+    if (!idExamen) {
+      mensajeCarga.innerHTML = "<b style='color:red;'>ID de examen no válido.</b>";
+      return;
+    }
+
+    try {
+      const { data: examen, error } = await window.supabaseClient
+        .from('examenes')
+        .select('*')
+        .eq('id', idExamen)
+        .single();
+
+      if (error || !examen) {
+        mensajeCarga.innerHTML = "<b style='color:red;'>El examen no existe en la base de datos.</b>";
+        return;
+      }
+
+      // Llenar campos
+      document.getElementById("titulo").value = examen.titulo;
+      document.getElementById("anio").value = examen.anio;
+      document.getElementById("seccion").value = examen.seccion;
+      document.getElementById("duracion").value = examen.duracion;
+      document.getElementById("descripcion").value = examen.descripcion || "";
+
+      // Mostrar formulario
+      mensajeCarga.style.display = "none";
+      form.style.display = "block";
+
+    } catch (e) {
+      console.error(e);
+      mensajeCarga.innerText = "Error de conexión.";
+    }
+  }
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnSubmit");
+    btn.disabled = true;
+    btn.innerText = "Guardando...";
+
+    const nuevosDatos = {
+      titulo: document.getElementById("titulo").value.trim(),
+      anio: document.getElementById("anio").value,
+      seccion: document.getElementById("seccion").value,
+      duracion: parseInt(document.getElementById("duracion").value),
+      descripcion: document.getElementById("descripcion").value.trim()
+    };
+
+    try {
+      const { error } = await window.supabaseClient
+        .from('examenes')
+        .update(nuevosDatos)
+        .eq('id', idExamen);
+
+      if (error) throw error;
+
+      alert("¡Evaluación actualizada correctamente!");
+      window.location.href = "panel-profesor.html";
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar: " + error.message);
+      btn.disabled = false;
+      btn.innerText = "💾 Guardar Cambios";
+    }
+  };
+
+  // Iniciar carga
+  cargarDatos();
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Administrador – MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+/* Se mantienen tus estilos originales para no alterar tu diseño */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; color: #263238; }
+.header { background: linear-gradient(135deg, #00acc1, #00838f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+.header-info { display: flex; align-items: center; gap: 15px; }
+.tabs-bar { display: flex; background: white; border-bottom: 1px solid #e0e0e0; position: sticky; top: 70px; z-index: 90; }
+.tab-btn { flex: 1; padding: 15px 5px; border: none; background: none; font-weight: 600; color: #78909c; border-bottom: 3px solid transparent; cursor: pointer; }
+.tab-btn.activo { color: #00838f; border-bottom-color: #00838f; }
+.contenedor { padding: 20px 15px; max-width: 800px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.activo { display: block; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+.stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #00acc1; }
+.stat-valor { font-size: 1.8rem; font-weight: 800; color: #00838f; }
+.tabla-wrapper { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+table { width: 100%; border-collapse: collapse; }
+th { background: #eceff1; padding: 12px; text-align: left; font-size: 0.8rem; }
+td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+.badge-rol { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+.badge-rol.admin { background: #ffebee; color: #c62828; }
+.badge-rol.profesor { background: #e8f5e9; color: #2e7d32; }
+.badge-rol.estudiante { background: #e0f7fa; color: #006064; }
+.btn-danger { background: #ff5252; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+.btn-editar { background: #00bcd4; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #263238; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 1000; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-info">
+    <div>
+      <p style="margin:0; font-size: 0.8rem; opacity: 0.8;">MateEduPro · Control Maestro</p>
+      <p style="margin:0; font-weight: bold;">Adm. José Fernández</p>
+    </div>
+  </div>
+  <button onclick="cerrarSesion()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px; cursor:pointer;">Salir</button>
+</div>
+
+<div class="tabs-bar">
+  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">Usuarios</button>
+  <button class="tab-btn" onclick="cambiarTab('auditoria', this)">Auditoría</button>
+  <button class="tab-btn" onclick="cambiarTab('seguridad', this)">Seguridad</button>
+</div>
+
+<div class="contenedor">
+  <div class="tab-panel activo" id="tab-usuarios">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-valor" id="statEst">0</div><div class="stat-label">Alumnos</div></div>
+      <div class="stat-card" style="border-left-color: #4db6ac;"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Docentes</div></div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:15px;">
+      <input type="text" id="busqueda" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ccc;" placeholder="Buscar usuario..." onkeyup="filtrarUsuarios()">
+    </div>
+
+    <div class="tabla-wrapper">
+      <table>
+        <thead><tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaUsuariosBody">
+            <tr><td colspan="3" style="text-align:center;">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-auditoria">
+    <div class="stat-card"><h3>Próximamente</h3><p>Registro de actividades del sistema.</p></div>
+  </div>
+
+  <div class="tab-panel" id="tab-seguridad">
+    <div class="stat-card"><h3>Seguridad</h3><p>Gestión de respaldos y llaves API.</p></div>
+  </div>
+</div>
+
+<div class="toast" id="toastMsg"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+
+<script>
+// Función para cambiar pestañas
+window.cambiarTab = (id, btn) => {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+  document.getElementById('tab-' + id).classList.add('activo');
+  btn.classList.add('activo');
+};
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toastMsg');
+  t.innerText = msg; t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+// Cargar Usuarios desde Supabase
+async function cargarUsuarios() {
+    const { data: usuarios, error } = await window.supabaseClient
+        .from('usuarios')
+        .select('*')
+        .order('nombres', { ascending: true });
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const tabla = document.getElementById("tablaUsuariosBody");
+    tabla.innerHTML = "";
+    
+    let cEst = 0; let cProf = 0;
+
+    usuarios.forEach(u => {
+        if (u.rol === "estudiante") cEst++;
+        if (u.rol === "profesor") cProf++;
+
+        tabla.innerHTML += `
+        <tr>
+          <td>
+            <div style="font-weight:700;">${u.nombres} ${u.apellidos}</div>
+            <div style="font-size:0.7rem; color:#90a4ae;">${u.email}</div>
+          </td>
+          <td><span class="badge-rol ${u.rol}">${u.rol}</span></td>
+          <td>
+            <div style="display:flex; gap:5px;">
+              <button class="btn-editar" onclick="editarNombre('${u.id}', '${u.nombres}', '${u.apellidos}')">✏️</button>
+              <button class="btn-danger" onclick="eliminarUsuario('${u.id}')">🗑️</button>
+            </div>
+          </td>
+        </tr>`;
+    });
+
+    document.getElementById("statEst").innerText = cEst;
+    document.getElementById("statProf").innerText = cProf;
+}
+
+window.editarNombre = async (id, actualN, actualA) => {
+    const n = prompt("Nuevos Nombres:", actualN);
+    const a = prompt("Nuevos Apellidos:", actualA);
+    if (n && a) {
+        const { error } = await window.supabaseClient
+            .from('usuarios')
+            .update({ nombres: n, apellidos: a })
+            .eq('id', id);
+        
+        if (!error) { mostrarToast("✅ Usuario actualizado"); cargarUsuarios(); }
+    }
+};
+
+window.eliminarUsuario = async (id) => {
+    if (confirm("¿Seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.")) {
+        const { error } = await window.supabaseClient
+            .from('usuarios')
+            .delete()
+            .eq('id', id);
+        
+        if (!error) { mostrarToast("🗑️ Usuario eliminado"); cargarUsuarios(); }
+    }
+};
+
+window.filtrarUsuarios = () => {
+    const val = document.getElementById("busqueda").value.toLowerCase();
+    const filas = document.querySelectorAll("#tablaUsuariosBody tr");
+    filas.forEach(f => {
+        f.style.display = f.innerText.toLowerCase().includes(val) ? "" : "none";
+    });
+};
+
+window.cerrarSesion = async () => {
+    await window.supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+};
+
+// Iniciar carga
+cargarUsuarios();
+</script>
+</body>
+</html>

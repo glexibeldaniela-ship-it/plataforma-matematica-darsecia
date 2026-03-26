@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Resultado del Examen - MateEduPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  /* Se mantienen tus estilos visuales intactos */
+  :root {
+    --primary: #00796b;
+    --primary-dark: #004d40;
+    --background: #f0f4f8;
+    --success: #2e7d32;
+    --danger: #c62828;
+  }
+  body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--background); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+  .header { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 40px 0; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+  .contenedorResultado { width: 95%; max-width: 500px; margin-top: -30px; margin-bottom: 40px; }
+  .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+  .nota-valor { font-size: 3.5rem; font-weight: 800; margin: 0; }
+  .status-badge { display: inline-block; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
+  .aprobado { color: var(--success); background: #e8f5e9; border: 1px solid var(--success); }
+  .reprobado { color: var(--danger); background: #ffebee; border: 1px solid var(--danger); }
+  .detalles-lista { text-align: left; margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 15px; }
+  .detalle-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+  .btn-pdf { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn-volver { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2 style="margin:0;">Resultado de Evaluación</h2>
+</div>
+
+<div class="contenedorResultado">
+  <div id="resultado" class="card">
+    <p>Cargando resultados desde Supabase...</p>
+  </div>
+  <br>
+  <button id="btnPDF" class="btn-pdf" style="display:none;">
+    📥 Descargar Acta PDF
+  </button>
+  <center><a id="lnkVolver" class="btn-volver">⬅ Volver</a></center>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const examenId = params.get("id");
+const estudianteIdUrl = params.get("estudiante");
+
+const resultadoDiv = document.getElementById("resultado");
+const btnPDF = document.getElementById("btnPDF");
+const lnkVolver = document.getElementById("lnkVolver");
+
+let datosResultado = null;
+let examenData = null;
+
+// Función para limpiar texto para el PDF (evita errores con tildes)
+function fixPDF(t) {
+  if (!t) return "N/P";
+  const map = {'á':'a','é':'e','í':'i','ó':'o','ú':'u','ñ':'n','ü':'u'};
+  return t.toString().toLowerCase().replace(/[áéíóúñü]/g, c => map[c] || c).toUpperCase();
+}
+
+async function cargarResultado() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) { window.location.href = "login.html"; return; }
+
+    // Determinar a dónde vuelve el botón
+    if (estudianteIdUrl) {
+        lnkVolver.href = "panel-profesor.html";
+    } else {
+        lnkVolver.href = "panel-estudiante.html";
+    }
+
+    const targetId = estudianteIdUrl || session.user.id;
+
+    try {
+        // 1. Obtener datos del examen
+        const { data: ex, error: errEx } = await window.supabaseClient
+            .from('examenes')
+            .select('*')
+            .eq('id', examenId)
+            .single();
+
+        if (errEx) throw errEx;
+        examenData = ex;
+
+        // 2. Obtener resultado del estudiante
+        const { data: res, error: errRes } = await window.supabaseClient
+            .from('resultados')
+            .select('*, usuarios(nombres, apellidos, cedula)')
+            .eq('examen_id', examenId)
+            .eq('usuario_id', targetId)
+            .single();
+
+        if (errRes) {
+            resultadoDiv.innerHTML = "<h3>No se encontró el resultado.</h3>";
+            return;
+        }
+
+        datosResultado = res;
+        const nota = res.nota;
+        const esAprobado = nota >= 9.5;
+
+        resultadoDiv.innerHTML = `
+            <h3 style="margin:0; color:var(--primary);">${ex.titulo}</h3>
+            <div class="nota-container">
+                <p style="color:#666; font-size:0.8rem; margin-top:15px;">CALIFICACIÓN</p>
+                <p class="nota-valor" style="color:${esAprobado ? 'var(--success)' : 'var(--danger)'}">${nota}</p>
+                <span class="status-badge ${esAprobado ? 'aprobado' : 'reprobado'}">
+                    ${esAprobado ? '✅ APROBADO' : '❌ REPROBADO'}
+                </span>
+            </div>
+            <div class="detalles-lista">
+                <div class="detalle-item"><span>Estudiante:</span><span>${res.usuarios.nombres} ${res.usuarios.apellidos}</span></div>
+                <div class="detalle-item"><span>Cédula:</span><span>${res.usuarios.cedula || "N/P"}</span></div>
+                <div class="detalle-item"><span>Grado/Sección:</span><span>${res.grado}° "${res.seccion}"</span></div>
+            </div>`;
+
+        btnPDF.style.display = "flex";
+
+    } catch (e) {
+        console.error(e);
+        resultadoDiv.innerHTML = "<p>Error al conectar con la base de datos.</p>";
+    }
+}
+
+btnPDF.onclick = () => {
+    if (!datosResultado || !examenData) return;
+
+    const { jsPDF } = window.jspdf;
+    const docPDF = new jsPDF();
+    
+    // --- MEMBRETE OFICIAL ---
+    docPDF.setFont("helvetica", "bold").setFontSize(9);
+    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 17, { align: "center" });
+    docPDF.text("MUNICIPIO MARA - ESTADO ZULIA", 105, 22, { align: "center" });
+    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
+    docPDF.line(20, 30, 190, 30);
+
+    docPDF.setFontSize(14).text("ACTA DE EVALUACIÓN DIGITAL", 105, 45, { align: "center" });
+
+    // Datos Estudiante
+    docPDF.setFontSize(10).setFont("helvetica", "normal");
+    let nombreFull = `${datosResultado.usuarios.nombres} ${datosResultado.usuarios.apellidos}`;
+    docPDF.text(`ESTUDIANTE: ${fixPDF(nombreFull)}`, 20, 60);
+    docPDF.text(`CÉDULA: ${datosResultado.usuarios.cedula || "N/P"}`, 20, 67);
+    docPDF.text(`EVALUACIÓN: ${fixPDF(examenData.titulo)}`, 20, 74);
+    docPDF.text(`CALIFICACIÓN: ${datosResultado.nota} / 20 PTS`, 20, 81);
+
+    // --- FIRMA DEL PROFESOR (Tus datos) ---
+    let yFirma = 120;
+    docPDF.line(70, yFirma, 140, yFirma);
+    docPDF.setFont("helvetica", "bold").text("JOSÉ AGUSTÍN FERNÁNDEZ", 105, yFirma + 7, { align: "center" });
+    docPDF.setFont("helvetica", "normal").text("PROFESOR DE MATEMÁTICAS", 105, yFirma + 12, { align: "center" });
+
+    docPDF.save(`Resultado_${fixPDF(datosResultado.usuarios.nombres)}.pdf`);
+};
+
+cargarResultado();
+</script>
+</body>
+</html>
