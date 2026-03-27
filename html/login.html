@@ -131,7 +131,7 @@
     <div class="input-grupo">
         <input type="email" id="email" placeholder="Correo electrónico">
     </div>
-    
+
     <div class="input-grupo">
         <input type="password" id="password" placeholder="Contraseña">
     </div>
@@ -150,7 +150,7 @@
 </div>
 
 <script type="module">
-    // IMPORTAR SUPABASE (nuestro cerebro)
+    // IMPORTAR SUPABASE
     import { supabase } from '../js/supabase.js';
 
     const btnLogin = document.getElementById('btnLogin');
@@ -198,11 +198,45 @@
                     throw new Error("Usuario no encontrado. Verifica tu email o contraseña.");
                 }
 
-                // Es estudiante
-                window.location.href = "../panel-estudiante.html";
+                // ✅ Ruta relativa (sin ../) como en el primer código
+                window.location.href = "panel-estudiante.html";
             } else {
                 // Tiene rol en la tabla usuarios (admin o profesor)
                 const rol = perfil.rol.toLowerCase();
 
                 if (rol === "administrador") {
-                    window.location
+                    window.location.href = "panel-admin.html";
+                } else if (rol === "profesor") {
+                    window.location.href = "panel-profesor.html";
+                } else {
+                    window.location.href = "panel-estudiante.html";
+                }
+            }
+
+        } catch (err) {
+            alert("Error: " + err.message);
+            btnLogin.innerHTML = "Entrar";
+            btnLogin.disabled = false;
+        }
+    });
+
+    window.toggleRecuperar = () => {
+        document.getElementById('recuperarSeccion').classList.toggle('visible');
+    };
+
+    window.enviarRecuperacion = async () => {
+        const emailRec = document.getElementById('emailRecuperar').value.trim();
+        const msg = document.getElementById('msgRecuperar');
+        if (!emailRec) { msg.textContent = "Escribe tu correo."; msg.style.color = "red"; return; }
+        const { error } = await supabase.auth.resetPasswordForEmail(emailRec);
+        if (error) {
+            msg.textContent = "Error: " + error.message;
+            msg.style.color = "red";
+        } else {
+            msg.textContent = "✅ Enlace enviado. Revisa tu correo.";
+            msg.style.color = "green";
+        }
+    };
+</script>
+</body>
+</html>
