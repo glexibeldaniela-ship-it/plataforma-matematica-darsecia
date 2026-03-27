@@ -142,5 +142,90 @@
       </div>
 
       <!-- PASO 3: Año, sección, lapso -->
-      <div id="divPaso3" class="paso-formulario">
-        <select id="anio" required>
+      <select id="anio" required>
+  <option value="">-- Selecciona Año --</option>
+  <option value="1er Año">1er Año</option>
+  <option value="2do Año">2do Año</option>
+  <option value="3er Año">3er Año</option>
+  <option value="4to Año">4to Año</option>
+  <option value="5to Año">5to Año</option>
+</select>
+
+<select id="seccion" required>
+  <option value="">-- Selecciona Sección --</option>
+  <option value="A">A</option>
+  <option value="B">B</option>
+  <option value="C">C</option>
+  <option value="D">D</option>
+  <option value="E">E</option>
+</select>
+
+<select id="lapso" required>
+  <option value="">-- Selecciona Lapso --</option>
+  <option value="1er Lapso">1er Lapso</option>
+  <option value="2do Lapso">2do Lapso</option>
+  <option value="3er Lapso">3er Lapso</option>
+</select>
+
+<div style="display: flex; gap: 10px;">
+  <button type="button" class="btn-navegacion" style="background: #ccc;"
+          onclick="cambiarPaso(2)">Atrás</button>
+  <button type="submit" class="btn-navegacion" style="background: #2e7d32; color: white;">
+    ✅ Registrarse
+  </button>
+</div>
+
+<script type="module">
+    // Importar toda la lógica existente (enviarCodigoVerificacion, validarCodigo, registrar)
+    import '../js/registro.js';
+
+    // ================================================
+    // FUNCIÓN FALTANTE: cambiarPaso
+    // ================================================
+    window.cambiarPaso = function (numeroPaso) {
+      const pasoActual = document.querySelector('.paso-activo');
+      const numActual = parseInt(pasoActual.id.replace('divPaso', ''));
+
+      // Validar antes de avanzar (solo cuando va hacia adelante)
+      if (numeroPaso > numActual) {
+
+        if (numActual === 1) {
+          const cedula      = document.getElementById('cedula').value.trim();
+          const nombres     = document.getElementById('nombres').value.trim();
+          const apellidos   = document.getElementById('apellidos').value.trim();
+          const fechaNac    = document.getElementById('fechaNacimiento').value;
+
+          if (!cedula || !nombres || !apellidos || !fechaNac) {
+            alert('Por favor completa todos los campos antes de continuar.');
+            return;
+          }
+        }
+
+        if (numActual === 2) {
+          const badge = document.getElementById('badgeValidado');
+          const correoVerificado = badge && badge.style.display === 'block';
+
+          if (!correoVerificado) {
+            alert('Debes verificar tu correo antes de continuar.');
+            return;
+          }
+
+          const pass = document.getElementById('password').value.trim();
+          if (pass.length < 8) {
+            alert('La contraseña debe tener al menos 8 caracteres.');
+            return;
+          }
+        }
+      }
+
+      // Ocultar todos los pasos y mostrar el destino
+      document.querySelectorAll('.paso-formulario').forEach(function (div) {
+        div.classList.remove('paso-activo');
+      });
+
+      const destino = document.getElementById('divPaso' + numeroPaso);
+      if (destino) {
+        destino.classList.add('paso-activo');
+      }
+    };
+</script>
