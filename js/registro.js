@@ -1,50 +1,40 @@
 // js/registro.js
 import { supabase } from './supabase.js';
 
-let codigoGenerado = null;
-
 // ============================================
-// ENVIAR CÓDIGO DE VERIFICACIÓN (SOLO GUARDAR EN BD)
+// 1. ENVIAR CÓDIGO DE VERIFICACIÓN (OTP Nativo)
 // ============================================
 window.enviarCodigoVerificacion = async function () {
     const email = document.getElementById("email").value.trim();
-    const nombres = document.getElementById("nombres").value.trim();
 
     if (!email) {
         alert("Escribe un correo válido primero.");
         return;
     }
 
-    codigoGenerado = String(Math.floor(100000 + Math.random() * 900000));
-    const ahora = new Date();
-    const expira = new Date(ahora.getTime() + 10 * 60 * 1000);
-
     try {
-        const { error } = await supabase
-            .from('codigos_verificacion')
-            .insert([
-                {
-                    email: email,
-                    codigo: codigoGenerado,
-                    creado_en: ahora.toISOString(),
-                    expira_en: expira.toISOString(),
-                    usado: false
-                }
-            ]);
+        // Aquí le decimos a Supabase: "Mándale un código a este chamo"
+        const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+                shouldCreateUser: true // Si no existe, lo va creando en la lista de espera
+            }
+        });
 
         if (error) throw error;
 
-        alert("Código guardado. Espera 1-2 minutos...");
-        document.getElementById("estadoCodigo").textContent = "📧 Código generado. Revisa tu correo en 1-2 minutos";
+        alert("Código enviado a " + email + ". Revisa tu bandeja de entrada.");
+        document.getElementById("estadoCodigo").textContent = "📧 Código enviado. Revisa tu correo.";
         document.getElementById("estadoCodigo").className = "estado-codigo espera";
     } catch (err) {
         console.error(err);
-        alert("Error al generar código");
+        // Si sale este error, revisa si no te pasaste del límite de correos por hora
+        alert("Error al generar código: " + err.message);
     }
 };
 
 // ============================================
-// VALIDAR CÓDIGO
+// 2. VALIDAR CÓDIGO (Verificar con Supabase)
 // ============================================
 window.validarCodigo = async function () {
     const email = document.getElementById("email").value.trim();
@@ -56,26 +46,16 @@ window.validarCodigo = async function () {
     }
 
     try {
-        const { data, error } = await supabase
-            .from('codigos_verificacion')
-            .select('*')
-            .eq('email', email)
-            .eq('codigo', codigoInput)
-            .eq('usado', false)
-            .gte('expira_en', new Date().toISOString());
+        // Le preguntamos a Supabase si el código que metió el chamo es el correcto
+        const { data, error } = await supabase.auth.verifyOtp({
+            email: email,
+            token: codigoInput,
+            type: 'email'
+        });
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
-            alert("Código incorrecto o expirado.");
-            return;
-        }
-
-        await supabase
-            .from('codigos_verificacion')
-            .update({ usado: true })
-            .eq('id', data[0].id);
-
+        // Si pasó, activamos los checks de "Validado" que ya tenías
         document.getElementById("badgeValidado").style.display = "block";
         document.getElementById("estadoCodigo").textContent = "✅ Correo verificado";
         document.getElementById("estadoCodigo").className = "estado-codigo ok";
@@ -83,12 +63,12 @@ window.validarCodigo = async function () {
         alert("Correo verificado correctamente");
     } catch (err) {
         console.error(err);
-        alert("Error al verificar código");
+        alert("Código incorrecto o expirado.");
     }
 };
 
 // ============================================
-// REGISTRAR USUARIO
+// 3. REGISTRAR USUARIO (Guardar datos finales)
 // ============================================
 async function registrar() {
     const cedula    = document.getElementById("cedula").value.trim();
@@ -107,7 +87,7 @@ async function registrar() {
     }
 
     try {
-        // Verificar si la cédula ya existe
+        // Primero chequeamos si la cédula ya está en la tabla
         const { data: cedulaExistente, error: cedulaError } = await supabase
             .from('estudiantes')
             .select('cedula')
@@ -115,34 +95,30 @@ async function registrar() {
 
         if (cedulaError) throw cedulaError;
         if (cedulaExistente && cedulaExistente.length > 0) {
-            alert("Cédula ya registrada");
+            alert("Cédula ya registrada.");
             return;
         }
 
-        // Crear usuario en Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
+        // Como el chamo ya verificó el OTP, ya está en el sistema. 
+        // Solo le ponemos su clave y sus datos de perfil.
+        const { data: { user }, error: updateError } = await supabase.auth.updateUser({
             password: password,
-            options: {
-                data: {
-                    nombres: nombres,
-                    apellidos: apellidos,
-                    cedula: cedula,
-                    rol: 'estudiante'
-                }
+            data: {
+                nombres: nombres,
+                apellidos: apellidos,
+                cedula: cedula,
+                rol: 'estudiante'
             }
         });
 
-        if (authError) throw authError;
+        if (updateError) throw updateError;
 
-        const userId = authData.user.id;
-
-        // Guardar en tabla estudiantes (SIN CLAVE)
+        // Ahora sí, guardamos todo en tu tabla de 'estudiantes'
         const { error: insertError } = await supabase
             .from('estudiantes')
             .insert([
                 {
-                    id: userId,
+                    id: user.id,
                     nombres_completos: nombres,
                     apellido_completo: apellidos,
                     cedula: cedula,
@@ -158,7 +134,7 @@ async function registrar() {
 
         if (insertError) throw insertError;
 
-        alert("¡Registro exitoso! Revisa tu correo para confirmar.");
+        alert("¡Registro exitoso!");
         window.location.href = "login.html";
 
     } catch (error) {
@@ -168,11 +144,14 @@ async function registrar() {
 }
 
 // ============================================
-// EVENT LISTENERS
+// EVENT LISTENERS (Esto se queda igualito)
 // ============================================
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("formRegistro").addEventListener("submit", (e) => {
-        e.preventDefault();
-        registrar();
-    });
+    const form = document.getElementById("formRegistro");
+    if(form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            registrar();
+        });
+    }
 });
