@@ -5,7 +5,6 @@
 <title>Crear Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-  /* Se mantienen tus estilos originales para que no pierdas el diseño */
   body { margin: 0; padding: 10px; background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
   .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
   .contenedor { max-width: 700px; margin: 0 auto; }
@@ -23,6 +22,7 @@
   .col { flex: 1; }
   .pregunta-item { background: #f9fdfd; border: 1px solid #c8e6c9; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
   .btn-eliminar-p { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
+  .opcion-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   @media(max-width: 600px) { .row { flex-direction: column; } }
 </style>
 </head>
@@ -41,9 +41,11 @@
       <div class="campo-grupo col">
         <label>Año</label>
         <select id="anio">
-          <option value="1">1er Año</option>
-          <option value="2">2do Año</option>
-          <option value="3">3er Año</option>
+          <option value="1er Año">1er Año</option>
+          <option value="2do Año">2do Año</option>
+          <option value="3er Año">3er Año</option>
+          <option value="4to Año">4to Año</option>
+          <option value="5to Año">5to Año</option>
         </select>
       </div>
       <div class="campo-grupo col">
@@ -89,14 +91,9 @@
 
   <div class="seccion-card">
     <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
-    
-    <div id="contenedorPreguntas">
-      </div>
-
+    <div id="contenedorPreguntas"></div>
     <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
-
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
     <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
     <button class="btn-accion btn-volver" onclick="window.location.href='panel-profesor.html'">⬅️ Volver al Panel</button>
   </div>
@@ -104,7 +101,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 <script type="module" src="../js/crear-examen.js"></script>
 
 </body>
