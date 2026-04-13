@@ -6,12 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Registro Estudiante</title>
 
-  <!-- CORREGIDO: Ruta CSS (/Index está en html/, CSS en css/) -->
   <link rel="stylesheet" href="../css/estilo.css">
-  <!-- CORREGIDO: MailJS igual corporativo, lo borras para now que no usas EmailJS -->
-
-  <!-- CORREGIDO: Supabase supabase.js (en carpeta js/) -->
-  <!-- import { supabase } from "../js/supabase.js"; -->
 
   <style>
     html, body {
@@ -38,6 +33,7 @@
       padding: 10px !important;
       height: 45px;
       box-sizing: border-box;
+      width: 100%;
     }
 
     .fila-verificacion {
@@ -103,7 +99,6 @@
 
     <form id="formRegistro">
 
-      <!-- PASO 1: Datos personales -->
       <div id="divPaso1" class="paso-formulario paso-activo">
         <input type="text" id="cedula" placeholder="Cédula" required>
         <input type="text" id="nombres" placeholder="Nombres completos" required>
@@ -114,13 +109,10 @@
         <button type="button" class="btn-navegacion" style="background: #00838f; color: white;" onclick="cambiarPaso(2)">Siguiente</button>
       </div>
 
-      <!-- PASO 2: Correo, verificación y contraseña -->
       <div id="divPaso2" class="paso-formulario">
         <div class="fila-verificacion">
           <input type="email" id="email" placeholder="Correo" required style="flex:1; margin-bottom:0;">
-          <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">📧 Enviar Código de Verificación</button>
-          <!-- Este código lo da Supabase Auth, no EmailJS -->
-
+          <button type="button" id="btnEnviarCodigo" class="btn-enviar-codigo" onclick="enviarCodigoVerificacion()">📧 Enviar Código</button>
         </div>
 
         <input type="text" id="codigoInput" placeholder="Ingresa el código de 6 dígitos" maxlength="6">
@@ -141,75 +133,79 @@
         </div>
       </div>
 
-      <!-- PASO 3: Año, sección, lapso -->
-      <select id="anio" required>
-  <option value="">-- Selecciona Año --</option>
-  <option value="1er Año">1er Año</option>
-  <option value="2do Año">2do Año</option>
-  <option value="3er Año">3er Año</option>
-  <option value="4to Año">4to Año</option>
-  <option value="5to Año">5to Año</option>
-</select>
+      <div id="divPaso3" class="paso-formulario">
 
-<select id="seccion" required>
-  <option value="">-- Selecciona Sección --</option>
-  <option value="A">A</option>
-  <option value="B">B</option>
-  <option value="C">C</option>
-  <option value="D">D</option>
-  <option value="E">E</option>
-</select>
+        <select id="anio" required>
+          <option value="">-- Selecciona Año --</option>
+          <option value="1er Año">1er Año</option>
+          <option value="2do Año">2do Año</option>
+          <option value="3er Año">3er Año</option>
+          <option value="4to Año">4to Año</option>
+          <option value="5to Año">5to Año</option>
+        </select>
 
-<select id="lapso" required>
-  <option value="">-- Selecciona Lapso --</option>
-  <option value="1er Lapso">1er Lapso</option>
-  <option value="2do Lapso">2do Lapso</option>
-  <option value="3er Lapso">3er Lapso</option>
-</select>
+        <select id="seccion" required>
+          <option value="">-- Selecciona Sección --</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+        </select>
 
-<div style="display: flex; gap: 10px;">
-  <button type="button" class="btn-navegacion" style="background: #ccc;"
-          onclick="cambiarPaso(2)">Atrás</button>
-  <button type="submit" class="btn-navegacion" style="background: #2e7d32; color: white;">
-    ✅ Registrarse
-  </button>
-</div>
+        <select id="lapso" required>
+          <option value="">-- Selecciona Lapso --</option>
+          <option value="1er Lapso">1er Lapso</option>
+          <option value="2do Lapso">2do Lapso</option>
+          <option value="3er Lapso">3er Lapso</option>
+        </select>
 
-<script type="module">
-    // Importar toda la lógica existente (enviarCodigoVerificacion, validarCodigo, registrar)
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-navegacion" style="background: #ccc;"
+                  onclick="cambiarPaso(2)">Atrás</button>
+          <button type="submit" class="btn-navegacion" style="background: #2e7d32; color: white;">
+            ✅ Registrarse
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.supabaseClient = supabase.createClient(
+      'https://dugwjmafpffeykpkkpna.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+    );
+  </script>
+  <script type="module">
     import '../js/registro.js';
 
-    // ================================================
-    // FUNCIÓN FALTANTE: cambiarPaso
-    // ================================================
     window.cambiarPaso = function (numeroPaso) {
       const pasoActual = document.querySelector('.paso-activo');
+      if (!pasoActual) return;
+      
       const numActual = parseInt(pasoActual.id.replace('divPaso', ''));
 
-      // Validar antes de avanzar (solo cuando va hacia adelante)
       if (numeroPaso > numActual) {
-
         if (numActual === 1) {
-          const cedula      = document.getElementById('cedula').value.trim();
-          const nombres     = document.getElementById('nombres').value.trim();
-          const apellidos   = document.getElementById('apellidos').value.trim();
-          const fechaNac    = document.getElementById('fechaNacimiento').value;
-
+          const cedula   = document.getElementById('cedula').value.trim();
+          const nombres  = document.getElementById('nombres').value.trim();
+          const apellidos = document.getElementById('apellidos').value.trim();
+          const fechaNac  = document.getElementById('fechaNacimiento').value;
           if (!cedula || !nombres || !apellidos || !fechaNac) {
             alert('Por favor completa todos los campos antes de continuar.');
             return;
           }
         }
-
         if (numActual === 2) {
           const badge = document.getElementById('badgeValidado');
           const correoVerificado = badge && badge.style.display === 'block';
-
           if (!correoVerificado) {
             alert('Debes verificar tu correo antes de continuar.');
             return;
           }
-
           const pass = document.getElementById('password').value.trim();
           if (pass.length < 8) {
             alert('La contraseña debe tener al menos 8 caracteres.');
@@ -218,17 +214,13 @@
         }
       }
 
-      // Ocultar todos los pasos y mostrar el destino
       document.querySelectorAll('.paso-formulario').forEach(function (div) {
         div.classList.remove('paso-activo');
       });
-
       const destino = document.getElementById('divPaso' + numeroPaso);
-      if (destino) {
-        destino.classList.add('paso-activo');
-      }
+      if (destino) destino.classList.add('paso-activo');
     };
-</script>
+  </script>
 
 </body>
 </html>
