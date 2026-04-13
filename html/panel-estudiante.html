@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="../css/estilo.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
     .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -22,6 +23,7 @@
 </style>
 </head>
 <body>
+
 <div class="header">
   <div>
     <h2 style="margin:0">MateEduPro 🎓</h2>
@@ -56,7 +58,13 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  // Configuración de Supabase
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
 let datosUsuario = null;
@@ -65,69 +73,67 @@ async function inicializar() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) { window.location.href = "login.html"; return; }
 
+    // CORREGIDO: Buscando en la tabla 'estudiantes'
     const { data: user, error } = await window.supabaseClient
-        .from('usuarios')
+        .from('estudiantes')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
     if (user) {
         datosUsuario = user;
-        document.getElementById("datosPersonales").innerHTML = 
-            `<b>${user.nombres} ${user.apellidos}</b><br>` +
-            `C.I: ${user.cedula || "N/P"} | ${user.anio}° Año | Sección: "${user.seccion}"`;
+        // Uso de nombres de columna corregidos y año con ñ
+        document.getElementById("datosPersonales").innerHTML =
+            "<b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
+            "C.I: " + (user.cedula || "N/P") + " | " + user["año"] + " | Sección: " + user.seccion;
 
-        cargarExamenes(user.anio, user.seccion, user.id);
-        cargarHistorial(user.id);
+        cargarExamenes(user["año"], user.seccion, session.user.id);
+        cargarHistorial(session.user.id);
+    } else {
+        document.getElementById("datosPersonales").innerHTML =
+            "<b style='color:red;'>No se encontró el perfil del estudiante.</b>";
     }
 }
 
 async function cargarExamenes(anio, seccion, userId) {
     const lista = document.getElementById("listaExamenes");
-    
-    // 1. Obtener exámenes para el año del alumno
+
     const { data: examenes } = await window.supabaseClient
         .from('examenes')
         .select('*')
         .eq('activo', true)
         .eq('anio', anio);
 
-    // 2. Obtener cuáles ya realizó
     const { data: realizados } = await window.supabaseClient
         .from('resultados')
         .select('examen_id')
         .eq('usuario_id', userId);
 
-    const idsRealizados = realizados.map(r => r.examen_id);
+    const idsRealizados = (realizados || []).map(function(r) { return r.examen_id; });
 
     lista.innerHTML = "";
-    
-    const filtrados = examenes.filter(ex => 
-        (ex.seccion === seccion || ex.seccion === "Ambas") && 
-        !idsRealizados.includes(ex.id)
-    );
+    const filtrados = (examenes || []).filter(function(ex) {
+        return (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id);
+    });
 
     if (filtrados.length === 0) {
         lista.innerHTML = "<p style='text-align:center; color:#777;'>No tienes exámenes pendientes.</p>";
         return;
     }
 
-    filtrados.forEach(ex => {
-        lista.innerHTML += `
-            <div class="examen-card">
-                <div>
-                    <strong>${ex.titulo}</strong><br>
-                    <small>🕒 ${ex.duracion} min | 📅 ${new Date(ex.fecha_creacion).toLocaleDateString()}</small>
-                </div>
-                <button class="btn-iniciar" onclick="window.location.href='presentar-examen.html?id=${ex.id}'">Iniciar</button>
-            </div>`;
+    filtrados.forEach(function(ex) {
+        lista.innerHTML += "<div class='examen-card'>" +
+            "<div><strong>" + ex.titulo + "</strong><br>" +
+            "<small>Duración: " + ex.duracion + " min</small></div>" +
+            "<button class='btn-iniciar' onclick=\"window.location.href='presentar-examen.html?id=" + ex.id + "'\">Iniciar</button>" +
+            "</div>";
     });
 }
 
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
-    
-    const { data: notas, error } = await window.supabaseClient
+
+    const { data: notas } = await window.supabaseClient
         .from('resultados')
         .select('*, examenes(titulo)')
         .eq('usuario_id', userId);
@@ -138,15 +144,14 @@ async function cargarHistorial(userId) {
         return;
     }
 
-    notas.forEach(n => {
+    notas.forEach(function(n) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${n.examenes.titulo}</td>
-            <td><b style="color:#00796b">${n.nota} / 20</b></td>
-            <td>
-                <button class="btn-pdf-examen" onclick="descargarReporte('${n.id}')">📥 PDF</button>
-                <button class="btn-ver" onclick="window.location.href='resultados.html?id=${n.examen_id}'">🔍 Ver</button>
-            </td>`;
+        tr.innerHTML = "<td>" + (n.examenes ? n.examenes.titulo : 'Examen sin título') + "</td>" +
+            "<td><b style='color:#00796b'>" + n.nota + " / 20</b></td>" +
+            "<td>" +
+            "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\">PDF</button>" +
+            "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\">Ver</button>" +
+            "</td>";
         body.appendChild(tr);
     });
 }
@@ -154,40 +159,41 @@ async function cargarHistorial(userId) {
 async function descargarReporte(resultadoId) {
     const { data: res } = await window.supabaseClient
         .from('resultados')
-        .select('*, examenes(*), usuarios(*)')
+        .select('*, examenes(*), estudiantes(*)')
         .eq('id', resultadoId)
         .single();
+
+    if (!res) return;
 
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
 
-    // Membrete Oficial
     docPDF.setFont("helvetica", "bold").setFontSize(9);
-    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
-    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 17, { align: "center" });
+    docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
     docPDF.line(20, 20, 190, 20);
 
-    docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACIÓN", 105, 30, { align: "center" });
+    docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACION", 105, 30, { align: "center" });
 
     docPDF.setFont("helvetica", "normal").setFontSize(10);
-    docPDF.text(`ESTUDIANTE: ${res.usuarios.nombres} ${res.usuarios.apellidos}`, 20, 45);
-    docPDF.text(`CÉDULA: ${res.usuarios.cedula || "N/P"}`, 20, 52);
-    docPDF.text(`EVALUACIÓN: ${res.examenes.titulo}`, 20, 59);
-    docPDF.text(`NOTA: ${res.nota} / 20 Puntos`, 20, 66);
+    docPDF.text("ESTUDIANTE: " + res.estudiantes.nombres_completos + " " + res.estudiantes.apellido_completo, 20, 45);
+    docPDF.text("CEDULA: " + (res.estudiantes.cedula || "N/P"), 20, 52);
+    docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
+    docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
 
-    // Firma del profesor (Tus datos)
     docPDF.line(70, 100, 140, 100);
-    docPDF.setFont("helvetica", "bold").text("JOSÉ AGUSTÍN FERNÁNDEZ", 105, 105, { align: "center" });
-    docPDF.text("PROFESOR DE MATEMÁTICAS", 105, 110, { align: "center" });
+    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
+    docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
 
-    docPDF.save(`Nota_${res.examenes.titulo.replace(/\s/g, '_')}.pdf`);
+    docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
 }
 
-document.getElementById("btnSalir").onclick = async () => {
+document.getElementById("btnSalir").onclick = async function() {
     await window.supabaseClient.auth.signOut();
     window.location.href = "login.html";
 };
 
+// Iniciar proceso
 inicializar();
 </script>
 </body>
