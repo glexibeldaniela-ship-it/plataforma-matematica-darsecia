@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  /* Se mantienen tus estilos visuales intactos */
   :root {
     --primary: #00796b;
     --primary-dark: #004d40;
@@ -46,7 +45,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -64,14 +68,13 @@ let examenData = null;
 function fixPDF(t) {
   if (!t) return "N/P";
   const map = {'á':'a','é':'e','í':'i','ó':'o','ú':'u','ñ':'n','ü':'u'};
-  return t.toString().toLowerCase().replace(/[áéíóúñü]/g, c => map[c] || c).toUpperCase();
+  return t.toString().toLowerCase().replace(/[áéíóúñü]/g, function(c) { return map[c] || c; }).toUpperCase();
 }
 
 async function cargarResultado() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (!session) { window.location.href = "login.html"; return; }
 
-    // Determinar a dónde vuelve el botón
     if (estudianteIdUrl) {
         lnkVolver.href = "panel-profesor.html";
     } else {
@@ -81,7 +84,6 @@ async function cargarResultado() {
     const targetId = estudianteIdUrl || session.user.id;
 
     try {
-        // 1. Obtener datos del examen
         const { data: ex, error: errEx } = await window.supabaseClient
             .from('examenes')
             .select('*')
@@ -91,15 +93,15 @@ async function cargarResultado() {
         if (errEx) throw errEx;
         examenData = ex;
 
-        // 2. Obtener resultado del estudiante
+        // CORREGIDO: join con 'estudiantes' en lugar de 'usuarios'
         const { data: res, error: errRes } = await window.supabaseClient
             .from('resultados')
-            .select('*, usuarios(nombres, apellidos, cedula)')
+            .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
             .eq('examen_id', examenId)
             .eq('usuario_id', targetId)
             .single();
 
-        if (errRes) {
+        if (errRes || !res) {
             resultadoDiv.innerHTML = "<h3>No se encontró el resultado.</h3>";
             return;
         }
@@ -114,12 +116,12 @@ async function cargarResultado() {
                 <p style="color:#666; font-size:0.8rem; margin-top:15px;">CALIFICACIÓN</p>
                 <p class="nota-valor" style="color:${esAprobado ? 'var(--success)' : 'var(--danger)'}">${nota}</p>
                 <span class="status-badge ${esAprobado ? 'aprobado' : 'reprobado'}">
-                    ${esAprobado ? '✅ APROBADO' : '❌ REPROBADO'}
+                    ${esAprobado ? 'APROBADO' : 'REPROBADO'}
                 </span>
             </div>
             <div class="detalles-lista">
-                <div class="detalle-item"><span>Estudiante:</span><span>${res.usuarios.nombres} ${res.usuarios.apellidos}</span></div>
-                <div class="detalle-item"><span>Cédula:</span><span>${res.usuarios.cedula || "N/P"}</span></div>
+                <div class="detalle-item"><span>Estudiante:</span><span>${res.estudiantes.nombres_completos} ${res.estudiantes.apellido_completo}</span></div>
+                <div class="detalle-item"><span>Cédula:</span><span>${res.estudiantes.cedula || "N/P"}</span></div>
                 <div class="detalle-item"><span>Grado/Sección:</span><span>${res.grado}° "${res.seccion}"</span></div>
             </div>`;
 
@@ -131,37 +133,33 @@ async function cargarResultado() {
     }
 }
 
-btnPDF.onclick = () => {
+btnPDF.onclick = function() {
     if (!datosResultado || !examenData) return;
-
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
-    
-    // --- MEMBRETE OFICIAL ---
+
     docPDF.setFont("helvetica", "bold").setFontSize(9);
-    docPDF.text("REPÚBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
-    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN", 105, 17, { align: "center" });
+    docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACION", 105, 17, { align: "center" });
     docPDF.text("MUNICIPIO MARA - ESTADO ZULIA", 105, 22, { align: "center" });
-    docPDF.text("U.E.E. CECILIA NÚÑEZ SUCRE", 105, 27, { align: "center" });
+    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 27, { align: "center" });
     docPDF.line(20, 30, 190, 30);
 
-    docPDF.setFontSize(14).text("ACTA DE EVALUACIÓN DIGITAL", 105, 45, { align: "center" });
+    docPDF.setFontSize(14).text("ACTA DE EVALUACION DIGITAL", 105, 45, { align: "center" });
 
-    // Datos Estudiante
     docPDF.setFontSize(10).setFont("helvetica", "normal");
-    let nombreFull = `${datosResultado.usuarios.nombres} ${datosResultado.usuarios.apellidos}`;
-    docPDF.text(`ESTUDIANTE: ${fixPDF(nombreFull)}`, 20, 60);
-    docPDF.text(`CÉDULA: ${datosResultado.usuarios.cedula || "N/P"}`, 20, 67);
-    docPDF.text(`EVALUACIÓN: ${fixPDF(examenData.titulo)}`, 20, 74);
-    docPDF.text(`CALIFICACIÓN: ${datosResultado.nota} / 20 PTS`, 20, 81);
+    var nombreFull = datosResultado.estudiantes.nombres_completos + " " + datosResultado.estudiantes.apellido_completo;
+    docPDF.text("ESTUDIANTE: " + fixPDF(nombreFull), 20, 60);
+    docPDF.text("CEDULA: " + (datosResultado.estudiantes.cedula || "N/P"), 20, 67);
+    docPDF.text("EVALUACION: " + fixPDF(examenData.titulo), 20, 74);
+    docPDF.text("CALIFICACION: " + datosResultado.nota + " / 20 PTS", 20, 81);
 
-    // --- FIRMA DEL PROFESOR (Tus datos) ---
-    let yFirma = 120;
+    var yFirma = 120;
     docPDF.line(70, yFirma, 140, yFirma);
-    docPDF.setFont("helvetica", "bold").text("JOSÉ AGUSTÍN FERNÁNDEZ", 105, yFirma + 7, { align: "center" });
-    docPDF.setFont("helvetica", "normal").text("PROFESOR DE MATEMÁTICAS", 105, yFirma + 12, { align: "center" });
+    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, yFirma + 7, { align: "center" });
+    docPDF.setFont("helvetica", "normal").text("PROFESOR DE MATEMATICAS", 105, yFirma + 12, { align: "center" });
 
-    docPDF.save(`Resultado_${fixPDF(datosResultado.usuarios.nombres)}.pdf`);
+    docPDF.save("Resultado_" + fixPDF(datosResultado.estudiantes.nombres_completos) + ".pdf");
 };
 
 cargarResultado();
