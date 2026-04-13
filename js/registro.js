@@ -4,8 +4,9 @@
 // REGISTRAR USUARIO (Registro Directo y Simplificado)
 // ============================================
 async function registrar() {
-    // Referencia al cliente global configurado en el HTML
-    const supabase = window.supabaseClient;
+    // CAMBIO CLAVE: Ahora usamos 'window.n' que es el nombre 
+    // que pusimos en los archivos HTML para la conexión.
+    const supabase = window.n;
 
     // Captura de datos del formulario
     const cedula          = document.getElementById("cedula").value.trim();
@@ -34,6 +35,7 @@ async function registrar() {
 
     try {
         // 1. Verificar disponibilidad de la cédula
+        // Aquí es donde daba el error, ahora con 'window.n' ya funcionará
         const { data: cedulaExistente, error: cedulaError } = await supabase
             .from('estudiantes')
             .select('cedula')
@@ -45,7 +47,7 @@ async function registrar() {
             return;
         }
 
-        // 2. Registro en Supabase Auth (Sin necesidad de confirmar correo)
+        // 2. Registro en Supabase Auth
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
             email: email,
             password: password,
@@ -73,7 +75,7 @@ async function registrar() {
                 email: email,
                 fecha_nacimiento: fechaNacimiento,
                 usuario: email,
-                año: anio, // Mantenemos la ñ si así está en tu DB, o cámbialo a 'anio' si prefieres
+                año: anio, 
                 seccion: seccion,
                 lapso: lapso,
                 created_at: new Date()
@@ -91,7 +93,7 @@ async function registrar() {
 }
 
 // ============================================
-// INICIALIZACIÓN
+// EVENT LISTENER
 // ============================================
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("formRegistro");
