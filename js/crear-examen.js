@@ -1,11 +1,8 @@
-// Importamos el cliente que ya configuraste
-// La ruta es ../js/ porque este archivo suele estar en la carpeta js
-// Pero si lo llamas desde html/crear-examen.html, la ruta en el HTML debe ser ../js/crear-examen.js
-
+// MateEduPro - Lógica de Creación de Exámenes
 let examenIdEditando = null;
 let usuarioActual = null;
 
-// 🔐 Verificar sesión con Supabase
+// 🔐 Verificar sesión con Supabase Global
 async function verificarSesion() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     if (session) {
@@ -21,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnAgregar").addEventListener("click", () => agregarPreguntaConDatos({}));
     document.getElementById("btnGuardar").addEventListener("click", guardarExamen);
 
-    // MODO EDICIÓN
+    // MODO EDICIÓN: Si viene un ID en la URL
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     if (id) {
@@ -72,7 +69,7 @@ function renderContenidoDinamico(tipo, contenido, datos) {
     const idLocal = Date.now();
 
     if (tipo === "opcion_multiple") {
-        contenido.innerHTML = `<button type="button" class="btn-agregar">➕ Añadir Opción</button><div class="lista-opciones"></div>`;
+        contenido.innerHTML = `<button type="button" class="btn-accion btn-agregar" style="padding:5px; font-size:12px;">➕ Añadir Opción</button><div class="lista-opciones" style="margin-top:10px;"></div>`;
         const btn = contenido.querySelector("button");
         const lista = contenido.querySelector(".lista-opciones");
 
@@ -100,9 +97,24 @@ function crearFilaOpcion(lista, idLocal, texto, esCorrecta) {
     opDiv.innerHTML = `
         <input type="radio" name="radio_${idLocal}" class="esCorrecta" ${esCorrecta ? "checked" : ""}>
         <input type="text" class="txtOpcion" placeholder="Opción..." value="${texto}" style="flex:1;">
-        <button type="button" onclick="this.parentElement.remove()">❌</button>
+        <button type="button" style="background:none; border:none; cursor:pointer;" onclick="this.parentElement.remove()">❌</button>
     `;
     lista.appendChild(opDiv);
+}
+
+async function cargarExamenParaEditar(id) {
+    const { data: ex, error } = await window.supabaseClient.from('examenes').select('*').eq('id', id).single();
+    if (ex) {
+        document.getElementById("titulo").value = ex.titulo;
+        document.getElementById("anio").value = ex.anio;
+        document.getElementById("seccion").value = ex.seccion;
+        document.getElementById("lapso").value = ex.lapso;
+        document.getElementById("duracion").value = ex.duracion;
+        document.getElementById("repaso").value = ex.repaso_link || "";
+        document.getElementById("descripcion").value = ex.descripcion || "";
+
+        ex.preguntas.forEach(p => agregarPreguntaConDatos(p));
+    }
 }
 
 async function guardarExamen() {
@@ -110,7 +122,7 @@ async function guardarExamen() {
 
     const btn = document.getElementById("btnGuardar");
     btn.disabled = true;
-    btn.innerText = "Guardando en Supabase...";
+    btn.innerText = "Guardando...";
 
     const preguntasArr = [];
     document.querySelectorAll(".pregunta-item").forEach(pDiv => {
@@ -120,7 +132,7 @@ async function guardarExamen() {
         let pData = { tipo, enunciado };
 
         if (tipo === "opcion_multiple") {
-            pData.opciones = Array.from(pDiv.querySelectorAll(".lista-opciones div")).map(row => ({
+            pData.opciones = Array.from(pDiv.querySelectorAll(".lista-opciones .opcion-fila")).map(row => ({
                 texto: row.querySelector(".txtOpcion").value.trim(),
                 correcta: row.querySelector(".esCorrecta").checked
             }));
@@ -139,26 +151,26 @@ async function guardarExamen() {
         lapso: document.getElementById("lapso").value,
         duracion: parseInt(document.getElementById("duracion").value) || 45,
         repaso_link: document.getElementById("repaso").value.trim(),
+        descripcion: document.getElementById("descripcion").value.trim(),
         creado_por: usuarioActual.id,
         preguntas: preguntasArr,
-        ultima_modificacion: new Date()
+        activo: true // Por defecto lo creamos activo
     };
 
-    let error;
+    let res;
     if (examenIdEditando) {
-        const { error: err } = await window.supabaseClient.from('examenes').update(datosExamen).eq('id', examenIdEditando);
-        error = err;
+        res = await window.supabaseClient.from('examenes').update(datosExamen).eq('id', examenIdEditando);
     } else {
-        const { error: err } = await window.supabaseClient.from('examenes').insert([datosExamen]);
-        error = err;
+        res = await window.supabaseClient.from('examenes').insert([datosExamen]);
     }
 
-    if (error) {
-        alert("Error al guardar: " + error.message);
+    if (res.error) {
+        alert("Error al guardar: " + res.error.message);
         btn.disabled = false;
         btn.innerText = "Reintentar Guardar";
     } else {
         alert("✅ Examen guardado exitosamente");
-        window.location.href = "admin-panel.html"; // O la ruta de tu panel
+        window.location.href = "panel-profesor.html";
     }
-}
+                }
+                
