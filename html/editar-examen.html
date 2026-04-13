@@ -36,9 +36,11 @@
       <div class="campo" style="flex:1;">
         <label>Año:</label>
         <select id="anio">
-          <option value="1">1ero</option>
-          <option value="2">2do</option>
-          <option value="3">3ero</option>
+          <option value="1er Año">1er Año</option>
+          <option value="2do Año">2do Año</option>
+          <option value="3er Año">3er Año</option>
+          <option value="4to Año">4to Año</option>
+          <option value="5to Año">5to Año</option>
         </select>
       </div>
       <div class="campo" style="flex:1;">
@@ -46,6 +48,7 @@
         <select id="seccion">
           <option value="A">Sección A</option>
           <option value="B">Sección B</option>
+          <option value="C">Sección C</option>
         </select>
       </div>
     </div>
@@ -69,7 +72,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
   const params = new URLSearchParams(window.location.search);
