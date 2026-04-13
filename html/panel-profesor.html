@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <title>Panel Profesor – Centro de Control</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="../css/estilos.css">
+    <link rel="stylesheet" href="../css/estilo.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
-        /* Se mantienen tus estilos originales */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
         .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); position: sticky; top: 0; z-index: 100; }
         .tabs-bar { display: flex; overflow-x: auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 60px; z-index: 90; }
@@ -25,8 +24,6 @@
         .btn-eliminar { background: #d32f2f; margin-left: 5px; }
         .filtros-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         select, .input-busqueda { padding: 10px; border-radius: 8px; border: 1px solid #ccd6dd; flex: 1; min-width: 120px; font-size: 14px; }
-        .status-online { color: #4caf50; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; }
-        .status-online::before { content: '●'; font-size: 14px; }
         .tabla-scroll { width: 100%; overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         table { min-width: 600px; border-collapse: collapse; width: 100%; }
         th { background: #00796b; color: white; padding: 12px; text-align: left; }
@@ -35,12 +32,13 @@
     </style>
 </head>
 <body>
+
 <div class="header">
     <div>
         <h2 style="margin:0">MateEduPro 🎓</h2>
         <small>Panel del Profesor</small>
     </div>
-    <button id="btnSalir" style="background:rgba(255,255,255,0.2); color:white; border:1px solid white; padding:5px 12px; border-radius:10px; font-weight: bold;">Salir</button>
+    <button id="btnSalir" style="background:rgba(255,255,255,0.2); color:white; border:1px solid white; padding:5px 12px; border-radius:10px; font-weight: bold; cursor:pointer;">Salir</button>
 </div>
 
 <div class="tabs-bar">
@@ -63,11 +61,15 @@
         <div class="filtros-box">
             <select id="fAnio" onchange="window.cargarEstudiantes()">
                 <option value="todos">Todos los Años</option>
-                <option value="1">1ero</option><option value="2">2do</option><option value="3">3ero</option>
+                <option value="1er Año">1ero</option>
+                <option value="2do Año">2do</option>
+                <option value="3er Año">3ero</option>
+                <option value="4to Año">4to</option>
+                <option value="5to Año">5to</option>
             </select>
             <select id="fSec" onchange="window.cargarEstudiantes()">
                 <option value="todas">Todas las Secciones</option>
-                <option value="A">A</option><option value="B">B</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
             </select>
             <input type="text" id="busquedaEstudiante" class="input-busqueda" placeholder="🔍 Buscar por nombre..." onkeyup="window.cargarEstudiantes()">
             <button class="btn-descargar-lista" onclick="window.descargarListaPDF()">📥 Lista PDF</button>
@@ -101,7 +103,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
     let usuarioActual = null;
@@ -144,7 +151,7 @@
                         <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">${ex.activo ? 'PUBLICADO' : 'BORRADOR'}</span>
                     </div>
                     <div style="padding:15px">
-                        <small style="color:#666;">${ex.anio}° Año | Sección: ${ex.seccion}</small>
+                        <small style="color:#666;">${ex.anio} | Sección: ${ex.seccion}</small>
                         <div style="margin-top:10px;">
                             <button class="btn-accion ${ex.activo ? 'btn-desactivar' : 'btn-activar'}" onclick="window.toggleEx('${ex.id}', ${ex.activo})">
                                 ${ex.activo ? '⏹ Desactivar' : '▶️ Activar'}
@@ -169,32 +176,35 @@
         }
     };
 
+    // CORREGIDO: Búsqueda en tabla 'estudiantes'
     window.cargarEstudiantes = async () => {
         const anioSel = document.getElementById("fAnio").value;
         const secSel = document.getElementById("fSec").value;
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
 
-        let query = window.supabaseClient.from('usuarios').select('*').eq('rol', 'estudiante');
-        
-        if (anioSel !== 'todos') query = query.eq('anio', anioSel);
+        let query = window.supabaseClient.from('estudiantes').select('*');
+        if (anioSel !== 'todos') query = query.eq('año', anioSel);
         if (secSel !== 'todas') query = query.eq('seccion', secSel);
 
         const { data: usuarios } = await query;
         body.innerHTML = "";
-        estudiantesActuales = usuarios.filter(u => `${u.nombres} ${u.apellidos}`.toLowerCase().includes(busqueda));
+        estudiantesActuales = (usuarios || []).filter(u =>
+            (u.nombres_completos + " " + u.apellido_completo).toLowerCase().includes(busqueda)
+        );
 
         estudiantesActuales.forEach(u => {
             body.innerHTML += `
                 <tr>
-                    <td><b>${u.nombres} ${u.apellidos}</b><br><small>C.I. ${u.cedula || 'N/P'}</small></td>
-                    <td>${u.anio || '?'}° "${u.seccion || '?'}"</td>
+                    <td><b>${u.nombres_completos} ${u.apellido_completo}</b><br><small>C.I. ${u.cedula || 'N/P'}</small></td>
+                    <td>${u["año"] || '?'} | Sección: "${u.seccion || '?'}"</td>
                     <td><span style="color:#999; font-size:11px;">Registrado</span></td>
                     <td><button class="btn-accion btn-eliminar" onclick="window.eliminarEstudiante('${u.id}')">🗑️</button></td>
                 </tr>`;
         });
     };
 
+    // CORREGIDO: Join con tabla 'estudiantes'
     window.cargarNotas = async () => {
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
@@ -202,16 +212,16 @@
 
         const { data: notas } = await window.supabaseClient
             .from('resultados')
-            .select('*, usuarios(nombres, apellidos, cedula)')
+            .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
             .eq('examen_id', exId);
 
         body.innerHTML = "";
-        notas.forEach(n => {
+        (notas || []).forEach(n => {
             body.innerHTML += `
                 <tr>
-                    <td><b>${n.usuarios.nombres} ${n.usuarios.apellidos}</b></td>
-                    <td>${n.usuarios.cedula}</td>
-                    <td>${n.grado}° "${n.seccion}"</td>
+                    <td><b>${n.estudiantes.nombres_completos} ${n.estudiantes.apellido_completo}</b></td>
+                    <td>${n.estudiantes.cedula}</td>
+                    <td>${n.grado} | "${n.seccion}"</td>
                     <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
                     <td>
                         <button onclick="window.imprimirReporte('${n.id}', '${exId}')" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
@@ -223,10 +233,12 @@
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
         const { data: examenes } = await window.supabaseClient.from('examenes').select('id, titulo');
-        examenes.forEach(ex => {
-            const op = document.createElement("option");
-            op.value = ex.id; op.textContent = ex.titulo; select.appendChild(op);
-        });
+        if (examenes) {
+            examenes.forEach(ex => {
+                const op = document.createElement("option");
+                op.value = ex.id; op.textContent = ex.titulo; select.appendChild(op);
+            });
+        }
     }
 
     document.getElementById("btnSalir").onclick = async () => {
