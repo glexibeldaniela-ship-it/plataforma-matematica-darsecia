@@ -1,8 +1,14 @@
+// js/supabase.js
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = 'https://dugwjmafpffeykpkkpna.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+// 1. Usamos la URL y Key del proyecto NUEVO (abejdltqyeuslgmmfucx)
+const supabaseUrl = 'https://abejdltqyeuslgmmfucx.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
 
-// Esto crea el cliente y lo hace accesible para todos tus archivos
+// 2. Creamos la conexión oficial
 export const supabase = createClient(supabaseUrl, supabaseKey)
-window.supabaseClient = supabase;
+
+// 3. LA CLAVE DEL ÉXITO: 
+// Asignamos la conexión a 'window.n' porque tus archivos .js 
+// (como registro.js) usan 'n' para trabajar.
+window.n = supabase;
