@@ -5,7 +5,7 @@
 <title>Panel Administrador – MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-/* Se mantienen tus estilos originales para no alterar tu diseño */
+/* Se mantienen tus estilos originales */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; color: #263238; }
 .header { background: linear-gradient(135deg, #00acc1, #00838f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
@@ -41,7 +41,7 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
       <p style="margin:0; font-weight: bold;">Adm. José Fernández</p>
     </div>
   </div>
-  <button onclick="cerrarSesion()" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px; cursor:pointer;">Salir</button>
+  <button id="btnSalirAdmin" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px; cursor:pointer;">Salir</button>
 </div>
 
 <div class="tabs-bar">
@@ -83,7 +83,12 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 <div class="toast" id="toastMsg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
 // Función para cambiar pestañas
@@ -173,7 +178,7 @@ window.filtrarUsuarios = () => {
     });
 };
 
-window.cerrarSesion = async () => {
+document.getElementById("btnSalirAdmin").onclick = async () => {
     await window.supabaseClient.auth.signOut();
     window.location.href = "login.html";
 };
