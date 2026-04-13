@@ -38,7 +38,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://dugwjmafpffeykpkkpna.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1Z3dqbWFmcGZmZXlrcGtrcG5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDE0NDIsImV4cCI6MjA4ODc3NzQ0Mn0.WS-DSZPMxnlV1HKTCTjwYMODVXGyjf7wB5MVJ5NklCs'
+  );
+</script>
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -65,7 +70,7 @@ async function iniciar() {
         .select('id')
         .eq('examen_id', examenId)
         .eq('usuario_id', usuarioActual.id)
-        .single();
+        .maybeSingle(); // Usamos maybeSingle para evitar errores si no hay registros
 
     if (yaHizo) {
         alert("Ya has presentado esta evaluación.");
@@ -91,10 +96,10 @@ async function cargarExamen() {
 
     infoDiv.innerHTML = `
         <h2>${ex.titulo}</h2>
-        <p>📌 ${ex.anio}° Año | ⏱ ${ex.duracion} minutos</p>
+        <p>📌 ${ex.anio} | ⏱ ${ex.duracion} minutos</p>
         <div class='instrucciones'><strong>Instrucciones:</strong><br>${ex.descripcion || "Lee con atención y responde."}</div>`;
 
-    renderizarPreguntas(ex.preguntas); // Asumiendo que las preguntas están en un JSON en la tabla
+    renderizarPreguntas(ex.preguntas);
     iniciarTemporizador(ex.duracion);
     btnEnviar.style.display = "block";
 }
@@ -116,8 +121,10 @@ function renderizarPreguntas(preguntas) {
             });
         } else if (p.tipo === "verdadero_falso") {
             htmlP += `
-                <label class="opcion-label"><input type="radio" name="preg_${index}" value="Verdadero"> Verdadero</label>
-                <label class="opcion-label"><input type="radio" name="preg_${index}" value="Falso"> Falso</label>`;
+                <label class="opcion-label"><input type="radio" name="preg_${index}" value="verdadero"> Verdadero</label>
+                <label class="opcion-label"><input type="radio" name="preg_${index}" value="falso"> Falso</label>`;
+        } else if (p.tipo === "numerica") {
+            htmlP += `<input type="number" name="preg_${index}" step="any" placeholder="Escribe tu respuesta numérica aquí...">`;
         } else {
             htmlP += `<input type="text" name="preg_${index}" placeholder="Escribe tu respuesta aquí...">`;
         }
@@ -142,7 +149,7 @@ function iniciarTemporizador(minutos) {
 
         if (restante <= 0) {
             clearInterval(intervaloTimer);
-            enviarExamen(true); // Enviar automáticamente
+            enviarExamen(true); 
         } else {
             const m = Math.floor(restante / 60000);
             const s = Math.floor((restante % 60000) / 1000);
@@ -166,16 +173,16 @@ async function enviarExamen(automatico = false) {
 
     preguntas.forEach((p, index) => {
         const radio = document.querySelector(`input[name="preg_${index}"]:checked`);
-        const texto = document.querySelector(`input[type="text"][name="preg_${index}"]`);
+        const texto = document.querySelector(`input[name="preg_${index}"][type="text"], input[name="preg_${index}"][type="number"]`);
         
         let respuesta = radio ? radio.value : (texto ? texto.value.trim() : "Sin responder");
         let esCorrecta = false;
 
-        // Validar respuesta
         if (p.tipo === "opcion_multiple") {
             const correcta = p.opciones.find(o => o.correcta);
             if (correcta && respuesta === correcta.texto) esCorrecta = true;
         } else {
+            // Comparación para V/F y Numérica
             if (respuesta.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) esCorrecta = true;
         }
 
@@ -188,6 +195,7 @@ async function enviarExamen(automatico = false) {
         });
     });
 
+    // Nota basada en base 20 (Venezuela)
     const notaFinal = parseFloat(((puntos / preguntas.length) * 20).toFixed(2));
 
     try {
@@ -204,10 +212,11 @@ async function enviarExamen(automatico = false) {
 
         if (error) throw error;
 
-        window.location.href = `resultados.html?id=${examenId}`;
+        alert("¡Examen enviado! Tu nota es: " + notaFinal + " / 20");
+        window.location.href = `panel-estudiante.html`;
     } catch (e) {
         console.error(e);
-        alert("Error al guardar. Tu nota fue: " + notaFinal);
+        alert("Error al guardar. Tu nota calculada fue: " + notaFinal);
     }
 }
 
