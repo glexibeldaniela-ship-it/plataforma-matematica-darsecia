@@ -13,7 +13,7 @@ async function registrar() {
     const email           = document.getElementById("email").value.trim();
     const password        = document.getElementById("password").value.trim();
     const fechaNacimiento = document.getElementById("fechaNacimiento").value;
-    const anio            = document.getElementById("anio").value;
+    const anioTexto       = document.getElementById("anio").value; // "1er Año", "2do Año"...
     const seccion         = document.getElementById("seccion").value;
     const lapso           = document.getElementById("lapso").value;
 
@@ -26,10 +26,14 @@ async function registrar() {
         alert("La contraseña debe tener al menos 8 caracteres por seguridad.");
         return;
     }
-    if (!anio || !seccion) {
+    if (!anioTexto || !seccion) {
         alert("Debes seleccionar tu año y sección.");
         return;
     }
+
+    // CONVERSIÓN CRÍTICA: Extraemos solo el número (ej: de "1er Año" sacamos el 1)
+    // Esto es para que la columna 'integer' de tu base de datos no dé error.
+    const anioNumerico = parseInt(anioTexto);
 
     try {
         // 1. Verificar disponibilidad de la cédula
@@ -71,8 +75,8 @@ async function registrar() {
                 cedula: cedula,
                 email: email,
                 fecha_nacimiento: fechaNacimiento,
-                // SE ELIMINÓ LA LÍNEA 'usuario' PORQUE NO EXISTE EN TU TABLA
-                anio: anio, 
+                // USAMOS EL NÚMERO CONVERTIDO PARA QUE LA TABLA LO ACEPTE
+                anio: anioNumerico, 
                 seccion: seccion,
                 lapso: lapso,
                 created_at: new Date()
