@@ -74,31 +74,34 @@
 let datosUsuario = null;
 
 async function inicializar() {
-    // CORREGIDO: Usando window.n
-    const { data: { session } } = await window.n.auth.getSession();
-    if (!session) { window.location.href = "login.html"; return; }
+    try {
+        const { data: { session } } = await window.n.auth.getSession();
+        if (!session) { window.location.href = "login.html"; return; }
 
-    const { data: user, error } = await window.n
-        .from('estudiantes')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+        const { data: user, error } = await window.n
+            .from('estudiantes')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
 
-    if (user) {
-        datosUsuario = user;
-        // CORREGIDO: Uso flexible de año/anio para evitar fallos
-        const anioTexto = user.anio || user["año"] || "N/A";
-        
-        document.getElementById("datosPersonales").innerHTML =
-            "<i class='fas fa-user-graduate' style='font-size:2rem; color:#00796b;'></i>" +
-            "<div><b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
-            "<span>C.I: " + (user.cedula || "N/P") + " | " + anioTexto + " | Sección: " + user.seccion + "</span></div>";
+        if (user) {
+            datosUsuario = user;
+            // Usamos 'anio' directamente como confirmaste
+            const anioTexto = user.anio || "N/A";
 
-        cargarExamenes(anioTexto, user.seccion, session.user.id);
-        cargarHistorial(session.user.id);
-    } else {
-        document.getElementById("datosPersonales").innerHTML =
-            "<b style='color:red;'>No se encontró el perfil del estudiante en la base de datos.</b>";
+            document.getElementById("datosPersonales").innerHTML =
+                "<i class='fas fa-user-graduate' style='font-size:2rem; color:#00796b;'></i>" +
+                "<div><b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
+                "<span>C.I: " + (user.cedula || "N/P") + " | " + anioTexto + " | Sección: " + user.seccion + "</span></div>";
+
+            cargarExamenes(anioTexto, user.seccion, session.user.id);
+            cargarHistorial(session.user.id);
+        } else {
+            document.getElementById("datosPersonales").innerHTML =
+                "<b style='color:red;'>No se encontró el perfil en la base de datos.</b>";
+        }
+    } catch (err) {
+        console.error("Error en inicializar:", err);
     }
 }
 
@@ -111,7 +114,6 @@ async function cargarExamenes(anio, seccion, userId) {
         .eq('activo', true)
         .eq('anio', anio);
 
-    // CORREGIDO: La columna correcta es estudiante_id
     const { data: realizados } = await window.n
         .from('resultados')
         .select('examen_id')
@@ -141,7 +143,6 @@ async function cargarExamenes(anio, seccion, userId) {
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
 
-    // CORREGIDO: La columna correcta es estudiante_id y window.n
     const { data: notas } = await window.n
         .from('resultados')
         .select('*, examenes(titulo)')
@@ -149,7 +150,8 @@ async function cargarHistorial(userId) {
 
     body.innerHTML = "";
     if (!notas || notas.length === 0) {
-        body.innerHTML = "<tr><td colspan="3" style="text-align:center;">No hay notas registradas todavía.</td></tr>";
+        // CORREGIDO: Uso de comillas simples para evitar el error de sintaxis
+        body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas todavía.</td></tr>";
         return;
     }
 
@@ -176,7 +178,6 @@ async function descargarReporte(resultadoId) {
 
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
-    // (Mantenemos la lógica de tu PDF igual para no dañar el formato que ya tienes)
     docPDF.setFont("helvetica", "bold").setFontSize(9);
     docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
     docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
@@ -188,7 +189,7 @@ async function descargarReporte(resultadoId) {
     docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
     docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
     docPDF.line(70, 100, 140, 100);
-    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
+    docPDF.setFont("helvetica", "bold").text("JOSE FERNANDEZ", 105, 105, { align: "center" });
     docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
     docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
 }
