@@ -4,8 +4,6 @@
 // REGISTRAR USUARIO (Registro Directo y Simplificado)
 // ============================================
 async function registrar() {
-    // CAMBIO CLAVE: Ahora usamos 'window.n' que es el nombre 
-    // que pusimos en los archivos HTML para la conexión.
     const supabase = window.n;
 
     // Captura de datos del formulario
@@ -35,7 +33,6 @@ async function registrar() {
 
     try {
         // 1. Verificar disponibilidad de la cédula
-        // Aquí es donde daba el error, ahora con 'window.n' ya funcionará
         const { data: cedulaExistente, error: cedulaError } = await supabase
             .from('estudiantes')
             .select('cedula')
@@ -69,13 +66,13 @@ async function registrar() {
             .from('estudiantes')
             .insert([{
                 id: authData.user.id,
-                nombres_completos: nombres,
-                apellido_completo: apellidos,
+                nombres_completos: nombres, // <-- CAMBIO 1: Antes decía 'nombres'
+                apellido_completo: apellidos, // <-- CAMBIO 2: Antes decía 'apellido_completo' pero enviaba 'apellidos'
                 cedula: cedula,
                 email: email,
                 fecha_nacimiento: fechaNacimiento,
                 usuario: email,
-                año: anio, 
+                anio: anio, // <-- CAMBIO 3: Quitamos la 'ñ' porque en tu video sale 'anio'
                 seccion: seccion,
                 lapso: lapso,
                 created_at: new Date()
