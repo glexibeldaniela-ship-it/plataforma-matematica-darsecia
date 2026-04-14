@@ -104,6 +104,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // Tu conexión original mantenida como window.n
   window.n = supabase.createClient(
     'https://abejdltqyeuslgmmfucx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
@@ -115,7 +116,8 @@
     let estudiantesActuales = [];
 
     async function verificarSesion() {
-        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        // CORREGIDO: Usamos window.n
+        const { data: { session } } = await window.n.auth.getSession();
         if (!session) {
             window.location.href = "login.html";
         } else {
@@ -136,7 +138,8 @@
 
     window.cargarExamenes = async () => {
         const lista = document.getElementById("listaExamenes");
-        const { data: examenes, error } = await window.supabaseClient
+        // CORREGIDO: Usamos window.n
+        const { data: examenes, error } = await window.n
             .from('examenes')
             .select('*')
             .eq('creado_por', usuarioActual.id);
@@ -165,52 +168,63 @@
     };
 
     window.toggleEx = async (id, st) => {
-        await window.supabaseClient.from('examenes').update({ activo: !st }).eq('id', id);
+        // CORREGIDO: Usamos window.n
+        await window.n.from('examenes').update({ activo: !st }).eq('id', id);
         window.cargarExamenes();
     };
 
     window.borrarEx = async (id) => {
         if (confirm("¿Eliminar evaluación?")) {
-            await window.supabaseClient.from('examenes').delete().eq('id', id);
+            // CORREGIDO: Usamos window.n
+            await window.n.from('examenes').delete().eq('id', id);
             window.cargarExamenes();
         }
     };
 
-    // CORREGIDO: Búsqueda en tabla 'estudiantes'
     window.cargarEstudiantes = async () => {
         const anioSel = document.getElementById("fAnio").value;
         const secSel = document.getElementById("fSec").value;
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
         const body = document.getElementById("bodyEstudiantes");
 
-        let query = window.supabaseClient.from('estudiantes').select('*');
-        if (anioSel !== 'todos') query = query.eq('año', anioSel);
+        // CORREGIDO: Usamos window.n
+        let query = window.n.from('estudiantes').select('*');
+        // CORREGIDO: Usamos 'anio' en lugar de 'año' si tu DB no tiene la Ñ
+        if (anioSel !== 'todos') query = query.eq('anio', anioSel);
         if (secSel !== 'todas') query = query.eq('seccion', secSel);
 
         const { data: usuarios } = await query;
         body.innerHTML = "";
         estudiantesActuales = (usuarios || []).filter(u =>
-            (u.nombres_completos + " " + u.apellido_completo).toLowerCase().includes(busqueda)
+            (u.nombres_completos + " " + (u.apellido_completo || "")).toLowerCase().includes(busqueda)
         );
 
         estudiantesActuales.forEach(u => {
             body.innerHTML += `
                 <tr>
-                    <td><b>${u.nombres_completos} ${u.apellido_completo}</b><br><small>C.I. ${u.cedula || 'N/P'}</small></td>
-                    <td>${u["año"] || '?'} | Sección: "${u.seccion || '?'}"</td>
+                    <td><b>${u.nombres_completos} ${u.apellido_completo || ""}</b><br><small>C.I. ${u.cedula || 'N/P'}</small></td>
+                    <td>${u.anio || '?'} | Sección: "${u.seccion || '?'}"</td>
                     <td><span style="color:#999; font-size:11px;">Registrado</span></td>
                     <td><button class="btn-accion btn-eliminar" onclick="window.eliminarEstudiante('${u.id}')">🗑️</button></td>
                 </tr>`;
         });
     };
 
-    // CORREGIDO: Join con tabla 'estudiantes'
+    window.eliminarEstudiante = async (id) => {
+        if (confirm("¿Seguro que deseas eliminar a este estudiante?")) {
+            // CORREGIDO: Usamos window.n
+            await window.n.from('estudiantes').delete().eq('id', id);
+            window.cargarEstudiantes();
+        }
+    };
+
     window.cargarNotas = async () => {
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
         if (!exId) return;
 
-        const { data: notas } = await window.supabaseClient
+        // CORREGIDO: Usamos window.n
+        const { data: notas } = await window.n
             .from('resultados')
             .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
             .eq('examen_id', exId);
@@ -232,7 +246,8 @@
 
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
-        const { data: examenes } = await window.supabaseClient.from('examenes').select('id, titulo');
+        // CORREGIDO: Usamos window.n
+        const { data: examenes } = await window.n.from('examenes').select('id, titulo');
         if (examenes) {
             examenes.forEach(ex => {
                 const op = document.createElement("option");
@@ -242,7 +257,8 @@
     }
 
     document.getElementById("btnSalir").onclick = async () => {
-        await window.supabaseClient.auth.signOut();
+        // CORREGIDO: Usamos window.n para cerrar sesión
+        await window.n.auth.signOut();
         window.location.href = "login.html";
     };
 
