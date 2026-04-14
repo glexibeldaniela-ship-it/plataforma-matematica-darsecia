@@ -22,6 +22,34 @@
     .btn-pdf-examen { background: #e53935; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; display: flex; align-items: center; gap: 5px; }
     .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
     .btn-ver { background: #0288d1; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+
+    /* Estilos del Modal de Repaso */
+    #modalRepaso {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 10000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+    }
+    #modalRepaso.activo { display: flex; }
+    .modal-caja {
+        background: white;
+        border-radius: 15px;
+        width: 100%;
+        max-width: 850px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .modal-header { background: #00796b; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    #iframeRepaso { flex: 1; border: none; width: 100%; }
+    .modal-footer { padding: 15px; background: #f4f4f4; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+    #btnComenzarExamen { background: #00796b; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
 </style>
 </head>
 <body>
@@ -62,6 +90,21 @@
   </div>
 </div>
 
+<div id="modalRepaso">
+  <div class="modal-caja">
+    <div class="modal-header">
+      <h3 style="margin:0"><i class="fas fa-book-reader"></i> Repaso Obligatorio</h3>
+      <button onclick="cerrarRepaso()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <iframe id="iframeRepaso" src=""></iframe>
+    <div class="modal-footer">
+      <span id="cargandoMsj" style="color:#666;"><i class="fas fa-spinner fa-spin"></i> Cargando material educativo...</span>
+      <button id="btnComenzarExamen" onclick="irAlExamen()">✅ Comenzar Evaluación</button>
+      <button onclick="cerrarRepaso()" style="background:#ccc; border:none; padding:10px 15px; border-radius:8px; cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   window.n = supabase.createClient(
@@ -72,23 +115,18 @@
 
 <script>
 let datosUsuario = null;
+let urlExamenPendiente = "";
 
 async function inicializar() {
     try {
         const { data: { session } } = await window.n.auth.getSession();
         if (!session) { window.location.href = "login.html"; return; }
 
-        const { data: user, error } = await window.n
-            .from('estudiantes')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+        const { data: user } = await window.n.from('estudiantes').select('*').eq('id', session.user.id).single();
 
         if (user) {
             datosUsuario = user;
-            // Usamos 'anio' directamente como confirmaste
             const anioTexto = user.anio || "N/A";
-
             document.getElementById("datosPersonales").innerHTML =
                 "<i class='fas fa-user-graduate' style='font-size:2rem; color:#00796b;'></i>" +
                 "<div><b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
@@ -96,61 +134,72 @@ async function inicializar() {
 
             cargarExamenes(anioTexto, user.seccion, session.user.id);
             cargarHistorial(session.user.id);
-        } else {
-            document.getElementById("datosPersonales").innerHTML =
-                "<b style='color:red;'>No se encontró el perfil en la base de datos.</b>";
         }
-    } catch (err) {
-        console.error("Error en inicializar:", err);
-    }
+    } catch (err) { console.error(err); }
 }
 
 async function cargarExamenes(anio, seccion, userId) {
     const lista = document.getElementById("listaExamenes");
+    const { data: examenes } = await window.n.from('examenes').select('*').eq('activo', true).eq('anio', anio);
+    const { data: realizados } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
 
-    const { data: examenes } = await window.n
-        .from('examenes')
-        .select('*')
-        .eq('activo', true)
-        .eq('anio', anio);
-
-    const { data: realizados } = await window.n
-        .from('resultados')
-        .select('examen_id')
-        .eq('estudiante_id', userId);
-
-    const idsRealizados = (realizados || []).map(function(r) { return r.examen_id; });
-
+    const idsRealizados = (realizados || []).map(r => r.examen_id);
     lista.innerHTML = "";
-    const filtrados = (examenes || []).filter(function(ex) {
-        return (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id);
-    });
+
+    const filtrados = (examenes || []).filter(ex => (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id));
 
     if (filtrados.length === 0) {
         lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No tienes exámenes pendientes.</p>";
         return;
     }
 
-    filtrados.forEach(function(ex) {
+    filtrados.forEach(ex => {
+        // Se pasa el ID y la URL del repaso a la función gestionadora
         lista.innerHTML += "<div class='examen-card'>" +
             "<div><strong><i class='fas fa-book'></i> " + ex.titulo + "</strong><br>" +
             "<small><i class='fas fa-clock'></i> Duración: " + ex.duracion + " min</small></div>" +
-            "<button class='btn-iniciar' onclick=\"window.location.href='presentar-examen.html?id=" + ex.id + "'\"><i class='fas fa-play'></i> Iniciar</button>" +
+            "<button class='btn-iniciar' onclick=\"gestionarInicio('" + ex.id + "', '" + (ex.url_repaso || "") + "')\"><i class='fas fa-play'></i> Iniciar</button>" +
             "</div>";
     });
 }
 
+function gestionarInicio(id, urlRepaso) {
+    if (!urlRepaso || urlRepaso === "" || urlRepaso === "null") {
+        // Si no hay repaso, va directo al examen
+        window.location.href = "presentar-examen.html?id=" + id;
+    } else {
+        // Si hay repaso, abre el modal
+        urlExamenPendiente = "presentar-examen.html?id=" + id;
+        document.getElementById("iframeRepaso").src = urlRepaso;
+        document.getElementById("modalRepaso").classList.add("activo");
+        
+        // Resetear botones del modal
+        document.getElementById("btnComenzarExamen").style.display = "none";
+        document.getElementById("cargandoMsj").style.display = "block";
+
+        // Cuando el PDF carga en el iframe
+        document.getElementById("iframeRepaso").onload = function() {
+            document.getElementById("cargandoMsj").style.display = "none";
+            document.getElementById("btnComenzarExamen").style.display = "block";
+        };
+    }
+}
+
+function cerrarRepaso() {
+    document.getElementById("modalRepaso").classList.remove("activo");
+    document.getElementById("iframeRepaso").src = "";
+}
+
+function irAlExamen() {
+    window.location.href = urlExamenPendiente;
+}
+
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
-
-    const { data: notas } = await window.n
-        .from('resultados')
-        .select('*, examenes(titulo)')
-        .eq('estudiante_id', userId);
+    const { data: notas } = await window.n.from('resultados').select('*, examenes(titulo)').eq('estudiante_id', userId);
 
     body.innerHTML = "";
     if (!notas || notas.length === 0) {
-        // CORREGIDO: Uso de comillas simples para evitar el error de sintaxis
         body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas todavía.</td></tr>";
         return;
     }
@@ -168,14 +217,10 @@ async function cargarHistorial(userId) {
 }
 
 async function descargarReporte(resultadoId) {
-    const { data: res } = await window.n
-        .from('resultados')
-        .select('*, examenes(*), estudiantes(*)')
-        .eq('id', resultadoId)
-        .single();
+    const { data: res } = await window.n.from('resultados').select('*, examenes(*), estudiantes(*)')
+        .eq('id', resultadoId).single();
 
     if (!res) return;
-
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
     docPDF.setFont("helvetica", "bold").setFontSize(9);
