@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <title>Panel Administrador – MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-/* Se mantienen tus estilos originales */
+/* Se mantienen tus estilos originales intactos */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; color: #263238; }
 .header { background: linear-gradient(135deg, #00acc1, #00838f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
@@ -17,7 +18,8 @@ body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #
 .tab-panel { display: none; }
 .tab-panel.activo { display: block; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-.stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #00acc1; }
+.stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #00acc1; transition: 0.3s; }
+.stat-card:hover { transform: translateY(-5px); }
 .stat-valor { font-size: 1.8rem; font-weight: 800; color: #00838f; }
 .tabla-wrapper { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 table { width: 100%; border-collapse: collapse; }
@@ -36,47 +38,58 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 
 <div class="header">
   <div class="header-info">
+    <i class="fas fa-user-shield" style="font-size: 1.5rem;"></i>
     <div>
       <p style="margin:0; font-size: 0.8rem; opacity: 0.8;">MateEduPro · Control Maestro</p>
       <p style="margin:0; font-weight: bold;">Adm. José Fernández</p>
     </div>
   </div>
-  <button id="btnSalirAdmin" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px; cursor:pointer;">Salir</button>
+  <button id="btnSalirAdmin" style="background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:8px; cursor:pointer;">
+    <i class="fas fa-power-off"></i> Salir
+  </button>
 </div>
 
 <div class="tabs-bar">
-  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)">Usuarios</button>
-  <button class="tab-btn" onclick="cambiarTab('auditoria', this)">Auditoría</button>
-  <button class="tab-btn" onclick="cambiarTab('seguridad', this)">Seguridad</button>
+  <button class="tab-btn activo" onclick="cambiarTab('usuarios', this)"><i class="fas fa-users"></i> Usuarios</button>
+  <button class="tab-btn" onclick="cambiarTab('auditoria', this)"><i class="fas fa-clipboard-list"></i> Auditoría</button>
+  <button class="tab-btn" onclick="cambiarTab('seguridad', this)"><i class="fas fa-lock"></i> Seguridad</button>
 </div>
 
 <div class="contenedor">
   <div class="tab-panel activo" id="tab-usuarios">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-valor" id="statEst">0</div><div class="stat-label">Alumnos</div></div>
-      <div class="stat-card" style="border-left-color: #4db6ac;"><div class="stat-valor" id="statProf">0</div><div class="stat-label">Docentes</div></div>
+      <div class="stat-card">
+        <i class="fas fa-user-graduate" style="color:#00acc1"></i>
+        <div class="stat-valor" id="statEst">0</div>
+        <div class="stat-label">Alumnos</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #4db6ac;">
+        <i class="fas fa-chalkboard-teacher" style="color:#4db6ac"></i>
+        <div class="stat-valor" id="statProf">0</div>
+        <div class="stat-label">Docentes</div>
+      </div>
     </div>
 
     <div style="display:flex; gap:10px; margin-bottom:15px;">
-      <input type="text" id="busqueda" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ccc;" placeholder="Buscar usuario..." onkeyup="filtrarUsuarios()">
+      <input type="text" id="busqueda" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ccc;" placeholder="🔍 Buscar por nombre o email..." onkeyup="filtrarUsuarios()">
     </div>
 
     <div class="tabla-wrapper">
       <table>
         <thead><tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead>
         <tbody id="tablaUsuariosBody">
-            <tr><td colspan="3" style="text-align:center;">Cargando usuarios...</td></tr>
+            <tr><td colspan="3" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <div class="tab-panel" id="tab-auditoria">
-    <div class="stat-card"><h3>Próximamente</h3><p>Registro de actividades del sistema.</p></div>
+    <div class="stat-card"><h3><i class="fas fa-tools"></i> Próximamente</h3><p>Registro de actividades del sistema.</p></div>
   </div>
 
   <div class="tab-panel" id="tab-seguridad">
-    <div class="stat-card"><h3>Seguridad</h3><p>Gestión de respaldos y llaves API.</p></div>
+    <div class="stat-card"><h3><i class="fas fa-shield-alt"></i> Seguridad</h3><p>Gestión de respaldos y llaves API.</p></div>
   </div>
 </div>
 
@@ -91,7 +104,6 @@ td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
 </script>
 
 <script>
-// Función para cambiar pestañas
 window.cambiarTab = (id, btn) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('activo'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
@@ -105,68 +117,67 @@ function mostrarToast(msg) {
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
-// Cargar Usuarios desde Supabase
+// CORREGIDO: Cargar de ambas tablas
 async function cargarUsuarios() {
-    const { data: usuarios, error } = await window.supabaseClient
-        .from('usuarios')
-        .select('*')
-        .order('nombres', { ascending: true });
+    try {
+        // Obtenemos profesores y estudiantes por separado
+        const { data: profes } = await window.n.from('profesores').select('*');
+        const { data: estu } = await window.n.from('estudiantes').select('*');
 
-    if (error) {
-        console.error(error);
-        return;
+        const tabla = document.getElementById("tablaUsuariosBody");
+        tabla.innerHTML = "";
+
+        let cEst = (estu || []).length; 
+        let cProf = (profes || []).length;
+
+        // Combinar ambas listas para la tabla
+        const todos = [
+            ...(profes || []).map(p => ({...p, tipo: 'profesores', displayRol: p.rol || 'profesor'})),
+            ...(estu || []).map(e => ({...e, nombres: e.nombres_completos, apellidos: e.apellido_completo, tipo: 'estudiantes', displayRol: 'estudiante'}))
+        ];
+
+        todos.forEach(u => {
+            tabla.innerHTML += `
+            <tr>
+              <td>
+                <div style="font-weight:700;">${u.nombres || ''} ${u.apellidos || ''}</div>
+                <div style="font-size:0.7rem; color:#90a4ae;"><i class="fas fa-envelope"></i> ${u.email || 'Sin correo'}</div>
+              </td>
+              <td><span class="badge-rol ${u.displayRol}">${u.displayRol}</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn-editar" onclick="editarNombre('${u.id}', '${u.nombres}', '${u.apellidos}', '${u.tipo}')"><i class="fas fa-edit"></i></button>
+                  <button class="btn-danger" onclick="eliminarUsuario('${u.id}', '${u.tipo}')"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>`;
+        });
+
+        document.getElementById("statEst").innerText = cEst;
+        document.getElementById("statProf").innerText = cProf;
+    } catch (e) {
+        mostrarToast("Error cargando datos");
     }
-
-    const tabla = document.getElementById("tablaUsuariosBody");
-    tabla.innerHTML = "";
-    
-    let cEst = 0; let cProf = 0;
-
-    usuarios.forEach(u => {
-        if (u.rol === "estudiante") cEst++;
-        if (u.rol === "profesor") cProf++;
-
-        tabla.innerHTML += `
-        <tr>
-          <td>
-            <div style="font-weight:700;">${u.nombres} ${u.apellidos}</div>
-            <div style="font-size:0.7rem; color:#90a4ae;">${u.email}</div>
-          </td>
-          <td><span class="badge-rol ${u.rol}">${u.rol}</span></td>
-          <td>
-            <div style="display:flex; gap:5px;">
-              <button class="btn-editar" onclick="editarNombre('${u.id}', '${u.nombres}', '${u.apellidos}')">✏️</button>
-              <button class="btn-danger" onclick="eliminarUsuario('${u.id}')">🗑️</button>
-            </div>
-          </td>
-        </tr>`;
-    });
-
-    document.getElementById("statEst").innerText = cEst;
-    document.getElementById("statProf").innerText = cProf;
 }
 
-window.editarNombre = async (id, actualN, actualA) => {
+window.editarNombre = async (id, actualN, actualA, tabla) => {
     const n = prompt("Nuevos Nombres:", actualN);
     const a = prompt("Nuevos Apellidos:", actualA);
-    if (n && a) {
-        const { error } = await window.supabaseClient
-            .from('usuarios')
-            .update({ nombres: n, apellidos: a })
-            .eq('id', id);
-        
-        if (!error) { mostrarToast("✅ Usuario actualizado"); cargarUsuarios(); }
+    if (n !== null && a !== null) {
+        // Ajuste de nombres de columna según la tabla
+        const updateData = tabla === 'estudiantes' 
+            ? { nombres_completos: n, apellido_completo: a } 
+            : { nombres: n, apellidos: a };
+
+        const { error } = await window.n.from(tabla).update(updateData).eq('id', id);
+        if (!error) { mostrarToast("✅ Actualizado"); cargarUsuarios(); }
     }
 };
 
-window.eliminarUsuario = async (id) => {
-    if (confirm("¿Seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.")) {
-        const { error } = await window.supabaseClient
-            .from('usuarios')
-            .delete()
-            .eq('id', id);
-        
-        if (!error) { mostrarToast("🗑️ Usuario eliminado"); cargarUsuarios(); }
+window.eliminarUsuario = async (id, tabla) => {
+    if (confirm("¿Seguro que deseas eliminar este usuario?")) {
+        const { error } = await window.n.from(tabla).delete().eq('id', id);
+        if (!error) { mostrarToast("🗑️ Eliminado"); cargarUsuarios(); }
     }
 };
 
@@ -179,11 +190,10 @@ window.filtrarUsuarios = () => {
 };
 
 document.getElementById("btnSalirAdmin").onclick = async () => {
-    await window.supabaseClient.auth.signOut();
+    await window.n.auth.signOut();
     window.location.href = "login.html";
 };
 
-// Iniciar carga
 cargarUsuarios();
 </script>
 </body>
