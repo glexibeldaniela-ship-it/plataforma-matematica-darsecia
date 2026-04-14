@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Crear Examen - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
   body { margin: 0; padding: 10px; background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
   .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -21,8 +22,9 @@
   .row { display: flex; gap: 10px; }
   .col { flex: 1; }
   .pregunta-item { background: #f9fdfd; border: 1px solid #c8e6c9; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
-  .btn-eliminar-p { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
   .opcion-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  /* Estilo para el input de archivo */
+  .file-custom { border: 2px dashed #00796b; padding: 10px; text-align: center; cursor: pointer; background: #e0f2f1; }
   @media(max-width: 600px) { .row { flex-direction: column; } }
 </style>
 </head>
@@ -53,6 +55,7 @@
         <select id="seccion">
           <option value="A">Sección A</option>
           <option value="B">Sección B</option>
+          <option value="C">Sección C</option>
           <option value="Ambas">Ambas (A y B)</option>
         </select>
       </div>
@@ -83,18 +86,20 @@
             <input type="number" id="duracion" value="45" min="1">
         </div>
         <div class="campo-grupo col" style="flex: 2;">
-            <label>Material de Apoyo (URL)</label>
-            <input type="text" id="repaso" placeholder="Enlace a PDF o Video">
+            <label>Material de Repaso (PDF Obligatorio)</label>
+            <input type="file" id="archivoPDF" accept=".pdf" class="file-custom">
+            <small id="statusCarga" style="color: #00796b; font-weight: bold;"></small>
         </div>
     </div>
   </div>
 
   <div class="seccion-card">
     <div class="seccion-titulo">❓ Contenido de la Evaluación</div>
-    <div id="contenedorPreguntas"></div>
-    <button class="btn-accion btn-agregar" id="btnAgregar">➕ Agregar Nueva Pregunta</button>
+    <div id="contenedorPreguntas">
+        </div>
+    <button class="btn-accion btn-agregar" id="btnAgregar" onclick="agregarPregunta()">➕ Agregar Nueva Pregunta</button>
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-    <button class="btn-accion btn-guardar" id="btnGuardar">💾 Guardar y Publicar Examen</button>
+    <button class="btn-accion btn-guardar" id="btnGuardar" onclick="guardarExamenCompleto()">💾 Guardar y Publicar Examen</button>
     <button class="btn-accion btn-volver" onclick="window.location.href='panel-profesor.html'">⬅️ Volver al Panel</button>
   </div>
 
@@ -102,13 +107,106 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // Configuración de Supabase
   window.n = supabase.createClient(
     'https://abejdltqyeuslgmmfucx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
   );
-</script>
 
-<script type="module" src="../js/crear-examen.js"></script>
+  let preguntas = [];
+
+  function agregarPregunta() {
+      const id = Date.now();
+      const div = document.createElement('div');
+      div.className = 'pregunta-item';
+      div.id = `preg-${id}`;
+      div.innerHTML = `
+        <input type="text" placeholder="Escribe la pregunta aquí..." class="preg-texto" style="margin-bottom:10px;">
+        <div class="opciones-contenedor">
+            <div class="opcion-fila"><input type="radio" name="correcta-${id}" value="0"> <input type="text" placeholder="Opción 1" class="opc-text"></div>
+            <div class="opcion-fila"><input type="radio" name="correcta-${id}" value="1"> <input type="text" placeholder="Opción 2" class="opc-text"></div>
+            <div class="opcion-fila"><input type="radio" name="correcta-${id}" value="2"> <input type="text" placeholder="Opción 3" class="opc-text"></div>
+        </div>
+        <button class="btn-eliminar-p" onclick="document.getElementById('preg-${id}').remove()">Eliminar</button>
+      `;
+      document.getElementById('contenedorPreguntas').appendChild(div);
+  }
+
+  async function guardarExamenCompleto() {
+      const btn = document.getElementById('btnGuardar');
+      const status = document.getElementById('statusCarga');
+      const fileInput = document.getElementById('archivoPDF');
+      let urlPublica = "";
+
+      try {
+          btn.disabled = true;
+          btn.innerText = "⏳ Procesando...";
+
+          // 1. SUBIR PDF AL STORAGE (si el profesor seleccionó uno)
+          if (fileInput.files.length > 0) {
+              status.innerText = "Subiendo PDF...";
+              const archivo = fileInput.files[0];
+              const nombreArchivo = `${Date.now()}_${archivo.name}`;
+              
+              const { data, error: uploadError } = await window.n.storage
+                  .from('repasos')
+                  .upload(nombreArchivo, archivo);
+
+              if (uploadError) throw uploadError;
+
+              // Obtener URL Pública
+              const { data: urlData } = window.n.storage
+                  .from('repasos')
+                  .getPublicUrl(nombreArchivo);
+              
+              urlPublica = urlData.publicUrl;
+          }
+
+          // 2. RECOLECTAR PREGUNTAS
+          const items = document.querySelectorAll('.pregunta-item');
+          let listaPreguntas = [];
+          items.forEach(item => {
+              const texto = item.querySelector('.preg-texto').value;
+              const opciones = Array.from(item.querySelectorAll('.opc-text')).map(i => i.value);
+              const correcta = item.querySelector('input[type="radio"]:checked')?.value;
+              if(texto && correcta !== undefined) {
+                  listaPreguntas.push({ pregunta: texto, opciones, respuesta_correcta: parseInt(correcta) });
+              }
+          });
+
+          // 3. GUARDAR EN LA TABLA EXAMENES
+          const { data: examenInsertado, error: dbError } = await window.n
+              .from('examenes')
+              .insert([{
+                  titulo: document.getElementById('titulo').value,
+                  descripcion: document.getElementById('descripcion').value,
+                  anio: document.getElementById('anio').value,
+                  seccion: document.getElementById('seccion').value,
+                  lapso: document.getElementById('lapso').value,
+                  duracion: parseInt(document.getElementById('duracion').value),
+                  url_repaso: urlPublica, // Aquí se guarda el enlace del Storage
+                  preguntas: listaPreguntas,
+                  activo: true
+              }])
+              .select();
+
+          if (dbError) throw dbError;
+
+          alert("¡Examen publicado con éxito!");
+          window.location.href = 'panel-profesor.html';
+
+      } catch (err) {
+          console.error(err);
+          alert("Error: " + err.message);
+      } finally {
+          btn.disabled = false;
+          btn.innerText = "💾 Guardar y Publicar Examen";
+      }
+  }
+
+  // Agregar una pregunta inicial por defecto
+  agregarPregunta();
+</script>
 
 </body>
 </html>
