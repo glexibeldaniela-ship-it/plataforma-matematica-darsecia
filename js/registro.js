@@ -66,13 +66,13 @@ async function registrar() {
             .from('estudiantes')
             .insert([{
                 id: authData.user.id,
-                nombres_completos: nombres, // <-- CAMBIO 1: Antes decía 'nombres'
-                apellido_completo: apellidos, // <-- CAMBIO 2: Antes decía 'apellido_completo' pero enviaba 'apellidos'
+                nombres_completos: nombres,
+                apellido_completo: apellidos,
                 cedula: cedula,
                 email: email,
                 fecha_nacimiento: fechaNacimiento,
-                usuario: email,
-                anio: anio, // <-- CAMBIO 3: Quitamos la 'ñ' porque en tu video sale 'anio'
+                // SE ELIMINÓ LA LÍNEA 'usuario' PORQUE NO EXISTE EN TU TABLA
+                anio: anio, 
                 seccion: seccion,
                 lapso: lapso,
                 created_at: new Date()
