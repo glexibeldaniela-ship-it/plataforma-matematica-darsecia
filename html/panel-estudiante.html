@@ -189,7 +189,7 @@ async function descargarReporte(resultadoId) {
     docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
     docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
     docPDF.line(70, 100, 140, 100);
-    docPDF.setFont("helvetica", "bold").text("JOSE FERNANDEZ", 105, 105, { align: "center" });
+    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
     docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
     docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
 }
