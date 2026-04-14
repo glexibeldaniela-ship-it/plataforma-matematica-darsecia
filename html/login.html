@@ -5,139 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login · MateEduPro</title>
 
-    <!-- CSS unificado (carpeta) -->
     <link rel="stylesheet" href="../css/estilo.css">
 
     <style>
-        .contenedor-login {
-            animation: aparecer 0.7s ease;
-        }
-
-        @keyframes aparecer {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .container-login {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-
-        .input-grupo {
-            margin-bottom: 15px;
-        }
-
-        .input-grupo input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .btn-primario {
-            width: 100%;
-            background: #00838f;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primario:hover {
-            background: #006f73;
-        }
-
-        .btn-primario:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .link-olvide {
-            display: block;
-            text-align: center;
-            margin-top: 14px;
-            font-size: 0.82rem;
-            color: #00838f;
-            cursor: pointer;
-            text-decoration: underline;
-            font-weight: 600;
-        }
-
-        .recuperar-seccion {
-            display: none;
-            margin-top: 14px;
-            background: rgba(224, 247, 250, 0.7);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 14px 16px;
-            border: 1px solid rgba(0, 131, 143, 0.3);
-            animation: aparecer 0.3s ease;
-        }
-
+        .contenedor-login { animation: aparecer 0.7s ease; }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .container-login { max-width: 400px; margin: 50px auto; padding: 20px; }
+        .input-grupo { margin-bottom: 15px; }
+        .input-grupo input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-primario { width: 100%; background: #00838f; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-primario:hover { background: #006f73; }
+        .btn-primario:disabled { background: #ccc; cursor: not-allowed; }
+        .link-olvide { display: block; text-align: center; margin-top: 14px; font-size: 0.82rem; color: #00838f; cursor: pointer; text-decoration: underline; font-weight: 600; }
+        .recuperar-seccion { display: none; margin-top: 14px; background: rgba(224, 247, 250, 0.7); backdrop-filter: blur(5px); border-radius: 20px; padding: 14px 16px; border: 1px solid rgba(0, 131, 143, 0.3); animation: aparecer 0.3s ease; }
         .recuperar-seccion.visible { display: block; }
-
-        .recuperar-seccion p {
-            font-size: 0.78rem;
-            color: #01579b;
-            margin: 0 0 10px;
-            text-align: center;
-        }
-
-        .recuperar-seccion input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            box-sizing: border-box;
-        }
-
-        .msg-recuperar {
-            font-size: 0.78rem;
-            text-align: center;
-            margin-top: 9px;
-            font-weight: 600;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .recuperar-seccion p { font-size: 0.78rem; color: #01579b; margin: 0 0 10px; text-align: center; }
+        .recuperar-seccion input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
+        .msg-recuperar { font-size: 0.78rem; text-align: center; margin-top: 9px; font-weight: 600; }
+        .loading-spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 
 <body class="pantalla-login">
 
 <div class="contenedor-login">
-
     <h2>📚 Iniciar Sesión</h2>
-
     <div class="input-grupo">
         <input type="email" id="email" placeholder="Correo electrónico">
     </div>
-
     <div class="input-grupo">
         <input type="password" id="password" placeholder="Contraseña">
     </div>
-
     <button id="btnLogin" class="btn-primario">Entrar</button>
-
     <span class="link-olvide" onclick="toggleRecuperar()">¿Olvidaste tu contraseña?</span>
 
     <div class="recuperar-seccion" id="recuperarSeccion">
@@ -146,16 +46,13 @@
         <button class="btn-primario" onclick="enviarRecuperacion()" style="padding: 12px;">Enviar enlace</button>
         <p class="msg-recuperar" id="msgRecuperar"></p>
     </div>
-
 </div>
 
 <script type="module">
-    // IMPORTAR SUPABASE
     import { supabase } from '../js/supabase.js';
 
     const btnLogin = document.getElementById('btnLogin');
 
-    // LOGIN PRINCIPAL
     btnLogin.addEventListener('click', async () => {
         const email = document.getElementById('email').value.trim();
         const pass = document.getElementById('password').value.trim();
@@ -169,7 +66,7 @@
         btnLogin.disabled = true;
 
         try {
-            // 1. Autenticar con Supabase Auth
+            // 1. Autenticar en Supabase Auth
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: pass
@@ -177,40 +74,35 @@
 
             if (authError) throw authError;
 
-            const user = authData.user;
+            // 2. BUSCAR EN TABLA ESTUDIANTES
+            const { data: estudiante, error: estError } = await supabase
+                .from('estudiantes')
+                .select('email')
+                .eq('email', email)
+                .single();
 
-            // 2. Buscar el rol del usuario en la tabla 'usuarios'
-            const { data: perfil, error: perfilError } = await supabase
-                .from('usuarios')
+            if (estudiante) {
+                window.location.href = "panel-estudiante.html";
+                return; // Cortamos aquí si es estudiante
+            }
+
+            // 3. SI NO ES ESTUDIANTE, BUSCAR EN TABLA PROFESORES
+            const { data: profe, error: profeError } = await supabase
+                .from('profesores')
                 .select('rol')
                 .eq('email', email)
                 .single();
 
-            if (perfilError || !perfil) {
-                // Si no está en 'usuarios', buscar en 'estudiantes'
-                const { data: estudiante, error: estError } = await supabase
-                    .from('estudiantes')
-                    .select('*')
-                    .eq('email', email)
-                    .single();
-
-                if (estError || !estudiante) {
-                    throw new Error("Usuario no encontrado. Verifica tu email o contraseña.");
-                }
-
-                // ✅ Ruta relativa (sin ../) como en el primer código
-                window.location.href = "panel-estudiante.html";
-            } else {
-                // Tiene rol en la tabla usuarios (admin o profesor)
-                const rol = perfil.rol.toLowerCase();
-
-                if (rol === "administrador") {
+            if (profe) {
+                const rol = profe.rol.toLowerCase();
+                // Redirigir según el rol escrito en la tabla profesores
+                if (rol === "admin" || rol === "administrador") {
                     window.location.href = "panel-admin.html";
-                } else if (rol === "profesor") {
-                    window.location.href = "panel-profesor.html";
                 } else {
-                    window.location.href = "panel-estudiante.html";
+                    window.location.href = "panel-profesor.html";
                 }
+            } else {
+                throw new Error("Usuario no encontrado en los registros escolares.");
             }
 
         } catch (err) {
