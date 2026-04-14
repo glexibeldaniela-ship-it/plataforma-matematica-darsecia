@@ -5,42 +5,47 @@
 <title>Panel Estudiante - MateEduPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="../css/estilo.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
     .header { background: linear-gradient(135deg, #00796b, #004d40); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .contenedor { padding: 20px; max-width: 800px; margin: 0 auto; }
-    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #ff9800; }
+    .perfil-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #ff9800; display: flex; align-items: center; gap: 15px; }
+    .perfil-card i { font-size: 2rem; color: #00796b; }
     .seccion-titulo { color: #00796b; border-bottom: 2px solid #00bcd4; padding-bottom: 5px; margin: 20px 0; font-weight: bold; display: flex; align-items: center; gap: 8px; }
     .examen-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 5px solid #00bcd4; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
     th { background: #00796b; color: white; padding: 12px; text-align: left; font-size: 0.9rem; }
     td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    .btn-pdf-examen { background: #00796b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; }
-    .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-ver { background: #0288d1; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 12px; }
+    .btn-pdf-examen { background: #e53935; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+    .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .btn-ver { background: #0288d1; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <h2 style="margin:0">MateEduPro 🎓</h2>
+    <h2 style="margin:0"><i class="fas fa-calculator"></i> MateEduPro 🎓</h2>
     <small>Panel Estudiante</small>
   </div>
-  <button id="btnSalir" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salir</button>
+  <button id="btnSalir" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">
+    <i class="fas fa-sign-out-alt"></i> Salir
+  </button>
 </div>
 
 <div class="contenedor">
   <div id="datosPersonales" class="perfil-card">
-      <p>Cargando perfil...</p>
+      <i class="fas fa-user-circle"></i>
+      <div><p>Cargando perfil...</p></div>
   </div>
 
-  <div class="seccion-titulo">📋 Exámenes Disponibles</div>
+  <div class="seccion-titulo"><i class="fas fa-file-alt"></i> Exámenes Disponibles</div>
   <div id="listaExamenes">Buscando evaluaciones...</div>
 
-  <div class="seccion-titulo">📊 Tu Historial de Notas</div>
+  <div class="seccion-titulo"><i class="fas fa-chart-line"></i> Tu Historial de Notas</div>
   <div style="overflow-x:auto;">
     <table>
       <thead>
@@ -65,16 +70,15 @@
   );
 </script>
 
-
 <script>
 let datosUsuario = null;
 
 async function inicializar() {
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    // CORREGIDO: Usando window.n
+    const { data: { session } } = await window.n.auth.getSession();
     if (!session) { window.location.href = "login.html"; return; }
 
-    // CORREGIDO: Buscando en la tabla 'estudiantes'
-    const { data: user, error } = await window.supabaseClient
+    const { data: user, error } = await window.n
         .from('estudiantes')
         .select('*')
         .eq('id', session.user.id)
@@ -82,32 +86,36 @@ async function inicializar() {
 
     if (user) {
         datosUsuario = user;
-        // Uso de nombres de columna corregidos y año con ñ
+        // CORREGIDO: Uso flexible de año/anio para evitar fallos
+        const anioTexto = user.anio || user["año"] || "N/A";
+        
         document.getElementById("datosPersonales").innerHTML =
-            "<b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
-            "C.I: " + (user.cedula || "N/P") + " | " + user["año"] + " | Sección: " + user.seccion;
+            "<i class='fas fa-user-graduate' style='font-size:2rem; color:#00796b;'></i>" +
+            "<div><b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
+            "<span>C.I: " + (user.cedula || "N/P") + " | " + anioTexto + " | Sección: " + user.seccion + "</span></div>";
 
-        cargarExamenes(user["año"], user.seccion, session.user.id);
+        cargarExamenes(anioTexto, user.seccion, session.user.id);
         cargarHistorial(session.user.id);
     } else {
         document.getElementById("datosPersonales").innerHTML =
-            "<b style='color:red;'>No se encontró el perfil del estudiante.</b>";
+            "<b style='color:red;'>No se encontró el perfil del estudiante en la base de datos.</b>";
     }
 }
 
 async function cargarExamenes(anio, seccion, userId) {
     const lista = document.getElementById("listaExamenes");
 
-    const { data: examenes } = await window.supabaseClient
+    const { data: examenes } = await window.n
         .from('examenes')
         .select('*')
         .eq('activo', true)
         .eq('anio', anio);
 
-    const { data: realizados } = await window.supabaseClient
+    // CORREGIDO: La columna correcta es estudiante_id
+    const { data: realizados } = await window.n
         .from('resultados')
         .select('examen_id')
-        .eq('usuario_id', userId);
+        .eq('estudiante_id', userId);
 
     const idsRealizados = (realizados || []).map(function(r) { return r.examen_id; });
 
@@ -117,15 +125,15 @@ async function cargarExamenes(anio, seccion, userId) {
     });
 
     if (filtrados.length === 0) {
-        lista.innerHTML = "<p style='text-align:center; color:#777;'>No tienes exámenes pendientes.</p>";
+        lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No tienes exámenes pendientes.</p>";
         return;
     }
 
     filtrados.forEach(function(ex) {
         lista.innerHTML += "<div class='examen-card'>" +
-            "<div><strong>" + ex.titulo + "</strong><br>" +
-            "<small>Duración: " + ex.duracion + " min</small></div>" +
-            "<button class='btn-iniciar' onclick=\"window.location.href='presentar-examen.html?id=" + ex.id + "'\">Iniciar</button>" +
+            "<div><strong><i class='fas fa-book'></i> " + ex.titulo + "</strong><br>" +
+            "<small><i class='fas fa-clock'></i> Duración: " + ex.duracion + " min</small></div>" +
+            "<button class='btn-iniciar' onclick=\"window.location.href='presentar-examen.html?id=" + ex.id + "'\"><i class='fas fa-play'></i> Iniciar</button>" +
             "</div>";
     });
 }
@@ -133,14 +141,15 @@ async function cargarExamenes(anio, seccion, userId) {
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
 
-    const { data: notas } = await window.supabaseClient
+    // CORREGIDO: La columna correcta es estudiante_id y window.n
+    const { data: notas } = await window.n
         .from('resultados')
         .select('*, examenes(titulo)')
-        .eq('usuario_id', userId);
+        .eq('estudiante_id', userId);
 
     body.innerHTML = "";
     if (!notas || notas.length === 0) {
-        body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas.</td></tr>";
+        body.innerHTML = "<tr><td colspan="3" style="text-align:center;">No hay notas registradas todavía.</td></tr>";
         return;
     }
 
@@ -148,16 +157,16 @@ async function cargarHistorial(userId) {
         const tr = document.createElement("tr");
         tr.innerHTML = "<td>" + (n.examenes ? n.examenes.titulo : 'Examen sin título') + "</td>" +
             "<td><b style='color:#00796b'>" + n.nota + " / 20</b></td>" +
-            "<td>" +
-            "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\">PDF</button>" +
-            "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\">Ver</button>" +
-            "</td>";
+            "<td><div style='display:flex; gap:5px;'>" +
+            "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\"><i class='fas fa-file-pdf'></i> PDF</button>" +
+            "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\"><i class='fas fa-eye'></i> Ver</button>" +
+            "</div></td>";
         body.appendChild(tr);
     });
 }
 
 async function descargarReporte(resultadoId) {
-    const { data: res } = await window.supabaseClient
+    const { data: res } = await window.n
         .from('resultados')
         .select('*, examenes(*), estudiantes(*)')
         .eq('id', resultadoId)
@@ -167,33 +176,28 @@ async function descargarReporte(resultadoId) {
 
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
-
+    // (Mantenemos la lógica de tu PDF igual para no dañar el formato que ya tienes)
     docPDF.setFont("helvetica", "bold").setFontSize(9);
     docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
     docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
     docPDF.line(20, 20, 190, 20);
-
     docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACION", 105, 30, { align: "center" });
-
     docPDF.setFont("helvetica", "normal").setFontSize(10);
-    docPDF.text("ESTUDIANTE: " + res.estudiantes.nombres_completos + " " + res.estudiantes.apellido_completo, 20, 45);
+    docPDF.text("ESTUDIANTE: " + (res.estudiantes.nombres_completos || "") + " " + (res.estudiantes.apellido_completo || ""), 20, 45);
     docPDF.text("CEDULA: " + (res.estudiantes.cedula || "N/P"), 20, 52);
     docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
     docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
-
     docPDF.line(70, 100, 140, 100);
     docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
     docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
-
     docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
 }
 
 document.getElementById("btnSalir").onclick = async function() {
-    await window.supabaseClient.auth.signOut();
+    await window.n.auth.signOut();
     window.location.href = "login.html";
 };
 
-// Iniciar proceso
 inicializar();
 </script>
 </body>
