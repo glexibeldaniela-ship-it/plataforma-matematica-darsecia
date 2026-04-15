@@ -17,7 +17,7 @@
   .opcion-label { display: block; background: #f9f9f9; padding: 12px 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
   .opcion-label:hover { background: #e0f2f1; border-color: #00796b; }
   input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-  input[type="text"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
+  input[type="text"], input[type="number"] { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; }
   #btnEnviar { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 18px; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,188,212,0.3); }
 </style>
 </head>
@@ -39,12 +39,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // Tu conexión establecida como window.n
   window.n = supabase.createClient(
     'https://abejdltqyeuslgmmfucx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
   );
 </script>
-
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -60,18 +60,18 @@ let intervaloTimer = null;
 let examenEnviado = false;
 
 async function iniciar() {
-    // 1. Verificar Sesión
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    // CORRECCIÓN: Usar window.n en lugar de supabaseClient
+    const { data: { session } } = await window.n.auth.getSession();
     if (!session) { window.location.href = "login.html"; return; }
     usuarioActual = session.user;
 
-    // 2. Verificar si ya lo presentó
-    const { data: yaHizo } = await window.supabaseClient
+    // Verificar si ya lo presentó usando la columna estudiante_id
+    const { data: yaHizo } = await window.n
         .from('resultados')
         .select('id')
         .eq('examen_id', examenId)
-        .eq('usuario_id', usuarioActual.id)
-        .maybeSingle(); // Usamos maybeSingle para evitar errores si no hay registros
+        .eq('estudiante_id', usuarioActual.id)
+        .maybeSingle();
 
     if (yaHizo) {
         alert("Ya has presentado esta evaluación.");
@@ -83,7 +83,7 @@ async function iniciar() {
 }
 
 async function cargarExamen() {
-    const { data: ex, error } = await window.supabaseClient
+    const { data: ex, error } = await window.n
         .from('examenes')
         .select('*')
         .eq('id', examenId)
@@ -108,15 +108,13 @@ async function cargarExamen() {
 function renderizarPreguntas(preguntas) {
     preguntasDiv.innerHTML = "";
     preguntas.forEach((p, index) => {
-        let htmlP = `
-        <div class="pregunta-card" data-id="${index}">
+        let htmlP = `<div class="pregunta-card" data-id="${index}">
             <h4>Pregunta ${index + 1}</h4>
             <p>${p.enunciado}</p>`;
 
         if (p.tipo === "opcion_multiple") {
-            p.opciones.forEach((op, i) => {
-                htmlP += `
-                <label class="opcion-label">
+            p.opciones.forEach((op) => {
+                htmlP += `<label class="opcion-label">
                     <input type="radio" name="preg_${index}" value="${op.texto}"> ${op.texto}
                 </label>`;
             });
@@ -124,10 +122,9 @@ function renderizarPreguntas(preguntas) {
             htmlP += `
                 <label class="opcion-label"><input type="radio" name="preg_${index}" value="verdadero"> Verdadero</label>
                 <label class="opcion-label"><input type="radio" name="preg_${index}" value="falso"> Falso</label>`;
-        } else if (p.tipo === "numerica") {
-            htmlP += `<input type="number" name="preg_${index}" step="any" placeholder="Escribe tu respuesta numérica aquí...">`;
         } else {
-            htmlP += `<input type="text" name="preg_${index}" placeholder="Escribe tu respuesta aquí...">`;
+            const inputType = p.tipo === "numerica" ? "number" : "text";
+            htmlP += `<input type="${inputType}" name="preg_${index}" placeholder="Escribe tu respuesta aquí...">`;
         }
         preguntasDiv.innerHTML += htmlP + "</div>";
     });
@@ -136,14 +133,12 @@ function renderizarPreguntas(preguntas) {
 function iniciarTemporizador(minutos) {
     const storageKey = `timer_${examenId}_${usuarioActual.id}`;
     let inicio = localStorage.getItem(storageKey);
-
     if (!inicio) {
         inicio = Date.now();
         localStorage.setItem(storageKey, inicio);
     }
 
     const tiempoMaximo = minutos * 60 * 1000;
-
     intervaloTimer = setInterval(() => {
         const transcurrido = Date.now() - inicio;
         const restante = tiempoMaximo - transcurrido;
@@ -174,55 +169,55 @@ async function enviarExamen(automatico = false) {
 
     preguntas.forEach((p, index) => {
         const radio = document.querySelector(`input[name="preg_${index}"]:checked`);
-        const texto = document.querySelector(`input[name="preg_${index}"][type="text"], input[name="preg_${index}"][type="number"]`);
-        
-        let respuesta = radio ? radio.value : (texto ? texto.value.trim() : "Sin responder");
+        const inputOpen = document.querySelector(`input[name="preg_${index}"][type="text"], input[name="preg_${index}"][type="number"]`);
+
+        let respuesta = radio ? radio.value : (inputOpen ? inputOpen.value.trim() : "Sin responder");
         let esCorrecta = false;
 
         if (p.tipo === "opcion_multiple") {
             const correcta = p.opciones.find(o => o.correcta);
             if (correcta && respuesta === correcta.texto) esCorrecta = true;
         } else {
-            // Comparación para V/F y Numérica
-            if (respuesta.toLowerCase() === String(p.respuestaCorrecta).toLowerCase()) esCorrecta = true;
+            if (respuesta.toLowerCase() === String(p.respuestaCorrecta || "").toLowerCase()) esCorrecta = true;
         }
 
         if (esCorrecta) puntos++;
 
+        // Guardamos el detalle para el PDF futuro
         respuestasEstudiante.push({
-            enunciado: p.enunciado,
-            respuesta_estudiante: respuesta,
-            resultado: esCorrecta ? "Correcta" : "Incorrecta"
+            pregunta: p.enunciado,
+            marcada: respuesta,
+            correcta: p.tipo === "opcion_multiple" ? p.opciones.find(o => o.correcta).texto : p.respuestaCorrecta,
+            esCorrecta: esCorrecta
         });
     });
 
-    // Nota basada en base 20 (Venezuela)
     const notaFinal = parseFloat(((puntos / preguntas.length) * 20).toFixed(2));
 
     try {
-        const { error } = await window.supabaseClient
+        // CORRECCIÓN: Nombres de columnas según tu video de Supabase
+        const { error } = await window.n
             .from('resultados')
             .insert({
                 examen_id: examenId,
-                usuario_id: usuarioActual.id,
+                estudiante_id: usuarioActual.id, // Antes era usuario_id
                 nota: notaFinal,
-                respuestas_detalle: respuestasEstudiante,
-                grado: examenData.anio,
+                respuestas_detalladas: respuestasEstudiante, // El JSON con todo el examen
+                anio: examenData.anio, // Antes era grado
                 seccion: examenData.seccion
             });
 
         if (error) throw error;
 
         alert("¡Examen enviado! Tu nota es: " + notaFinal + " / 20");
-        window.location.href = `panel-estudiante.html`;
+        window.location.href = `resultados.html?id=${examenId}`;
     } catch (e) {
-        console.error(e);
-        alert("Error al guardar. Tu nota calculada fue: " + notaFinal);
+        alert("Error al guardar: " + e.message);
     }
 }
 
 btnEnviar.onclick = () => {
-    if (confirm("¿Seguro que quieres finalizar el examen?")) enviarExamen();
+    if (confirm("¿Seguro que quieres finalizar?")) enviarExamen();
 };
 
 window.onbeforeunload = () => {
