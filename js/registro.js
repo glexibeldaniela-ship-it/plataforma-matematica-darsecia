@@ -31,9 +31,9 @@ async function registrar() {
         return;
     }
 
-    // CONVERSIÓN CRÍTICA: Extraemos solo el número (ej: de "1er Año" sacamos el 1)
-    // Esto es para que la columna 'integer' de tu base de datos no dé error.
-    const anioNumerico = parseInt(anioTexto);
+    // SOLUCIÓN DEFINITIVA: Ya no convertimos a número. 
+    // Guardamos el texto completo para que coincida con la tabla de examenes.
+    // (Borramos la línea del anioNumerico)
 
     try {
         // 1. Verificar disponibilidad de la cédula
@@ -75,8 +75,8 @@ async function registrar() {
                 cedula: cedula,
                 email: email,
                 fecha_nacimiento: fechaNacimiento,
-                // USAMOS EL NÚMERO CONVERTIDO PARA QUE LA TABLA LO ACEPTE
-                anio: anioNumerico, 
+                // AHORA GUARDAMOS EL TEXTO COMPLETO (Ej: "1er Año")
+                anio: anioTexto, 
                 seccion: seccion,
                 lapso: lapso,
                 created_at: new Date()
