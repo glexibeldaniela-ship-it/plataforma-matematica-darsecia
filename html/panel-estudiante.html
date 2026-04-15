@@ -119,56 +119,62 @@ let urlExamenPendiente = "";
 async function inicializar() {
     try {
         const { data: { session }, error: sessionError } = await window.n.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session) { window.location.href = "login.html"; return; }
+        if (sessionError || !session) { window.location.href = "login.html"; return; }
 
         const { data: user, error: userError } = await window.n.from('estudiantes').select('*').eq('id', session.user.id).single();
         if (userError) throw userError;
 
         if (user) {
             datosUsuario = user;
-            const anioTexto = user.anio || "N/A";
             document.getElementById("datosPersonales").innerHTML =
                 "<i class='fas fa-user-graduate' style='font-size:2rem; color:#00796b;'></i>" +
                 "<div><b>" + user.nombres_completos + " " + user.apellido_completo + "</b><br>" +
-                "<span>C.I: " + (user.cedula || "N/P") + " | " + anioTexto + " | Sección: " + user.seccion + "</span></div>";
+                "<span>C.I: " + (user.cedula || "N/P") + " | " + user.anio + " | Sección: " + user.seccion + "</span></div>";
 
-            cargarExamenes(anioTexto, user.seccion, session.user.id);
+            cargarExamenes(user.anio, user.seccion, session.user.id);
             cargarHistorial(session.user.id);
         }
     } catch (err) { 
-        document.getElementById("datosPersonales").innerHTML = `<p style="color:red;">⚠️ Error de sesión: ${err.message}</p>`;
+        document.getElementById("datosPersonales").innerHTML = `<p style="color:red;">⚠️ Error: ${err.message}</p>`;
     }
 }
 
-async function cargarExamenes(anio, seccion, userId) {
+async function cargarExamenes(anioEstudiante, seccionEstudiante, userId) {
     const lista = document.getElementById("listaExamenes");
     try {
-        const { data: examenes, error: errEx } = await window.n.from('examenes').select('*').eq('activo', true).eq('anio', anio);
+        // Traemos TODOS los exámenes activos
+        const { data: examenes, error: errEx } = await window.n.from('examenes').select('*').eq('activo', true);
         if (errEx) throw errEx;
 
-        // Cambiamos 'id' por 'estudiante_id' para buscar correctamente en la tabla de resultados
+        // Traemos lo que ya realizó
         const { data: realizados } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
-
         const idsRealizados = (realizados || []).map(r => r.examen_id);
+
         lista.innerHTML = "";
 
-        const filtrados = (examenes || []).filter(ex => (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id));
+        // FILTRO INTELIGENTE: Ignora mayúsculas/minúsculas y espacios
+        const filtrados = (examenes || []).filter(ex => {
+            const mismoAnio = ex.anio.trim().toLowerCase() === anioEstudiante.trim().toLowerCase();
+            const mismaSeccion = ex.seccion === "Ambas" || ex.seccion.trim().toLowerCase() === seccionEstudiante.trim().toLowerCase();
+            const noRealizado = !idsRealizados.includes(ex.id);
+            return mismoAnio && mismaSeccion && noRealizado;
+        });
 
         if (filtrados.length === 0) {
-            lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No tienes exámenes pendientes.</p>";
+            lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No hay exámenes para tu año/sección o ya los completaste.</p>";
             return;
         }
 
         filtrados.forEach(ex => {
-            lista.innerHTML += "<div class='examen-card'>" +
-                "<div><strong><i class='fas fa-book'></i> " + ex.titulo + "</strong><br>" +
-                "<small><i class='fas fa-clock'></i> Duración: " + ex.duracion + " min</small></div>" +
-                "<button class='btn-iniciar' onclick=\"gestionarInicio('" + ex.id + "', '" + (ex.url_repaso || "") + "')\"><i class='fas fa-play'></i> Iniciar</button>" +
-                "</div>";
+            lista.innerHTML += `
+                <div class='examen-card'>
+                    <div><strong><i class='fas fa-book'></i> ${ex.titulo}</strong><br>
+                    <small><i class='fas fa-clock'></i> Duración: ${ex.duracion} min</small></div>
+                    <button class='btn-iniciar' onclick="gestionarInicio('${ex.id}', '${ex.url_repaso || ""}')"><i class='fas fa-play'></i> Iniciar</button>
+                </div>`;
         });
     } catch (err) {
-        lista.innerHTML = `<p style="color:red;">⚠️ Error al cargar exámenes: ${err.message}</p>`;
+        lista.innerHTML = `<p style="color:red;">⚠️ Error: ${err.message}</p>`;
     }
 }
 
@@ -201,25 +207,25 @@ function irAlExamen() {
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
     try {
-        // Cambiamos 'id' por 'estudiante_id' para filtrar el historial del alumno
         const { data: notas, error } = await window.n.from('resultados').select('*, examenes(titulo)').eq('estudiante_id', userId);
         if (error) throw error;
 
         body.innerHTML = "";
         if (!notas || notas.length === 0) {
-            body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas todavía.</td></tr>";
+            body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas.</td></tr>";
             return;
         }
 
-        notas.forEach(function(n) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = "<td>" + (n.examenes ? n.examenes.titulo : 'Examen sin título') + "</td>" +
-                "<td><b style='color:#00796b'>" + n.nota + " / 20</b></td>" +
-                "<td><div style='display:flex; gap:5px;'>" +
-                "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\"><i class='fas fa-file-pdf'></i> PDF</button>" +
-                "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\"><i class='fas fa-eye'></i> Ver</button>" +
-                "</div></td>";
-            body.appendChild(tr);
+        notas.forEach(n => {
+            body.innerHTML += `
+                <tr>
+                    <td>${n.examenes ? n.examenes.titulo : 'Examen'}</td>
+                    <td><b style='color:#00796b'>${n.nota} / 20</b></td>
+                    <td><div style='display:flex; gap:5px;'>
+                        <button class='btn-pdf-examen' onclick="descargarReporte('${n.id}')"><i class='fas fa-file-pdf'></i> PDF</button>
+                        <button class='btn-ver' onclick="window.location.href='resultados.html?id=${n.examen_id}'"><i class='fas fa-eye'></i> Ver</button>
+                    </div></td>
+                </tr>`;
         });
     } catch (err) {
         body.innerHTML = `<tr><td colspan="3" style="color:red; text-align:center;">⚠️ Error: ${err.message}</td></tr>`;
@@ -230,8 +236,7 @@ async function descargarReporte(resultadoId) {
     try {
         const { data: res, error } = await window.n.from('resultados').select('*, examenes(*), estudiantes(*)')
             .eq('id', resultadoId).single();
-        if (error) throw error;
-        if (!res) return;
+        if (error || !res) throw error;
 
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF();
