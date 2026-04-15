@@ -104,19 +104,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Tu conexión original mantenida como window.n
   window.n = supabase.createClient(
     'https://abejdltqyeuslgmmfucx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
   );
-</script>
 
-<script>
     let usuarioActual = null;
-    let estudiantesActuales = [];
 
     async function verificarSesion() {
-        // CORREGIDO: Usamos window.n
         const { data: { session } } = await window.n.auth.getSession();
         if (!session) {
             window.location.href = "login.html";
@@ -138,13 +133,23 @@
 
     window.cargarExamenes = async () => {
         const lista = document.getElementById("listaExamenes");
-        // CORREGIDO: Usamos window.n
         const { data: examenes, error } = await window.n
             .from('examenes')
             .select('*')
             .eq('creado_por', usuarioActual.id);
 
-        if (error) return;
+        // MEJORA DE CODERABBITAI: Mostrar error si falla la carga
+        if (error) {
+            lista.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Error al cargar exámenes: ${error.message}</p>`;
+            console.error("Error en Supabase:", error);
+            return;
+        }
+
+        if (examenes.length === 0) {
+            lista.innerHTML = "<p style='color:#666;'>No tienes exámenes creados todavía.</p>";
+            return;
+        }
+
         lista.innerHTML = "";
         examenes.forEach(ex => {
             lista.innerHTML += `
@@ -167,39 +172,30 @@
         });
     };
 
-    window.toggleEx = async (id, st) => {
-        // CORREGIDO: Usamos window.n
-        await window.n.from('examenes').update({ activo: !st }).eq('id', id);
-        window.cargarExamenes();
-    };
-
-    window.borrarEx = async (id) => {
-        if (confirm("¿Eliminar evaluación?")) {
-            // CORREGIDO: Usamos window.n
-            await window.n.from('examenes').delete().eq('id', id);
-            window.cargarExamenes();
-        }
-    };
-
     window.cargarEstudiantes = async () => {
+        const body = document.getElementById("bodyEstudiantes");
         const anioSel = document.getElementById("fAnio").value;
         const secSel = document.getElementById("fSec").value;
         const busqueda = document.getElementById("busquedaEstudiante").value.toLowerCase();
-        const body = document.getElementById("bodyEstudiantes");
 
-        // CORREGIDO: Usamos window.n
         let query = window.n.from('estudiantes').select('*');
-        // CORREGIDO: Usamos 'anio' en lugar de 'año' si tu DB no tiene la Ñ
         if (anioSel !== 'todos') query = query.eq('anio', anioSel);
         if (secSel !== 'todas') query = query.eq('seccion', secSel);
 
-        const { data: usuarios } = await query;
+        const { data: usuarios, error } = await query;
+
+        // MEJORA DE CODERABBITAI: Mostrar error si falla la tabla de estudiantes
+        if (error) {
+            body.innerHTML = `<tr><td colspan="4" style="color:red;">⚠️ Error: ${error.message}</td></tr>`;
+            return;
+        }
+
         body.innerHTML = "";
-        estudiantesActuales = (usuarios || []).filter(u =>
+        let filtrados = (usuarios || []).filter(u =>
             (u.nombres_completos + " " + (u.apellido_completo || "")).toLowerCase().includes(busqueda)
         );
 
-        estudiantesActuales.forEach(u => {
+        filtrados.forEach(u => {
             body.innerHTML += `
                 <tr>
                     <td><b>${u.nombres_completos} ${u.apellido_completo || ""}</b><br><small>C.I. ${u.cedula || 'N/P'}</small></td>
@@ -210,24 +206,21 @@
         });
     };
 
-    window.eliminarEstudiante = async (id) => {
-        if (confirm("¿Seguro que deseas eliminar a este estudiante?")) {
-            // CORREGIDO: Usamos window.n
-            await window.n.from('estudiantes').delete().eq('id', id);
-            window.cargarEstudiantes();
-        }
-    };
-
     window.cargarNotas = async () => {
         const exId = document.getElementById("filtroExamenNotas").value;
         const body = document.getElementById("bodyNotas");
         if (!exId) return;
 
-        // CORREGIDO: Usamos window.n
-        const { data: notas } = await window.n
+        const { data: notas, error } = await window.n
             .from('resultados')
             .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
             .eq('examen_id', exId);
+
+        // MEJORA DE CODERABBITAI: Error en notas
+        if (error) {
+            body.innerHTML = `<tr><td colspan="5" style="color:red;">⚠️ Error al cargar notas: ${error.message}</td></tr>`;
+            return;
+        }
 
         body.innerHTML = "";
         (notas || []).forEach(n => {
@@ -238,15 +231,34 @@
                     <td>${n.grado} | "${n.seccion}"</td>
                     <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
                     <td>
-                        <button onclick="window.imprimirReporte('${n.id}', '${exId}')" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
+                        <button style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
                     </td>
                 </tr>`;
         });
     };
 
+    // ... Las demás funciones (toggleEx, borrarEx, llenarSelectExamenes, etc.) se mantienen igual ...
+    window.toggleEx = async (id, st) => {
+        await window.n.from('examenes').update({ activo: !st }).eq('id', id);
+        window.cargarExamenes();
+    };
+
+    window.borrarEx = async (id) => {
+        if (confirm("¿Eliminar evaluación?")) {
+            await window.n.from('examenes').delete().eq('id', id);
+            window.cargarExamenes();
+        }
+    };
+
+    window.eliminarEstudiante = async (id) => {
+        if (confirm("¿Seguro que deseas eliminar a este estudiante?")) {
+            await window.n.from('estudiantes').delete().eq('id', id);
+            window.cargarEstudiantes();
+        }
+    };
+
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
-        // CORREGIDO: Usamos window.n
         const { data: examenes } = await window.n.from('examenes').select('id, titulo');
         if (examenes) {
             examenes.forEach(ex => {
@@ -257,7 +269,6 @@
     }
 
     document.getElementById("btnSalir").onclick = async () => {
-        // CORREGIDO: Usamos window.n para cerrar sesión
         await window.n.auth.signOut();
         window.location.href = "login.html";
     };
