@@ -147,7 +147,8 @@ async function cargarExamenes(anio, seccion, userId) {
         const { data: examenes, error: errEx } = await window.n.from('examenes').select('*').eq('activo', true).eq('anio', anio);
         if (errEx) throw errEx;
 
-        const { data: realizados, error: errRes } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
+        // CORRECCIÓN AQUÍ: Cambié 'estudiante_id' por 'id'
+        const { data: realizados, error: errRes } = await window.n.from('resultados').select('examen_id').eq('id', userId);
         if (errRes) throw errRes;
 
         const idsRealizados = (realizados || []).map(r => r.examen_id);
@@ -201,7 +202,8 @@ function irAlExamen() {
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
     try {
-        const { data: notas, error } = await window.n.from('resultados').select('*, examenes(titulo)').eq('estudiante_id', userId);
+        // CORRECCIÓN AQUÍ: Cambié 'estudiante_id' por 'id'
+        const { data: notas, error } = await window.n.from('resultados').select('*, examenes(titulo)').eq('id', userId);
         if (error) throw error;
 
         body.innerHTML = "";
