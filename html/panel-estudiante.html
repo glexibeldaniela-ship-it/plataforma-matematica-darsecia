@@ -23,7 +23,6 @@
     .btn-iniciar { background: #00796b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
     .btn-ver { background: #0288d1; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
 
-    /* Estilos del Modal de Repaso */
     #modalRepaso {
         display: none;
         position: fixed;
@@ -119,10 +118,12 @@ let urlExamenPendiente = "";
 
 async function inicializar() {
     try {
-        const { data: { session } } = await window.n.auth.getSession();
+        const { data: { session }, error: sessionError } = await window.n.auth.getSession();
+        if (sessionError) throw sessionError;
         if (!session) { window.location.href = "login.html"; return; }
 
-        const { data: user } = await window.n.from('estudiantes').select('*').eq('id', session.user.id).single();
+        const { data: user, error: userError } = await window.n.from('estudiantes').select('*').eq('id', session.user.id).single();
+        if (userError) throw userError;
 
         if (user) {
             datosUsuario = user;
@@ -135,49 +136,52 @@ async function inicializar() {
             cargarExamenes(anioTexto, user.seccion, session.user.id);
             cargarHistorial(session.user.id);
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        document.getElementById("datosPersonales").innerHTML = `<p style="color:red;">⚠️ Error de sesión: ${err.message}</p>`;
+    }
 }
 
 async function cargarExamenes(anio, seccion, userId) {
     const lista = document.getElementById("listaExamenes");
-    const { data: examenes } = await window.n.from('examenes').select('*').eq('activo', true).eq('anio', anio);
-    const { data: realizados } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
+    try {
+        const { data: examenes, error: errEx } = await window.n.from('examenes').select('*').eq('activo', true).eq('anio', anio);
+        if (errEx) throw errEx;
 
-    const idsRealizados = (realizados || []).map(r => r.examen_id);
-    lista.innerHTML = "";
+        const { data: realizados, error: errRes } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
+        if (errRes) throw errRes;
 
-    const filtrados = (examenes || []).filter(ex => (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id));
+        const idsRealizados = (realizados || []).map(r => r.examen_id);
+        lista.innerHTML = "";
 
-    if (filtrados.length === 0) {
-        lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No tienes exámenes pendientes.</p>";
-        return;
+        const filtrados = (examenes || []).filter(ex => (ex.seccion === seccion || ex.seccion === "Ambas") && !idsRealizados.includes(ex.id));
+
+        if (filtrados.length === 0) {
+            lista.innerHTML = "<p style='text-align:center; color:#777;'><i class='fas fa-check-circle'></i> No tienes exámenes pendientes.</p>";
+            return;
+        }
+
+        filtrados.forEach(ex => {
+            lista.innerHTML += "<div class='examen-card'>" +
+                "<div><strong><i class='fas fa-book'></i> " + ex.titulo + "</strong><br>" +
+                "<small><i class='fas fa-clock'></i> Duración: " + ex.duracion + " min</small></div>" +
+                "<button class='btn-iniciar' onclick=\"gestionarInicio('" + ex.id + "', '" + (ex.url_repaso || "") + "')\"><i class='fas fa-play'></i> Iniciar</button>" +
+                "</div>";
+        });
+    } catch (err) {
+        lista.innerHTML = `<p style="color:red;">⚠️ Error al cargar exámenes: ${err.message}</p>`;
     }
-
-    filtrados.forEach(ex => {
-        // Se pasa el ID y la URL del repaso a la función gestionadora
-        lista.innerHTML += "<div class='examen-card'>" +
-            "<div><strong><i class='fas fa-book'></i> " + ex.titulo + "</strong><br>" +
-            "<small><i class='fas fa-clock'></i> Duración: " + ex.duracion + " min</small></div>" +
-            "<button class='btn-iniciar' onclick=\"gestionarInicio('" + ex.id + "', '" + (ex.url_repaso || "") + "')\"><i class='fas fa-play'></i> Iniciar</button>" +
-            "</div>";
-    });
 }
 
 function gestionarInicio(id, urlRepaso) {
     if (!urlRepaso || urlRepaso === "" || urlRepaso === "null") {
-        // Si no hay repaso, va directo al examen
         window.location.href = "presentar-examen.html?id=" + id;
     } else {
-        // Si hay repaso, abre el modal
         urlExamenPendiente = "presentar-examen.html?id=" + id;
         document.getElementById("iframeRepaso").src = urlRepaso;
         document.getElementById("modalRepaso").classList.add("activo");
-        
-        // Resetear botones del modal
         document.getElementById("btnComenzarExamen").style.display = "none";
         document.getElementById("cargandoMsj").style.display = "block";
 
-        // Cuando el PDF carga en el iframe
         document.getElementById("iframeRepaso").onload = function() {
             document.getElementById("cargandoMsj").style.display = "none";
             document.getElementById("btnComenzarExamen").style.display = "block";
@@ -196,47 +200,57 @@ function irAlExamen() {
 
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
-    const { data: notas } = await window.n.from('resultados').select('*, examenes(titulo)').eq('estudiante_id', userId);
+    try {
+        const { data: notas, error } = await window.n.from('resultados').select('*, examenes(titulo)').eq('estudiante_id', userId);
+        if (error) throw error;
 
-    body.innerHTML = "";
-    if (!notas || notas.length === 0) {
-        body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas todavía.</td></tr>";
-        return;
+        body.innerHTML = "";
+        if (!notas || notas.length === 0) {
+            body.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay notas registradas todavía.</td></tr>";
+            return;
+        }
+
+        notas.forEach(function(n) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = "<td>" + (n.examenes ? n.examenes.titulo : 'Examen sin título') + "</td>" +
+                "<td><b style='color:#00796b'>" + n.nota + " / 20</b></td>" +
+                "<td><div style='display:flex; gap:5px;'>" +
+                "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\"><i class='fas fa-file-pdf'></i> PDF</button>" +
+                "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\"><i class='fas fa-eye'></i> Ver</button>" +
+                "</div></td>";
+            body.appendChild(tr);
+        });
+    } catch (err) {
+        body.innerHTML = `<tr><td colspan="3" style="color:red; text-align:center;">⚠️ Error: ${err.message}</td></tr>`;
     }
-
-    notas.forEach(function(n) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = "<td>" + (n.examenes ? n.examenes.titulo : 'Examen sin título') + "</td>" +
-            "<td><b style='color:#00796b'>" + n.nota + " / 20</b></td>" +
-            "<td><div style='display:flex; gap:5px;'>" +
-            "<button class='btn-pdf-examen' onclick=\"descargarReporte('" + n.id + "')\"><i class='fas fa-file-pdf'></i> PDF</button>" +
-            "<button class='btn-ver' onclick=\"window.location.href='resultados.html?id=" + n.examen_id + "'\"><i class='fas fa-eye'></i> Ver</button>" +
-            "</div></td>";
-        body.appendChild(tr);
-    });
 }
 
 async function descargarReporte(resultadoId) {
-    const { data: res } = await window.n.from('resultados').select('*, examenes(*), estudiantes(*)')
-        .eq('id', resultadoId).single();
+    try {
+        const { data: res, error } = await window.n.from('resultados').select('*, examenes(*), estudiantes(*)')
+            .eq('id', resultadoId).single();
+        if (error) throw error;
+        if (!res) return;
 
-    if (!res) return;
-    const { jsPDF } = window.jspdf;
-    const docPDF = new jsPDF();
-    docPDF.setFont("helvetica", "bold").setFontSize(9);
-    docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
-    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
-    docPDF.line(20, 20, 190, 20);
-    docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACION", 105, 30, { align: "center" });
-    docPDF.setFont("helvetica", "normal").setFontSize(10);
-    docPDF.text("ESTUDIANTE: " + (res.estudiantes.nombres_completos || "") + " " + (res.estudiantes.apellido_completo || ""), 20, 45);
-    docPDF.text("CEDULA: " + (res.estudiantes.cedula || "N/P"), 20, 52);
-    docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
-    docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
-    docPDF.line(70, 100, 140, 100);
-    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
-    docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
-    docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+        docPDF.setFont("helvetica", "bold").setFontSize(9);
+        docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
+        docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
+        docPDF.line(20, 20, 190, 20);
+        docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACION", 105, 30, { align: "center" });
+        docPDF.setFont("helvetica", "normal").setFontSize(10);
+        docPDF.text("ESTUDIANTE: " + (res.estudiantes.nombres_completos || "") + " " + (res.estudiantes.apellido_completo || ""), 20, 45);
+        docPDF.text("CEDULA: " + (res.estudiantes.cedula || "N/P"), 20, 52);
+        docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
+        docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
+        docPDF.line(70, 100, 140, 100);
+        docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
+        docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
+        docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
+    } catch (err) {
+        alert("No se pudo generar el PDF: " + err.message);
+    }
 }
 
 document.getElementById("btnSalir").onclick = async function() {
