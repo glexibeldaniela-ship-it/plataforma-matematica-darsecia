@@ -126,7 +126,6 @@ async function cargarExamenes(anioEstudiante, seccionEstudiante, userId) {
         const { data: examenes, error: errEx } = await window.n.from('examenes').select('*').eq('activo', true);
         if (errEx) throw errEx;
 
-        // Cambio Clave: Usar estudiante_id para verificar realizados
         const { data: realizados } = await window.n.from('resultados').select('examen_id').eq('estudiante_id', userId);
         const idsRealizados = (realizados || []).map(r => r.examen_id);
 
@@ -185,12 +184,12 @@ function irAlExamen() {
 async function cargarHistorial(userId) {
     const body = document.getElementById("bodyHistorial");
     try {
-        // Cambio Clave: Usar estudiante_id y la relación explícita
+        // CORRECCIÓN CODE RABBIT (Bug 1): Hint explícito !examen_id_fkey
         const { data: notas, error } = await window.n
             .from('resultados')
-            .select('*, examenes(titulo)')
+            .select('*, examenes!examen_id_fkey(titulo)')
             .eq('estudiante_id', userId);
-        
+
         if (error) throw error;
 
         body.innerHTML = "";
@@ -217,10 +216,10 @@ async function cargarHistorial(userId) {
 
 async function descargarReporte(resultadoId) {
     try {
-        // Cambio Clave: Relación explícita con !estudiante_id_fkey
+        // CORRECCIÓN CODE RABBIT (Bug 2): Hint explícito en ambas tablas
         const { data: res, error } = await window.n
             .from('resultados')
-            .select('*, examenes(*), estudiantes!estudiante_id_fkey(*)')
+            .select('*, examenes!examen_id_fkey(*), estudiantes!estudiante_id_fkey(*)')
             .eq('id', resultadoId)
             .single();
 
@@ -233,18 +232,18 @@ async function descargarReporte(resultadoId) {
         docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
         docPDF.line(20, 20, 190, 20);
         docPDF.setFontSize(12).text("COMPROBANTE DE CALIFICACION", 105, 30, { align: "center" });
-        
+
         docPDF.setFont("helvetica", "normal").setFontSize(10);
         const nom = res.estudiantes.nombres_completos + " " + res.estudiantes.apellido_completo;
         docPDF.text("ESTUDIANTE: " + nom, 20, 45);
         docPDF.text("CEDULA: " + (res.estudiantes.cedula || "N/P"), 20, 52);
         docPDF.text("EVALUACION: " + res.examenes.titulo, 20, 59);
         docPDF.text("NOTA: " + res.nota + " / 20 Puntos", 20, 66);
-        
+
         docPDF.line(70, 100, 140, 100);
         docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, 105, { align: "center" });
         docPDF.text("PROFESOR DE MATEMATICAS", 105, 110, { align: "center" });
-        
+
         docPDF.save("Nota_" + res.examenes.titulo.replace(/\s/g, '_') + ".pdf");
     } catch (err) {
         alert("Error al generar PDF: " + err.message);
