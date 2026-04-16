@@ -15,38 +15,46 @@
   }
   body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--background); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
   .header { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 40px 0; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
-  .contenedorResultado { width: 95%; max-width: 500px; margin-top: -30px; margin-bottom: 40px; }
-  .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+  .contenedorResultado { width: 95%; max-width: 600px; margin-top: -30px; margin-bottom: 40px; }
+  .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
   .nota-valor { font-size: 3.5rem; font-weight: 800; margin: 0; }
   .status-badge { display: inline-block; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
   .aprobado { color: var(--success); background: #e8f5e9; border: 1px solid var(--success); }
   .reprobado { color: var(--danger); background: #ffebee; border: 1px solid var(--danger); }
   .detalles-lista { text-align: left; margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 15px; }
   .detalle-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+  
+  /* Estilos para el listado de preguntas */
+  .revision-titulo { text-align: left; color: var(--primary); margin-top: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; }
+  .pregunta-item { text-align: left; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+  .pregunta-item.correcta { border-left-color: var(--success); }
+  .pregunta-item.incorrecta { border-left-color: var(--danger); }
+  .label-res { font-size: 0.85rem; font-weight: bold; display: block; margin-top: 5px; }
+  .res-texto { font-size: 0.9rem; }
+
   .btn-pdf { background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
-  .btn-volver { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: 600; }
+  .btn-volver { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: 600; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h2 style="margin:0;">Resultado de Evaluación</h2>
+  <h2 style="margin:0;">Resumen de Evaluación</h2>
 </div>
 
 <div class="contenedorResultado">
   <div id="resultado" class="card">
     <p>Cargando resultados...</p>
   </div>
-  <br>
-  <button id="btnPDF" class="btn-pdf" style="display:none;">
+
+  <div id="listaPreguntas"></div> <button id="btnPDF" class="btn-pdf" style="display:none;">
     📥 Descargar Acta de Calificación
   </button>
-  <center><a id="lnkVolver" class="btn-volver">⬅ Volver</a></center>
+  <a id="lnkVolver" class="btn-volver">⬅ Volver al Panel</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Tu configuración de Supabase se mantiene igual
   window.n = supabase.createClient(
     'https://abejdltqyeuslgmmfucx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWpkbHRxeWV1c2xnbW1mdWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTIxNzIsImV4cCI6MjA4NDU4ODE3Mn0.7lT2M4ebC2r9oXIOhA3CfR5YKqg92q48n9UkkH93UuI'
@@ -59,6 +67,7 @@ const examenId = params.get("id");
 const estudianteIdUrl = params.get("estudiante");
 
 const resultadoDiv = document.getElementById("resultado");
+const listaPreguntasDiv = document.getElementById("listaPreguntas");
 const btnPDF = document.getElementById("btnPDF");
 const lnkVolver = document.getElementById("lnkVolver");
 
@@ -83,11 +92,11 @@ async function cargarResultado() {
         if (errEx) throw errEx;
         examenData = ex;
 
-        // CORRECCIÓN DE COLUMNAS: usuario_id -> estudiante_id | grado -> anio
+        // CORRECCIÓN DE RELACIÓN: Usando !estudiante_id_fkey para evitar el error de "Relationship not found"
         const { data: res, error: errRes } = await window.n.from('resultados')
-            .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
+            .select('*, estudiantes!estudiante_id_fkey(nombres_completos, apellido_completo, cedula)')
             .eq('examen_id', examenId)
-            .eq('estudiante_id', targetId) // Cambiado según tu video
+            .eq('estudiante_id', targetId)
             .single();
 
         if (errRes || !res) {
@@ -99,6 +108,7 @@ async function cargarResultado() {
         const nota = res.nota;
         const esAprobado = nota >= 9.5;
 
+        // 1. Mostrar la tarjeta de nota
         resultadoDiv.innerHTML = `
             <h3 style="margin:0; color:var(--primary);">${ex.titulo}</h3>
             <div class="nota-container">
@@ -114,10 +124,28 @@ async function cargarResultado() {
                 <div class="detalle-item"><span>Año/Sección:</span><span>${res.anio} - ${res.seccion}</span></div>
             </div>`;
 
+        // 2. Mostrar la revisión de preguntas (Aquí se quita el "undefined")
+        if (res.respuestas_detalladas && res.respuestas_detalladas.length > 0) {
+            let htmlPreguntas = `<h3 class="revision-titulo">Revisión de Respuestas</h3>`;
+            res.respuestas_detalladas.forEach((p, index) => {
+                const clase = p.esCorrecta ? 'correcta' : 'incorrecta';
+                const icono = p.esCorrecta ? '✅' : '❌';
+                htmlPreguntas += `
+                    <div class="pregunta-item ${clase}">
+                        <strong>${index + 1}. ${p.pregunta}</strong>
+                        <span class="label-res">Tu respuesta:</span>
+                        <span class="res-texto">${icono} ${p.marcada}</span>
+                        ${!p.esCorrecta ? `<span class="label-res" style="color:var(--success)">Respuesta correcta:</span><span class="res-texto">${p.correcta}</span>` : ''}
+                    </div>`;
+            });
+            listaPreguntasDiv.innerHTML = htmlPreguntas;
+        }
+
         btnPDF.style.display = "flex";
 
     } catch (e) {
-        resultadoDiv.innerHTML = "<p style='color:red;'>Error al cargar datos. Verifica las columnas de Supabase.</p>";
+        console.error(e);
+        resultadoDiv.innerHTML = "<p style='color:red;'>Error al cargar datos. Verifica la conexión.</p>";
     }
 }
 
@@ -126,31 +154,29 @@ btnPDF.onclick = function() {
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF();
 
-    // Membrete Institucional
+    // Membrete
     docPDF.setFont("helvetica", "bold").setFontSize(9);
     docPDF.text("REPUBLICA BOLIVARIANA DE VENEZUELA", 105, 12, { align: "center" });
-    docPDF.text("MINISTERIO DEL PODER POPULAR PARA LA EDUCACION", 105, 17, { align: "center" });
-    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 22, { align: "center" });
-    docPDF.line(20, 25, 190, 25);
+    docPDF.text("U.E.E. CECILIA NUNEZ SUCRE", 105, 17, { align: "center" });
+    docPDF.line(20, 22, 190, 22);
 
-    docPDF.setFontSize(14).text("ACTA DE CALIFICACION", 105, 40, { align: "center" });
+    docPDF.setFontSize(14).text("ACTA DE CALIFICACION", 105, 35, { align: "center" });
 
     docPDF.setFontSize(10).setFont("helvetica", "normal");
     const nombreFull = datosResultado.estudiantes.nombres_completos + " " + datosResultado.estudiantes.apellido_completo;
-    
-    docPDF.text("ESTUDIANTE: " + fixPDF(nombreFull), 20, 55);
-    docPDF.text("CEDULA: " + (datosResultado.estudiantes.cedula || "N/P"), 20, 62);
-    docPDF.text("ANIO Y SECCION: " + fixPDF(datosResultado.anio + " " + datosResultado.seccion), 20, 69);
-    docPDF.text("EVALUACION: " + fixPDF(examenData.titulo), 20, 76);
-    docPDF.setFont("helvetica", "bold").text("CALIFICACION FINAL: " + datosResultado.nota + " / 20 PTS", 20, 85);
 
-    // Firma del Profesor (José Agustín Fernández)
-    const yFirma = 140;
+    docPDF.text("ESTUDIANTE: " + fixPDF(nombreFull), 20, 50);
+    docPDF.text("CEDULA: " + (datosResultado.estudiantes.cedula || "N/P"), 20, 57);
+    docPDF.text("ANIO/SECCION: " + fixPDF(datosResultado.anio + " " + datosResultado.seccion), 20, 64);
+    docPDF.text("EVALUACION: " + fixPDF(examenData.titulo), 20, 71);
+    docPDF.setFont("helvetica", "bold").text("NOTA FINAL: " + datosResultado.nota + " / 20 PTS", 20, 80);
+
+    const yFirma = 130;
     docPDF.line(70, yFirma, 140, yFirma);
-    docPDF.setFont("helvetica", "bold").text("JOSE AGUSTIN FERNANDEZ", 105, yFirma + 7, { align: "center" });
-    docPDF.setFontSize(8).text("FIRMA DEL DOCENTE Y SELLO", 105, yFirma + 12, { align: "center" });
+    docPDF.text("JOSE AGUSTIN FERNANDEZ", 105, yFirma + 7, { align: "center" });
+    docPDF.setFontSize(8).text("DOCENTE DE MATEMATICAS", 105, yFirma + 12, { align: "center" });
 
-    docPDF.save("Resultado_" + fixPDF(datosResultado.estudiantes.apellido_completo) + ".pdf");
+    docPDF.save("Nota_" + fixPDF(datosResultado.estudiantes.apellido_completo) + ".pdf");
 };
 
 cargarResultado();
