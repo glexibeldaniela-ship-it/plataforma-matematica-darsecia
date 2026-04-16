@@ -138,10 +138,8 @@
             .select('*')
             .eq('creado_por', usuarioActual.id);
 
-        // MEJORA DE CODERABBITAI: Mostrar error si falla la carga
         if (error) {
             lista.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Error al cargar exámenes: ${error.message}</p>`;
-            console.error("Error en Supabase:", error);
             return;
         }
 
@@ -184,7 +182,6 @@
 
         const { data: usuarios, error } = await query;
 
-        // MEJORA DE CODERABBITAI: Mostrar error si falla la tabla de estudiantes
         if (error) {
             body.innerHTML = `<tr><td colspan="4" style="color:red;">⚠️ Error: ${error.message}</td></tr>`;
             return;
@@ -211,33 +208,37 @@
         const body = document.getElementById("bodyNotas");
         if (!exId) return;
 
+        // CORRECCIÓN CODE RABBIT: Hint explícito !estudiante_id_fkey para ver los datos del alumno
         const { data: notas, error } = await window.n
             .from('resultados')
-            .select('*, estudiantes(nombres_completos, apellido_completo, cedula)')
+            .select('*, estudiantes!estudiante_id_fkey(nombres_completos, apellido_completo, cedula, anio, seccion)')
             .eq('examen_id', exId);
 
-        // MEJORA DE CODERABBITAI: Error en notas
         if (error) {
             body.innerHTML = `<tr><td colspan="5" style="color:red;">⚠️ Error al cargar notas: ${error.message}</td></tr>`;
             return;
         }
 
         body.innerHTML = "";
-        (notas || []).forEach(n => {
+        if (!notas || notas.length === 0) {
+            body.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No hay estudiantes con nota en este examen.</td></tr>";
+            return;
+        }
+
+        notas.forEach(n => {
             body.innerHTML += `
                 <tr>
                     <td><b>${n.estudiantes.nombres_completos} ${n.estudiantes.apellido_completo}</b></td>
-                    <td>${n.estudiantes.cedula}</td>
-                    <td>${n.grado} | "${n.seccion}"</td>
+                    <td>${n.estudiantes.cedula || 'N/P'}</td>
+                    <td>${n.estudiantes.anio} | "${n.estudiantes.seccion}"</td>
                     <td style="font-weight:bold; color:#00796b;">${n.nota}/20</td>
                     <td>
-                        <button style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
+                        <button onclick="window.location.href='resultados.html?id=${exId}&estudiante=${n.estudiante_id}'" style="border:none; background:none; cursor:pointer; font-size:18px;">📄</button>
                     </td>
                 </tr>`;
         });
     };
 
-    // ... Las demás funciones (toggleEx, borrarEx, llenarSelectExamenes, etc.) se mantienen igual ...
     window.toggleEx = async (id, st) => {
         await window.n.from('examenes').update({ activo: !st }).eq('id', id);
         window.cargarExamenes();
@@ -259,7 +260,7 @@
 
     async function llenarSelectExamenes() {
         const select = document.getElementById("filtroExamenNotas");
-        const { data: examenes } = await window.n.from('examenes').select('id, titulo');
+        const { data: examenes } = await window.n.from('examenes').select('id, titulo').eq('creado_por', usuarioActual.id);
         if (examenes) {
             examenes.forEach(ex => {
                 const op = document.createElement("option");
